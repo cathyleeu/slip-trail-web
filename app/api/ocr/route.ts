@@ -1,47 +1,64 @@
-import { NextRequest, NextResponse } from "next/server"
-import { spawn } from "child_process"
-import { writeFile, unlink } from "fs/promises"
-import path from "path"
+import { parseReceipt } from '@lib/groq'
+import { execFile } from 'child_process'
+import { unlink, writeFile } from 'fs/promises'
+import { NextRequest, NextResponse } from 'next/server'
+import path from 'path'
+import { promisify } from 'util'
+
+const execFileAsync = promisify(execFile)
 
 export async function POST(request: NextRequest) {
   const form = await request.formData()
-  const file = form.get("file") as File
+  const file = form.get('file') as File
 
   if (!file) {
-    return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
+    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
   }
 
+  // 임시 파일 저장
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
-  const tempImagePath = path.join("/tmp", file.name)
+  const tempImagePath = path.join('/tmp', `receipt-${Date.now()}.jpg`)
   await writeFile(tempImagePath, buffer)
 
-  const python = spawn("python3", ["./python/ocr.py", tempImagePath], {
-    env: {
-      ...process.env,
-      PATH: `${process.cwd()}/python/venv/bin:${process.env.PATH}`,
+  try {
+    // Python OCR 실행
+    const pythonPath = path.join(process.cwd(), '.venv', 'bin', 'python3')
+    const scriptPath = path.join(process.cwd(), 'python', 'ocr.py')
+
+    const { stdout, stderr } = await execFileAsync(pythonPath, [scriptPath, tempImagePath])
+
+    if (stderr) {
+      console.warn('OCR stderr:', stderr)
     }
-  })
 
-  let ocrOutput = ""
-  let ocrError = ""
+    // JSON 파싱 시도
+    try {
+      const ocrResult = JSON.parse(stdout.trim())
+      const rawText = ocrResult.map((item: { text: string }) => item.text).join('\n')
+      const parsedReceipt = await parseReceipt(rawText)
 
-  python.stdout.on("data", (data) => {
-    ocrOutput += data.toString()
-  })
-  python.stderr.on("data", (data) => {
-    ocrError += data.toString()
-  })
-
-  const exitCode: number = await new Promise((resolve) => {
-    python.on("close", resolve)
-  })
-
-  await unlink(tempImagePath)
-
-  if (exitCode !== 0) {
-    return NextResponse.json({ error: ocrError }, { status: 500 })
+      return NextResponse.json({
+        success: true,
+        raw_text: rawText,
+        data: ocrResult,
+        parsed_receipt: parsedReceipt,
+      })
+    } catch {
+      // JSON 파싱 실패 시 raw text 그대로 반환
+      return NextResponse.json({
+        success: true,
+        raw_text: stdout.trim(),
+      })
+    }
+  } catch (error) {
+    console.error('OCR Error:', error)
+    return NextResponse.json(
+      { error: 'OCR failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  } finally {
+    // 임시 파일 삭제
+    await unlink(tempImagePath).catch((err) => console.error('Failed to delete temp file:', err))
   }
-
-  return NextResponse.json({ text: ocrOutput.trim() })
 }
