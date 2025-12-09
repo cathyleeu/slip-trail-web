@@ -59,7 +59,8 @@ export function useCamera() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [photo, setPhoto] = useState<string | null>(null)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null)
   const [showRetake, setShowRetake] = useState(false)
 
   const startCamera = async () => {
@@ -78,7 +79,8 @@ export function useCamera() {
   }
 
   const resetPhoto = () => {
-    setPhoto(null)
+    setPhotoUrl(null)
+    setPhotoBlob(null)
     setShowRetake(false)
   }
 
@@ -87,7 +89,8 @@ export function useCamera() {
     const blob = await capturePhoto(videoRef.current)
     if (blob) {
       const url = URL.createObjectURL(blob)
-      setPhoto(url)
+      setPhotoUrl(url)
+      setPhotoBlob(blob)
       setShowRetake(true)
     }
   }, [stream, videoRef])
@@ -107,7 +110,8 @@ export function useCamera() {
     startCamera,
     takePhoto,
     resetPhoto,
-    photo,
+    photoUrl,
+    photoBlob,
     showRetake,
   }
 }
