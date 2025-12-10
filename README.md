@@ -60,34 +60,57 @@ bun dev
 
 ## Project Roadmap
 
-**Week 1 — Core Logic**
+**Core Platform**
 
 - [x] init project
 - [x] set up basic folder structure
 - [x] configure Tailwind CSS
-- [ ] build Supabase DB schema
-- [ ] apollo server setup
 - [x] client setup
-- [ ] image upload UI
-- [x] OCR pipeline basic operation
-- [ ] AI parsing version 1 (item list extraction)
+- [ ] global error boundary + empty states
+- [ ] env var validation (GROQ, Supabase) on startup
 
-**Week 2 — Map Integration**
+**Data Layer**
+
+- [ ] Supabase schema
+- [x] Storage: create bucket `sliptrail-bills` + public policy
+- [ ] Apollo GraphQL server at `/api/graphql`
+- [ ] Client queries/mutations for receipts/items/places
+- [ ] Image upload UI with progress + retry
+
+**OCR & AI Pipeline**
+
+- [x] OCR pipeline basic operation (Python PaddleOCR)
+- [x] `/api/ocr` execFile integration + robust stderr logging
+- [ ] Client flow: capture → compress(WebP) → upload → OCR → parse
+- [ ] AI parsing v1 with Groq: vendor/date/total/items
+- [ ] Confidence/heuristics: guardrails for totals/taxes
+
+**Release & Ops**
+
+- [ ] Vercel project + env vars
+- [ ] Deploy serverless routes (`upload`, `parse`, `graphql`)
+- [ ] OCR service strategy (railway)
+
+**Mapping & Location**
 
 - [x] Set up Mapbox (or Google Maps)
 - [ ] Add receipt location coordinates
 - [ ] Pin-based visualization
 - [ ] Simple heatmap version
 - [ ] List/card view
+- [ ] `/api/geocode` using Nominatim
+- [ ] Persist lat/lon to `places` and link receipts
 
-**Week 3 — Detail Page + Monthly Report + Tip Processing**
+**Receipts UX & Insights**
 
 - [ ] Detail receipt page
 - [ ] Tip automation rules (basic 3 only)
 - [ ] Monthly summary page
 - [ ] AI insight one or two lines
+- [ ] Edit line items (qty/price) and re-calc totals
+- [ ] Upload history list with status (parsed/failed)
 
-**Week 4 — Final Polish + README + Demo Video**
+**Polish & Docs**
 
 - [ ] Color/layout polishing
 - [ ] Logo/brand minimal form
@@ -95,3 +118,5 @@ bun dev
 - [ ] README
 - [ ] 30 sec demo video
 - [ ] Deployment (Vercel)
+- [ ] Docs: architecture diagram OCR→LLM→DB→Map
+- [ ] Sample data + curl examples for API
