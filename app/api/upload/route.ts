@@ -1,5 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
+import { supabaseServer } from '@lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -10,12 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL!
-  const supabaseKey = process.env.SUPABASE_SECRET_KEY!
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    global: { headers: { Authorization: request.headers.get('Authorization')! } },
-  })
-
+  const supabase = await supabaseServer()
   const {
     data: { user },
   } = await supabase.auth.getUser()
