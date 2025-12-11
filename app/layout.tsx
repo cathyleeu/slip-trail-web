@@ -1,3 +1,4 @@
+import { AuthProvider } from '@context/AuthContext'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="min-h-screen mx-auto max-w-[430px] w-full bg-white">{children}</div>
+        <AuthProvider>
+          <div className="min-h-screen mx-auto max-w-[430px] w-full bg-white">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   )

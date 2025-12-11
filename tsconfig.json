@@ -24,6 +24,7 @@
       "@styles/*": ["./styles/*"],
       "@python/*": ["./python/*"],
       "@hooks/*": ["./app/hooks/*"],
+      "@context/*": ["./app/context/*"],
       "@lib/*": ["./lib/*"]
     }
   },
