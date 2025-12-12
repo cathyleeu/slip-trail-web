@@ -7,14 +7,17 @@ import { createContext, useContext, useEffect, useState } from 'react'
 export const AuthContext = createContext<{
   user: User | null
   session: Session | null
+  loading?: boolean
 }>({
   user: null,
   session: null,
+  loading: true,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
   // 세션 초기 로드
   useEffect(() => {
@@ -23,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(({ data }) => {
         setSession(data.session)
         setUser(data.session?.user ?? null)
+        setLoading(false)
       })
 
     // 로그인/로그아웃 변화 감지
@@ -34,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  return <AuthContext.Provider value={{ user, session }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, session, loading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuthContext() {
