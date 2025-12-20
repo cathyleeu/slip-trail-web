@@ -1,6 +1,7 @@
 'use client'
 
 import { useCamera } from '@hooks/useCamera'
+import { useOcr } from '@hooks/useOcr'
 import { compressImage } from '@utils/compressImage'
 import { motion } from 'motion/react'
 import Image from 'next/image'
@@ -15,8 +16,8 @@ interface OCRResult {
 export default function CameraPage() {
   const { videoRef, startCamera, photoUrl, photoBlob, takePhoto, showRetake, resetPhoto } =
     useCamera()
-  const [ocrResult, setOcrResult] = useState<OCRResult | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { runOcr, data: ocrResult, loading, reset } = useOcr()
+  const [, setLegacyResult] = useState<OCRResult | null>(null)
 
   useEffect(() => {
     startCamera()
@@ -24,30 +25,27 @@ export default function CameraPage() {
 
   const handleOCR = async () => {
     if (!photoBlob) return
-
-    setLoading(true)
     try {
       const compressedFile = await compressImage(photoBlob)
 
-      const HF_URL = 'https://2222ugggg-sliptrail-ocr.hf.space/ocr'
-      // API 호출
-      const ocrResponse = await fetch(HF_URL, {
-        method: 'POST',
-        body: compressedFile,
-      })
+      reset()
 
-      const result = await ocrResponse.json()
+      const result = await runOcr({ file: compressedFile })
 
+      // Keep legacy state shape for now (optional)
       if (result.success) {
-        setOcrResult(result)
-        console.log('OCR Result:', result.data)
-      } else {
-        console.error('OCR failed:', result.error)
+        setLegacyResult({
+          success: true,
+          data: (result.data ?? []).map((x) => ({
+            text: x.text,
+            confidence: x.confidence ?? 0,
+            bbox: x.bbox ?? [],
+          })),
+          raw_text: result.raw_text,
+        })
       }
     } catch (error) {
       console.error('Error:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -99,7 +97,7 @@ export default function CameraPage() {
       {ocrResult && (
         <div className="absolute top-4 left-4 right-4 bg-white/90 p-4 rounded-lg max-h-64 overflow-y-auto z-50">
           <h3 className="font-bold mb-2">OCR Result:</h3>
-          <pre className="text-xs">{ocrResult.raw_text}</pre>
+          <pre className="text-xs">{ocrResult.success ? ocrResult.raw_text : ocrResult.error}</pre>
         </div>
       )}
     </div>
