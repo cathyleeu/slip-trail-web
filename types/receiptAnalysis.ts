@@ -1,12 +1,11 @@
+// FIXME
 export type ExternalOcrApiResponse = {
-  text: string //NOTE: 실제 space OCR API 응답 형식 확인
+  text: string
 }
 
 export type OcrSuccess = {
   success: true
-  data: {
-    text: string
-  }
+  text: string
 }
 
 export type OcrFailure = {
