@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 export default function UploadPage() {
   const { runOcr, data: ocrResult, loading, reset } = useOcr()
   const [file, setFile] = useState<File | null>(null)
+  const [isPreparing, setIsPreparing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const previewUrl = useMemo(() => {
@@ -29,17 +30,21 @@ export default function UploadPage() {
   }
 
   const onPickClick = () => {
+    if (loading || isPreparing) return
     fileInputRef.current?.click()
   }
 
   const onRunOcr = async () => {
-    if (!file) return
+    if (!file || loading || isPreparing) return
     try {
+      setIsPreparing(true)
       const compressedFile = await compressImage(file)
       reset()
       await runOcr({ file: compressedFile })
     } catch (error) {
       console.error('Error:', error)
+    } finally {
+      setIsPreparing(false)
     }
   }
 
@@ -83,7 +88,7 @@ export default function UploadPage() {
                 type="button"
                 className="px-3 py-2 text-sm rounded-lg bg-white border border-gray-200"
                 onClick={onPickClick}
-                disabled={loading}
+                disabled={loading || isPreparing}
               >
                 선택
               </motion.button>
@@ -104,7 +109,7 @@ export default function UploadPage() {
             whileTap={{ scale: 0.98 }}
             className="w-full px-6 py-3 bg-blue-500 text-white rounded-xl disabled:opacity-50"
             onClick={onRunOcr}
-            disabled={!file || loading}
+            disabled={!file || loading || isPreparing}
           >
             OCR 요청
           </motion.button>

@@ -18,14 +18,16 @@ export default function CameraPage() {
     useCamera()
   const { runOcr, data: ocrResult, loading, reset } = useOcr()
   const [, setLegacyResult] = useState<OCRResult | null>(null)
+  const [isPreparing, setIsPreparing] = useState(false)
 
   useEffect(() => {
     startCamera()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOCR = async () => {
-    if (!photoBlob) return
+    if (!photoBlob || loading || isPreparing) return
     try {
+      setIsPreparing(true)
       const compressedFile = await compressImage(photoBlob)
 
       reset()
@@ -46,6 +48,8 @@ export default function CameraPage() {
       }
     } catch (error) {
       console.error('Error:', error)
+    } finally {
+      setIsPreparing(false)
     }
   }
 
@@ -73,7 +77,7 @@ export default function CameraPage() {
               whileTap={{ scale: 0.95 }}
               className="px-6 py-3 bg-blue-500 text-white rounded-lg"
               onClick={handleOCR}
-              disabled={loading}
+              disabled={loading || isPreparing}
             >
               업로드
             </motion.button>
