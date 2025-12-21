@@ -1,15 +1,10 @@
+import type { ApiErrorOptions, ApiFailure, ApiSuccess } from '@types'
 import { NextResponse } from 'next/server'
-
-type ApiErrorOptions = {
-  status?: number
-  details?: unknown
-  code?: string
-}
 
 export function apiError(message: string, options: ApiErrorOptions = {}) {
   const { status = 500, code, details } = options
 
-  return NextResponse.json(
+  return NextResponse.json<ApiFailure>(
     {
       success: false,
       error: message,
@@ -21,7 +16,7 @@ export function apiError(message: string, options: ApiErrorOptions = {}) {
 }
 
 export function apiSuccess<T>(data: T, status: number = 200) {
-  return NextResponse.json(
+  return NextResponse.json<ApiSuccess<T>>(
     {
       success: true,
       data,
