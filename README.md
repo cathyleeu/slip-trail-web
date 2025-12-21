@@ -67,11 +67,11 @@ bun dev
 - [x] configure Tailwind CSS
 - [x] client setup
 - [ ] global error boundary + empty states
-- [ ] env var validation (GROQ, Supabase) on startup
+- [x] env var validation (GROQ, Supabase) on startup
 
 **Data Layer**
 
-- [ ] Supabase schema
+- [x] Supabase schema
 - [x] Storage: create bucket `sliptrail-bills` + public policy
 - [ ] Apollo GraphQL server at `/api/graphql`
 - [ ] Client queries/mutations for receipts/items/places
@@ -81,13 +81,13 @@ bun dev
 
 - [x] OCR pipeline basic operation (Python PaddleOCR)
 - [x] `/api/ocr` execFile integration + robust stderr logging
-- [ ] Client flow: capture → compress(WebP) → upload → OCR → parse
-- [ ] AI parsing v1 with Groq: vendor/date/total/items
+- [x] Client flow: capture → upload → OCR → parse
+- [x] AI parsing v1 with Groq: vendor/date/total/items
 - [ ] Confidence/heuristics: guardrails for totals/taxes
 
 **Release & Ops**
 
-- [ ] Vercel project + env vars
+- [x] Vercel project + env vars
 - [ ] Deploy serverless routes (`upload`, `parse`, `graphql`)
 - [ ] OCR service strategy (railway)
 
