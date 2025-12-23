@@ -2,4 +2,9 @@ export type * from './api'
 export type * from './auth'
 export type * from './http'
 export type * from './profile'
-export type * from './receiptAnalysis'
+
+// Domain-based types (refactored from receiptAnalysis)
+export type * from './analysis'
+export type * from './location'
+export type * from './ocr'
+export type * from './receipt'
