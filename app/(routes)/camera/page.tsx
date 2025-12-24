@@ -1,112 +1,113 @@
 'use client'
 
 import { useCamera } from '@hooks/useCamera'
-import { useReceiptAnalysis } from '@hooks/useReceiptAnalysis'
 import { compressImage } from '@utils/compressImage'
 import { motion } from 'motion/react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function CameraPage() {
   const { videoRef, startCamera, photoUrl, photoBlob, takePhoto, showRetake, resetPhoto } =
     useCamera()
-  const { analyze, data: analysis, loading, reset } = useReceiptAnalysis()
+  const router = useRouter()
   const [isPreparing, setIsPreparing] = useState(false)
 
   useEffect(() => {
     startCamera()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleOCR = async () => {
-    if (!photoBlob || loading || isPreparing) return
+  const handleAnalyze = async () => {
+    if (!photoBlob || isPreparing) return
     try {
       setIsPreparing(true)
       const compressedFile = await compressImage(photoBlob)
 
-      reset()
-
-      const result = await analyze({ file: compressedFile })
-
-      if (result.success) {
-        console.log('Analysis complete:', result.receipt)
+      // Store in sessionStorage and navigate to processing
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        sessionStorage.setItem('receiptImage', reader.result as string)
+        router.push('/processing')
       }
+      reader.readAsDataURL(compressedFile)
     } catch (error) {
       console.error('Error:', error)
-    } finally {
       setIsPreparing(false)
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen relative">
-      <video ref={videoRef} className="w-full h-full object-cover" />
-      {photoUrl && (
-        <div className="absolute inset-0 w-full h-full bg-black/70 flex items-center justify-center">
-          <Image src={photoUrl} alt="Captured" fill className="object-cover" />
-        </div>
-      )}
+    <div className="flex flex-col h-screen bg-black relative">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4">
+        <button
+          onClick={() => router.back()}
+          className="w-10 h-10 flex items-center justify-center text-white"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="text-white text-sm font-medium">SCAN RECEIPT</div>
+        <div className="w-10" />
+      </div>
 
-      {/* 하단 버튼들 */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 z-50">
-        {showRetake ? (
-          <>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 bg-gray-500 text-white rounded-lg"
-              onClick={resetPhoto}
-            >
-              다시 찍기
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg"
-              onClick={handleOCR}
-              disabled={loading || isPreparing}
-            >
-              업로드
-            </motion.button>
-          </>
+      {/* Camera/Photo View */}
+      <div className="flex-1 relative">
+        {photoUrl ? (
+          <div className="absolute inset-0">
+            <Image src={photoUrl} alt="Captured" fill className="object-contain" />
+          </div>
         ) : (
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className="w-16 h-16 border-4 border-white bg-red-500 text-white rounded-full shadow-lg"
-            onClick={takePhoto}
-          />
+          <>
+            <video ref={videoRef} className="w-full h-full object-cover" />
+
+            {/* Frame Guide */}
+            <div className="absolute inset-0 flex items-center justify-center p-8">
+              <div className="w-full max-w-sm aspect-3/4 border-2 border-blue-400 rounded-2xl" />
+            </div>
+          </>
         )}
       </div>
 
-      {loading && (
-        <div className="absolute inset-0 w-full h-full bg-black/50 flex items-center justify-center z-50">
-          <div className="text-white text-lg">처리 중...</div>
+      {/* Bottom Controls */}
+      <div className="absolute bottom-0 left-0 right-0 z-50 pb-8 pt-4 bg-linear-to-t from-black/80 to-transparent">
+        <div className="text-center text-white text-sm mb-4">
+          {showRetake ? 'Review your receipt' : 'Align receipt within frame'}
         </div>
-      )}
-
-      {/* OCR 결과 표시 */}
-      {analysis && (
-        <div className="absolute top-4 left-4 right-4 bg-white/90 p-4 rounded-lg max-h-64 overflow-y-auto z-50">
-          <h3 className="font-bold mb-2">Analysis Result:</h3>
-          {'success' in analysis && analysis.success ? (
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs font-semibold text-gray-700 mb-1">OCR</div>
-                <pre className="text-xs whitespace-pre-wrap">{analysis.ocr.text}</pre>
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-gray-700 mb-1">Parsed</div>
-                <pre className="text-xs whitespace-pre-wrap">
-                  {JSON.stringify(analysis.receipt, null, 2)}
-                </pre>
-              </div>
-            </div>
+        <div className="flex justify-center items-center gap-6">
+          {showRetake ? (
+            <>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={resetPhoto}
+                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white rounded-full font-medium"
+              >
+                Retake
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAnalyze}
+                disabled={isPreparing}
+                className="px-8 py-3 bg-blue-500 text-white rounded-full font-medium disabled:opacity-50"
+              >
+                {isPreparing ? 'Processing...' : 'Continue'}
+              </motion.button>
+            </>
           ) : (
-            <pre className="text-xs whitespace-pre-wrap">
-              {'success' in analysis && !analysis.success
-                ? `[${analysis.stage}] ${analysis.error}`
-                : 'Analysis failed'}
-            </pre>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={takePhoto}
+              className="w-20 h-20 rounded-full bg-white border-4 border-blue-500 shadow-lg"
+            />
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
