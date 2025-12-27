@@ -4,7 +4,6 @@ import { persist } from 'zustand/middleware'
 
 type DraftState = {
   draft: ParsedReceipt | null
-
   setDraft: (draft: ParsedReceipt) => void
   updateDraft: (partial: Partial<ParsedReceipt>) => void
   clearDraft: () => void
