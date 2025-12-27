@@ -118,7 +118,7 @@ async function analyzeRequest({ file }: AnalyzeOptions): Promise<ReceiptAnalysis
   return { success: true, ocr, receipt: parsed.receipt, location: geo.location }
 }
 
-export function useReceiptAnalysis() {
+export function useAnalysisMutation() {
   const mutation = useMutation({
     mutationFn: analyzeRequest,
   })
