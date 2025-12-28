@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react'
 import { useAnalysisMutation } from './useAnalysisMutation'
 
 type AnalyzeReceiptOptions = {
-  receiptImg: File | Blob
+  receiptFile: File | Blob
   onError?: (error: string) => void
 }
 
@@ -20,13 +20,13 @@ export function useAnalysisFlow() {
   const [stage, setStage] = useState('Starting...')
 
   const analyzeReceipt = useCallback(
-    async ({ receiptImg, onError }: AnalyzeReceiptOptions) => {
+    async ({ receiptFile, onError }: AnalyzeReceiptOptions) => {
       try {
         setIsProcessing(true)
         setProgress(0)
         setStage('Starting...')
 
-        const compressedFile = await compressImage(receiptImg)
+        const compressedFile = await compressImage(receiptFile)
         setImageUrl(compressedFile)
 
         reset()
