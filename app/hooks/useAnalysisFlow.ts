@@ -1,6 +1,6 @@
 'use client'
 
-import { useMapDraftStore, useReceiptDraftStore } from '@store'
+import { useMapDraftStore, useReceiptDraftStore, useReceiptImageStore } from '@store'
 import { compressImage } from '@utils/compressImage'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
@@ -16,6 +16,7 @@ export function useAnalysisFlow() {
   const { analyze, reset } = useAnalysisMutation()
   const { setDraft } = useReceiptDraftStore()
   const { setLocation } = useMapDraftStore()
+  const { setImageUrl } = useReceiptImageStore()
   const [isPreparing, setIsPreparing] = useState(false)
 
   const analyzeReceipt = useCallback(
@@ -23,18 +24,22 @@ export function useAnalysisFlow() {
       try {
         setIsPreparing(true)
         const compressedFile = await compressImage(receiptImg)
+
+        // create ObjectURL (more memory efficient than base64)
+        const objectUrl = URL.createObjectURL(compressedFile)
+        setImageUrl(objectUrl)
+
         reset()
 
         const result = await analyze({ file: compressedFile })
 
         if (result.success) {
-          // Zustand store에 결과 저장
           setDraft(result.receipt)
           setLocation(result.location)
           router.push('/result')
           return result
         } else {
-          // 에러 콜백
+          // Error callback
           onError?.(result.error)
           return result
         }
@@ -47,7 +52,7 @@ export function useAnalysisFlow() {
         setIsPreparing(false)
       }
     },
-    [analyze, reset, setDraft, setLocation, router]
+    [analyze, reset, setDraft, setLocation, setImageUrl, router]
   )
 
   return {
