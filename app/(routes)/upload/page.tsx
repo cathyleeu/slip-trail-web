@@ -1,31 +1,32 @@
 'use client'
 
+import { ProcessingDialog } from '@components'
 import { useAnalysisFlow, useAnalysisMutation } from '@hooks'
+import { useReceiptImageStore } from '@store'
 import { motion } from 'motion/react'
 import Image from 'next/image'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useRef, useState } from 'react'
 
 export default function UploadPage() {
+  const router = useRouter()
   const { data: analysis, loading, reset } = useAnalysisMutation()
-  const { analyzeReceipt, isPreparing } = useAnalysisFlow()
+  const { analyzeReceipt, isPreparing, isProcessing, progress, stage } = useAnalysisFlow()
+  const { imageUrl, setImageUrl, clearImageUrl } = useReceiptImageStore()
   const [receiptImg, setReceiptImg] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-
-  const previewUrl = useMemo(() => {
-    if (!receiptImg) return null
-    return URL.createObjectURL(receiptImg)
-  }, [receiptImg])
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-    }
-  }, [previewUrl])
 
   const onPickFile: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const next = e.target.files?.[0] ?? null
     setReceiptImg(next)
     reset()
+
+    // setImageUrl automatically creates ObjectURL from File
+    if (next) {
+      setImageUrl(next)
+    } else {
+      clearImageUrl()
+    }
   }
 
   const onPickClick = () => {
@@ -40,9 +41,11 @@ export default function UploadPage() {
       receiptImg,
       onError: (error) => {
         console.error('Analysis failed:', error)
-        // 여기서 toast 알림 등을 추가할 수 있습니다
+        alert(`분석 실패: ${error}`)
       },
     })
+
+    router.push('/result')
   }
 
   return (
@@ -93,8 +96,8 @@ export default function UploadPage() {
           </div>
 
           <div className="relative w-full aspect-3/4 overflow-hidden rounded-2xl bg-gray-100">
-            {previewUrl ? (
-              <Image src={previewUrl} alt="Preview" fill className="object-cover" />
+            {imageUrl ? (
+              <Image src={imageUrl} alt="Preview" fill className="object-cover" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
                 미리보기
@@ -141,14 +144,13 @@ export default function UploadPage() {
         </div>
       </div>
 
-      {loading && (
-        <div className="absolute inset-0 w-full h-full bg-black/40 flex items-center justify-center z-50">
-          <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-center">
-            <div className="text-sm font-semibold text-gray-900">Processing...</div>
-            <div className="mt-1 text-xs text-gray-500">Extracting details</div>
-          </div>
-        </div>
-      )}
+      {/* Processing Dialog */}
+      <ProcessingDialog
+        isOpen={isProcessing}
+        imageUrl={imageUrl}
+        progress={progress}
+        stage={stage}
+      />
     </div>
   )
 }

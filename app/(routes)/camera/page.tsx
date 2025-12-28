@@ -1,6 +1,8 @@
 'use client'
 
+import { ProcessingDialog } from '@components'
 import { useAnalysisFlow, useCamera } from '@hooks'
+import { useReceiptImageStore } from '@store'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -10,11 +12,24 @@ export default function CameraPage() {
   const { videoRef, startCamera, photoUrl, photoBlob, takePhoto, showRetake, resetPhoto } =
     useCamera()
   const router = useRouter()
-  const { analyzeReceipt, isPreparing } = useAnalysisFlow()
+  const { analyzeReceipt, isPreparing, isProcessing, progress, stage, imageUrl } = useAnalysisFlow()
+  const { setImageUrl, clearImageUrl } = useReceiptImageStore()
 
   useEffect(() => {
     startCamera()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 사진 촬영 후 store에 저장
+  useEffect(() => {
+    if (photoUrl) {
+      setImageUrl(photoUrl)
+    }
+  }, [photoUrl, setImageUrl])
+
+  const handleRetake = () => {
+    resetPhoto()
+    clearImageUrl()
+  }
 
   const handleAnalyze = async () => {
     if (!photoBlob || isPreparing) return
@@ -26,6 +41,8 @@ export default function CameraPage() {
         alert(`분석 실패: ${error}`)
       },
     })
+
+    router.push('/result')
   }
 
   return (
@@ -77,7 +94,7 @@ export default function CameraPage() {
             <>
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={resetPhoto}
+                onClick={handleRetake}
                 className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white rounded-full font-medium"
               >
                 Retake
@@ -100,6 +117,14 @@ export default function CameraPage() {
           )}
         </div>
       </div>
+
+      {/* Processing Dialog */}
+      <ProcessingDialog
+        isOpen={isProcessing}
+        imageUrl={imageUrl}
+        progress={progress}
+        stage={stage}
+      />
     </div>
   )
 }
