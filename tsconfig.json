@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,22 +23,59 @@
       }
     ],
     "paths": {
-      "@components/*": ["./app/components/*"],
-      "@components": ["./app/components/index"],
-      "@utils/*": ["./app/utils/*"],
-      "@styles/*": ["./styles/*"],
-      "@python/*": ["./python/*"],
-      "@hooks/*": ["./app/hooks/*"],
-      "@hooks": ["./app/hooks/index"],
-      "@context/*": ["./app/context/*"],
-      "@lib/*": ["./lib/*"],
-      "@lib": ["./lib/index"],
-      "@types": ["./types/index"],
-      "@types/*": ["./types/*"],
-      "@store/*": ["./store/*"],
-      "@store": ["./store/index"]
+      "@components/*": [
+        "./app/components/*"
+      ],
+      "@components": [
+        "./app/components/index"
+      ],
+      "@utils/*": [
+        "./app/utils/*"
+      ],
+      "@styles/*": [
+        "./styles/*"
+      ],
+      "@python/*": [
+        "./python/*"
+      ],
+      "@hooks/*": [
+        "./app/hooks/*"
+      ],
+      "@hooks": [
+        "./app/hooks/index"
+      ],
+      "@context/*": [
+        "./app/context/*"
+      ],
+      "@lib/*": [
+        "./lib/*"
+      ],
+      "@lib": [
+        "./lib/index"
+      ],
+      "@types": [
+        "./types/index"
+      ],
+      "@types/*": [
+        "./types/*"
+      ],
+      "@store/*": [
+        "./store/*"
+      ],
+      "@store": [
+        "./store/index"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "**/*.mts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "**/*.mts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
