@@ -1,7 +1,7 @@
 'use client'
 
 import { ProcessingDialog } from '@components'
-import { useAnalysisFlow, useAnalysisMutation } from '@hooks'
+import { useAnalysisFlow } from '@hooks'
 import { useReceiptImageStore } from '@store'
 import { motion } from 'motion/react'
 import Image from 'next/image'
@@ -10,35 +10,34 @@ import { useRef, useState } from 'react'
 
 export default function UploadPage() {
   const router = useRouter()
-  const { data: analysis, loading, reset } = useAnalysisMutation()
   const { analyzeReceipt, isProcessing, progress, stage } = useAnalysisFlow()
   const { imageUrl, setImageUrl, clearImageUrl } = useReceiptImageStore()
-  const [receiptImg, setReceiptImg] = useState<File | null>(null)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const onPickFile: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const next = e.target.files?.[0] ?? null
-    setReceiptImg(next)
-    reset()
+    setReceiptFile(next)
 
-    // setImageUrl automatically creates ObjectURL from File
-    if (next) {
-      setImageUrl(next)
-    } else {
-      clearImageUrl()
-    }
+    if (next) setImageUrl(next)
+    else clearImageUrl()
   }
 
-  const onPickClick = () => {
-    if (loading || isProcessing) return
+  const openFilePicker = () => {
+    if (isProcessing) return
     fileInputRef.current?.click()
   }
 
+  const onReset = () => {
+    setReceiptFile(null)
+    clearImageUrl()
+  }
+
   const onRunOcr = async () => {
-    if (!receiptImg || loading || isProcessing) return
+    if (!receiptFile) return
 
     await analyzeReceipt({
-      receiptImg,
+      receiptFile,
       onError: (error) => {
         console.error('Analysis failed:', error)
         alert(`분석 실패: ${error}`)
@@ -59,11 +58,8 @@ export default function UploadPage() {
           <button
             type="button"
             className="text-sm text-blue-600 font-medium"
-            onClick={() => {
-              setReceiptImg(null)
-              reset()
-            }}
-            disabled={loading}
+            onClick={onReset}
+            disabled={isProcessing}
           >
             초기화
           </button>
@@ -74,26 +70,19 @@ export default function UploadPage() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            onChange={onPickFile}
+            onChange={handleFileChange}
             className="hidden"
           />
 
-          <div className="rounded-2xl bg-gray-50 p-3">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700 truncate">
-                {receiptImg ? receiptImg.name : '이미지를 선택해주세요'}
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                type="button"
-                className="px-3 py-2 text-sm rounded-lg bg-white border border-gray-200"
-                onClick={onPickClick}
-                disabled={loading || isProcessing}
-              >
-                선택
-              </motion.button>
-            </div>
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            className="w-full px-3 py-2 text-sm text-blue-950 rounded-2xl bg-gray-50 border border-gray-200"
+            onClick={openFilePicker}
+            disabled={isProcessing}
+          >
+            {receiptFile ? receiptFile.name : '이미지를 선택해주세요'}
+          </motion.button>
 
           <div className="relative w-full aspect-3/4 overflow-hidden rounded-2xl bg-gray-100">
             {imageUrl ? (
@@ -109,38 +98,10 @@ export default function UploadPage() {
             whileTap={{ scale: 0.98 }}
             className="w-full px-6 py-3 bg-blue-500 text-white rounded-xl disabled:opacity-50"
             onClick={onRunOcr}
-            disabled={!receiptImg || loading || isProcessing}
+            disabled={!receiptFile || isProcessing}
           >
             분석 요청
           </motion.button>
-
-          {analysis && (
-            <div className="rounded-2xl bg-gray-50 p-4 max-h-56 overflow-y-auto">
-              <div className="text-sm font-semibold text-gray-900 mb-2">추출 결과</div>
-              {'success' in analysis && analysis.success ? (
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-xs font-semibold text-gray-700 mb-1">OCR</div>
-                    <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                      {analysis.ocr.text}
-                    </pre>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-700 mb-1">Parsed</div>
-                    <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                      {JSON.stringify(analysis.receipt, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              ) : (
-                <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                  {'success' in analysis && !analysis.success
-                    ? `[${analysis.stage}] ${analysis.error}`
-                    : 'Analysis failed'}
-                </pre>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
