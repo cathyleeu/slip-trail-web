@@ -26,7 +26,17 @@ export default function Map({ location, zoom = 15, className = 'h-64 w-full' }: 
     })
   }, [])
 
-  const center: [number, number] = location ? [location.lat, location.lng] : [49.2827, -123.1207]
+  // Validate location has valid coordinates
+  const isValidLocation =
+    location &&
+    typeof location.lat === 'number' &&
+    typeof location.lng === 'number' &&
+    !isNaN(location.lat) &&
+    !isNaN(location.lng)
+
+  const center: [number, number] = isValidLocation
+    ? [location.lat, location.lng]
+    : [49.2827, -123.1207]
 
   return (
     <MapContainer
@@ -40,7 +50,7 @@ export default function Map({ location, zoom = 15, className = 'h-64 w-full' }: 
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {location && (
+      {isValidLocation && (
         <Marker position={[location.lat, location.lng]}>
           <Popup>{location.address}</Popup>
         </Marker>
