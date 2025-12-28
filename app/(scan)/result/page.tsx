@@ -1,15 +1,21 @@
 'use client'
 
-import Map from '@components/map'
 import { useMapDraftStore, useReceiptDraftStore } from '@store'
 import { motion } from 'motion/react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+
+// Dynamically import Map component to prevent SSR issues
+const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 export default function ResultPage() {
   const router = useRouter()
   const { draft: receipt } = useReceiptDraftStore()
   const { location } = useMapDraftStore()
+
+  // TODO: integrate Edit and Save functionality later
+  // TODO: add tip section
 
   useEffect(() => {
     if (!receipt) {
@@ -76,6 +82,7 @@ export default function ResultPage() {
         </div>
 
         {/* Items */}
+        {/* TODO: edit & delete functionality by line */}
         {receipt.items && receipt.items.length > 0 && (
           <div className="border-t border-gray-100 pt-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Items</h3>
@@ -94,6 +101,7 @@ export default function ResultPage() {
         )}
 
         {/* Charges */}
+        {/* TODO: show details ex PST, GST */}
         {receipt.charges && receipt.charges.length > 0 && (
           <div className="border-t border-gray-100 pt-3 space-y-2">
             {receipt.charges.map((charge, idx) => (
