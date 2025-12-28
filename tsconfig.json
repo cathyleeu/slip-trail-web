@@ -30,15 +30,11 @@
       "@lib/*": ["./lib/*"],
       "@lib": ["./lib/index"],
       "@types": ["./types/index"],
-      "@types/*": ["./types/*"]
+      "@types/*": ["./types/*"],
+      "@store/*": ["./store/*"],
+      "@store": ["./store/index"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "**/*.mts"
-  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "**/*.mts"],
   "exclude": ["node_modules"]
 }
