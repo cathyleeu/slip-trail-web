@@ -4,15 +4,16 @@ import { useMapDraftStore, useReceiptDraftStore } from '@store'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // Dynamically import Map component to prevent SSR issues
 const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 export default function ResultPage() {
   const router = useRouter()
-  const { draft: receipt } = useReceiptDraftStore()
+  const { draft: receipt, setDraft } = useReceiptDraftStore()
   const { location } = useMapDraftStore()
+  const [isEditMode, setIsEditMode] = useState(false)
 
   // TODO: integrate Edit and Save functionality later
   // TODO: add tip section
@@ -22,6 +23,32 @@ export default function ResultPage() {
       router.push('/camera')
     }
   }, [receipt, router])
+
+  const handleEditItem = (index: number, field: 'name' | 'qty' | 'unit_price', value: string) => {
+    if (!receipt?.items) return
+
+    const updatedItems = [...receipt.items]
+    if (field === 'qty' || field === 'unit_price') {
+      const numValue = parseFloat(value) || 0
+      updatedItems[index] = { ...updatedItems[index], [field]: numValue }
+    } else {
+      updatedItems[index] = { ...updatedItems[index], [field]: value }
+    }
+
+    setDraft({ ...receipt, items: updatedItems })
+  }
+
+  const handleDeleteItem = (index: number) => {
+    if (!receipt?.items) return
+    const updatedItems = receipt.items.filter((_, idx) => idx !== index)
+    setDraft({ ...receipt, items: updatedItems })
+  }
+
+  const handleSave = () => {
+    setIsEditMode(false)
+    // TODO: API call to save changes
+    alert('Changes saved!')
+  }
 
   if (!receipt) {
     return (
@@ -52,6 +79,7 @@ export default function ResultPage() {
           <Map location={location} zoom={16} className="h-64 w-full" />
         </motion.div>
       )}
+
       {/* Receipt Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -82,18 +110,66 @@ export default function ResultPage() {
         </div>
 
         {/* Items */}
-        {/* TODO: edit & delete functionality by line */}
         {receipt.items && receipt.items.length > 0 && (
           <div className="border-t border-gray-100 pt-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Items</h3>
             <div className="space-y-2">
               {receipt.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span className="text-gray-800">
-                    {item.qty > 1 ? `${item.qty}x ` : ''}
-                    {item.name}
-                  </span>
-                  <span className="font-medium text-gray-900">${item.unit_price.toFixed(2)}</span>
+                <div key={idx} className="flex items-center gap-2 text-sm">
+                  {isEditMode ? (
+                    <>
+                      <input
+                        type="number"
+                        value={item.qty}
+                        onChange={(e) => handleEditItem(idx, 'qty', e.target.value)}
+                        className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+                        min="1"
+                      />
+                      <span className="text-gray-400">x</span>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => handleEditItem(idx, 'name', e.target.value)}
+                        className="flex-1 px-2 py-1 border border-gray-300 rounded"
+                      />
+                      <input
+                        type="number"
+                        value={item.unit_price}
+                        onChange={(e) => handleEditItem(idx, 'unit_price', e.target.value)}
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                        step="0.01"
+                        min="0"
+                      />
+                      <button
+                        onClick={() => handleDeleteItem(idx)}
+                        className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-gray-800">
+                        {item.qty > 1 ? `${item.qty}x ` : ''}
+                        {item.name}
+                      </span>
+                      <span className="font-medium text-gray-900">
+                        ${item.unit_price.toFixed(2)}
+                      </span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -121,22 +197,44 @@ export default function ResultPage() {
           </span>
         </div>
       </motion.div>
+
       {/* Bottom Actions */}
       <div className="grid grid-cols-2 gap-4">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => alert('Edit functionality coming soon')}
-          className="w-full py-3 bg-white rounded-2xl shadow-sm text-gray-800 font-medium"
-        >
-          Edit
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => alert('Edit functionality coming soon')}
-          className="w-full py-3 bg-blue-600 text-white rounded-2xl shadow-sm font-medium"
-        >
-          Save
-        </motion.button>
+        {isEditMode ? (
+          <>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsEditMode(false)}
+              className="w-full py-3 bg-white rounded-2xl shadow-sm text-gray-800 font-medium border border-gray-200"
+            >
+              Cancel
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              className="w-full py-3 bg-blue-600 text-white rounded-2xl shadow-sm font-medium"
+            >
+              Save
+            </motion.button>
+          </>
+        ) : (
+          <>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsEditMode(true)}
+              className="w-full py-3 bg-white rounded-2xl shadow-sm text-gray-800 font-medium"
+            >
+              Edit
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={() => alert('Save functionality coming soon')}
+              className="w-full py-3 bg-blue-600 text-white rounded-2xl shadow-sm font-medium"
+            >
+              Save
+            </motion.button>
+          </>
+        )}
       </div>
     </div>
   )
