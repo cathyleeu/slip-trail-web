@@ -95,10 +95,12 @@ export default function OnboardingPage() {
   const [currentSlide] = useState(0)
 
   const handleSkip = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true')
     router.push('/login')
   }
 
   const handleGetStarted = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true')
     router.push('/signup')
   }
 
