@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 const PROTECTED_PREFIXES = ['/map', '/camera', '/dashboard', '/account']
-const AUTH_PAGES = ['/login', '/signup']
+const AUTH_PAGES = ['/upload', '/login', '/signup']
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
@@ -41,7 +41,7 @@ export async function middleware(req: NextRequest) {
   // Root: go to the right starting page.
   if (pathname === '/') {
     const url = req.nextUrl.clone()
-    url.pathname = isAuthed ? '/map' : '/login'
+    url.pathname = isAuthed ? '/map' : '/upload' //FIXME
     return NextResponse.redirect(url)
   }
 
