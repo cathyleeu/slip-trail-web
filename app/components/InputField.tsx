@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@utils/cn'
 import React from 'react'
 
 // Main wrapper component
@@ -14,7 +15,7 @@ function InputFieldRoot({ label, error, children, className }: InputFieldProps) 
   const id = React.useId()
 
   return (
-    <div className={`space-y-2 ${className || ''}`}>
+    <div className={cn('space-y-2', className)}>
       {label && (
         <label htmlFor={id} className="text-sm font-medium text-gray-900">
           {label}
@@ -33,7 +34,7 @@ interface InputWrapperProps {
 }
 
 function InputWrapper({ children, className }: InputWrapperProps) {
-  return <div className={`relative ${className || ''}`}>{children}</div>
+  return <div className={cn('relative', className)}>{children}</div>
 }
 
 // Actual input element
@@ -54,9 +55,10 @@ function InputElement({
 }: InputElementProps) {
   return (
     <input
-      className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-        className || ''
-      }`}
+      className={cn(
+        'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+        className
+      )}
       {...props}
     />
   )
@@ -74,7 +76,7 @@ function InputAction({ children, onClick, className }: InputActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`absolute right-4 top-1/2 -translate-y-1/2 ${className || ''}`}
+      className={cn('absolute right-4 top-1/2 -translate-y-1/2', className)}
     >
       {children}
     </button>

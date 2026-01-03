@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@utils/cn'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -142,9 +143,10 @@ export default function OnboardingPage() {
           {onboardingSlides.map((_, idx) => (
             <div
               key={idx}
-              className={`h-2 rounded-full transition-all ${
+              className={cn(
+                'h-2 rounded-full transition-all',
                 idx === currentSlide ? 'w-8 bg-blue-600' : 'w-2 bg-gray-300'
-              }`}
+              )}
             />
           ))}
         </div>

@@ -1,3 +1,5 @@
+import { cn } from '@utils/cn'
+
 interface DividerProps {
   label?: string
   position?: 'left' | 'center' | 'right'
@@ -17,11 +19,11 @@ export function Divider({ label, position = 'center', className = '' }: DividerP
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={cn('relative', className)}>
       <div className="absolute inset-0 flex items-center">
         <div className="w-full border-t border-gray-200" />
       </div>
-      <div className={`relative flex ${positionStyles[position]} text-sm`}>
+      <div className={cn('relative flex', positionStyles[position], 'text-sm')}>
         <span className="px-4 bg-white text-gray-500">{label}</span>
       </div>
     </div>
