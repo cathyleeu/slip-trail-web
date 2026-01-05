@@ -88,9 +88,9 @@ export default function SignUpPage() {
               />
               <InputField.Action onClick={password.togglePasswordVisibility}>
                 {password.showPassword ? (
-                  <EyeOffIcon className="text-gray-400" />
+                  <EyeOffIcon className="text-gray-400 w-4 h-4" />
                 ) : (
-                  <EyeIcon className="text-gray-400" />
+                  <EyeIcon className="text-gray-400 w-4 h-4" />
                 )}
               </InputField.Action>
             </InputField.Wrapper>
@@ -108,13 +108,21 @@ export default function SignUpPage() {
               />
               <InputField.Action onClick={confirmPassword.togglePasswordVisibility}>
                 {confirmPassword.showPassword ? (
-                  <EyeOffIcon className="text-gray-400" />
+                  <EyeOffIcon className="text-gray-400 w-4 h-4" />
                 ) : (
-                  <EyeIcon className="text-gray-400" />
+                  <EyeIcon className="text-gray-400 w-4 h-4" />
                 )}
               </InputField.Action>
             </InputField.Wrapper>
           </InputField>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-2xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Creating account...' : 'Sign Up'}
+          </button>
 
           {error && (
             <motion.p

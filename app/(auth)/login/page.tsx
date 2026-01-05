@@ -45,7 +45,13 @@ export default function LoginPage() {
           {/* Email Input */}
           <InputField label="Email address">
             <InputField.Wrapper>
-              <InputField.Input {...email} type="email" placeholder="name@example.com" required />
+              <InputField.Input
+                value={email.value}
+                onChange={email.onChange}
+                type={email.type}
+                placeholder="name@example.com"
+                required
+              />
               <InputField.Action>
                 <EmailIcon className="text-gray-400" />
               </InputField.Action>
@@ -65,9 +71,9 @@ export default function LoginPage() {
                 />
                 <InputField.Action onClick={password.togglePasswordVisibility}>
                   {password.showPassword ? (
-                    <EyeOffIcon className="text-gray-400" />
+                    <EyeOffIcon className="text-gray-400 w-4 h-4" />
                   ) : (
-                    <EyeIcon className="text-gray-400" />
+                    <EyeIcon className="text-gray-400 w-4 h-4" />
                   )}
                 </InputField.Action>
               </InputField.Wrapper>

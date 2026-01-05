@@ -37,26 +37,11 @@ function InputWrapper({ children, className }: InputWrapperProps) {
   return <div className={cn('relative', className)}>{children}</div>
 }
 
-// Actual input element
-interface InputElementProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  setValue?: (value: string) => void
-  showPassword?: boolean
-  togglePasswordVisibility?: () => void
-  isPasswordType?: boolean
-}
-
-function InputElement({
-  className,
-  setValue,
-  showPassword,
-  togglePasswordVisibility,
-  isPasswordType,
-  ...props
-}: InputElementProps) {
+function InputElement({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       className={cn(
-        'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+        'w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
         className
       )}
       {...props}
