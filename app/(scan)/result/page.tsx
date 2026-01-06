@@ -45,10 +45,31 @@ export default function ResultPage() {
     setDraft({ ...receipt, items: updatedItems })
   }
 
-  const handleSave = () => {
-    setIsEditMode(false)
-    // TODO: API call to save changes
-    alert('Changes saved!')
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receipt,
+          location,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save receipt')
+      }
+
+      setIsEditMode(false)
+      alert('영수증이 저장되었습니다!')
+      // 선택적: 저장 후 홈으로 이동
+      // router.push('/')
+    } catch (error) {
+      console.error('Error saving receipt:', error)
+      alert(error instanceof Error ? error.message : '저장 중 오류가 발생했습니다')
+    }
   }
 
   if (!receipt) {
