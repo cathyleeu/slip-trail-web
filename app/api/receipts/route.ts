@@ -1,61 +1,38 @@
+import { apiError, apiSuccess } from '@lib/apiResponse'
+import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
-import type { ParsedReceipt } from '@types'
-import { NextResponse } from 'next/server'
+import type { ParsedReceipt, Place } from '@types'
 
 export async function POST(req: Request) {
   try {
     const supabase = await supabaseServer()
 
-    // 인증 확인
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireAuth(supabase)
+    if (!auth.ok) return auth.response
 
     // 요청 body 파싱
     const body = await req.json()
-    const { receipt, location } = body as {
+    const { receipt, place } = body as {
       receipt: ParsedReceipt
-      location?: { latitude: number; longitude: number } | null
+      place: Place
+      img_url?: string | null
     }
 
-    if (!receipt) {
-      return NextResponse.json({ error: 'Receipt data is required' }, { status: 400 })
-    }
+    if (!receipt) return apiError('Receipt data is required', { status: 400 })
+    if (!place) return apiError('Place data is required', { status: 400 })
 
-    // receipts 테이블에 저장
-    const { data, error } = await supabase
-      .from('receipts')
-      .insert({
-        user_id: user.id,
-        vendor: receipt.vendor,
-        address: receipt.address,
-        phone: receipt.phone,
-        purchased_at: receipt.purchased_at,
-        currency: receipt.currency,
-        subtotal: receipt.subtotal,
-        total: receipt.total,
-        raw_text: receipt.raw_text,
-        items: receipt.items,
-        charges: receipt.charges,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
-      })
-      .select()
-      .single()
+    const { data, error } = await supabase.rpc('save_receipt_with_place', {
+      receipt: body.receipt,
+      place: body.place,
+      img_url: body.imgUrl ?? null,
+    })
 
-    if (error) {
-      console.error('Error saving receipt:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    if (error) return apiError('Failed to save receipt', { status: 500, details: error.message })
 
-    return NextResponse.json({ success: true, receipt: data }, { status: 201 })
+    return apiSuccess(data)
   } catch (error) {
     console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError('Unexpected error occurred', { status: 500 })
   }
 }
 
@@ -68,7 +45,7 @@ export async function GET(req: Request) {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return apiError('Unauthorized', { status: 401 })
     }
 
     // URL 파라미터로 필터링 옵션 제공 가능
@@ -86,12 +63,12 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error('Error fetching receipts:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return apiError(error.message, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, receipts: data })
+    return apiSuccess(data)
   } catch (error) {
     console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return apiError('Unexpected error occurred', { status: 500 })
   }
 }
