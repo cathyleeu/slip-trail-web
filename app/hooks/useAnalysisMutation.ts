@@ -1,6 +1,7 @@
 'use client'
 
 import { ApiError, request } from '@lib/httpFetcher'
+import { toGeoLocation } from '@lib/location'
 import { useMutation } from '@tanstack/react-query'
 import type {
   AnalyzeOptions,
@@ -13,7 +14,6 @@ import type {
   ReceiptAnalysisResult,
   RequestParsingOptions,
 } from '@types'
-import { toGeoLocation } from '@types'
 import { useCallback } from 'react'
 
 export async function requestOcr({ file }: AnalyzeOptions): Promise<OcrResult> {
