@@ -56,10 +56,10 @@ export async function convertImage(
   return blobToFile(blob, fileName)
 }
 
-export const toWebp = (
-  img: HTMLImageElement,
-  opts: Omit<Parameters<typeof convertImage>[1], 'format'> = {}
-) => convertImage(img, { ...opts, format: 'webp' })
+// export const toWebp = (
+//   img: HTMLImageElement,
+//   opts: Omit<Parameters<typeof convertImage>[1], 'format'> = {}
+// ) => convertImage(img, { ...opts, format: 'webp' })
 
 export async function compressImage(
   blob: Blob,
@@ -73,6 +73,26 @@ export async function compressImage(
   })
 
   return compressed
+}
+
+export async function toWebp(
+  img: Blob | File,
+  {
+    max = 1500,
+    quality = 0.78,
+    fileName = new Date().toISOString(),
+  }: { max?: number; quality?: number; fileName?: string } = {}
+): Promise<File> {
+  const file = img instanceof File ? img : blobToFile(img, fileName)
+
+  const webp = await imageCompression(file, {
+    maxWidthOrHeight: max,
+    initialQuality: quality,
+    fileType: 'image/webp',
+    useWebWorker: true,
+  })
+
+  return blobToFile(webp, fileName.replace(/\.[^.]+$/, '') + '.webp')
 }
 
 function fit(w: number, h: number, max: number) {
