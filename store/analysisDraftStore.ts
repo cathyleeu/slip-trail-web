@@ -17,7 +17,7 @@ type AnalysisDraftState = {
   setFile: (file: File | null) => void
   setReceipt: (draft: ParsedReceipt) => void
   setLocation: (location: GeoLocation | null) => void
-  setPreviewUrl: (url: string | null) => void
+  setPreviewUrl: (url: string) => void
   setDraftPath: (path: string | null) => void
 
   updateReceipt: (partial: Partial<ParsedReceipt>) => void
@@ -53,23 +53,24 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
 
   setPreviewFromFile: (file) => {
     const url = URL.createObjectURL(file)
-    set({ previewUrl: url })
+    get().setPreviewUrl(url)
   },
 
   clearPreview: () => {
     const url = get().previewUrl
-    if (url) {
-      URL.revokeObjectURL(url)
-    }
+    safeRevokeObjectUrl(url)
     set({ previewUrl: null })
   },
 
-  reset: () =>
+  reset: () => {
+    const { previewUrl } = get()
+    safeRevokeObjectUrl(previewUrl)
     set({
       file: null,
       receipt: null,
       location: null,
       previewUrl: null,
       draftPath: null,
-    }),
+    })
+  },
 }))
