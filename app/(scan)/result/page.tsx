@@ -1,6 +1,6 @@
 'use client'
 
-import { useMapDraftStore, useReceiptDraftStore } from '@store'
+import { useAnalysisDraftStore } from '@store'
 import { cn } from '@utils/cn'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
@@ -12,8 +12,7 @@ const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 export default function ResultPage() {
   const router = useRouter()
-  const { draft: receipt, setDraft } = useReceiptDraftStore()
-  const { location } = useMapDraftStore()
+  const { location, receipt, setReceipt } = useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
 
   // TODO: integrate Edit and Save functionality later
@@ -36,13 +35,13 @@ export default function ResultPage() {
       updatedItems[index] = { ...updatedItems[index], [field]: value }
     }
 
-    setDraft({ ...receipt, items: updatedItems })
+    setReceipt({ ...receipt, items: updatedItems })
   }
 
   const handleDeleteItem = (index: number) => {
     if (!receipt?.items) return
     const updatedItems = receipt.items.filter((_, idx) => idx !== index)
-    setDraft({ ...receipt, items: updatedItems })
+    setReceipt({ ...receipt, items: updatedItems })
   }
 
   const handleSave = async () => {

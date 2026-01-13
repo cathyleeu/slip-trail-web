@@ -2,7 +2,7 @@
 
 import { ProcessingDialog } from '@components'
 import { useAnalysisFlow, useCamera } from '@hooks'
-import { useReceiptImageStore } from '@store'
+import { useAnalysisDraftStore } from '@store'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -20,19 +20,19 @@ export default function CameraPage() {
   } = useCamera()
   const router = useRouter()
   const { analyzeReceipt, isProcessing, progress, stage, imageUrl } = useAnalysisFlow()
-  const { setImageUrl, clearImageUrl } = useReceiptImageStore()
+  const { setPreviewUrl, clearPreview } = useAnalysisDraftStore()
 
   useEffect(() => {
     startCamera()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (photoUrl) setImageUrl(photoUrl)
-  }, [photoUrl, setImageUrl])
+    if (photoUrl) setPreviewUrl(photoUrl)
+  }, [photoUrl, setPreviewUrl])
 
   const handleRetake = () => {
     resetPhoto()
-    clearImageUrl()
+    clearPreview()
   }
 
   const handleAnalyze = async () => {

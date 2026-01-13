@@ -2,7 +2,7 @@
 
 import { ProcessingDialog } from '@components'
 import { useAnalysisFlow } from '@hooks'
-import { useReceiptImageStore } from '@store'
+import { useAnalysisDraftStore } from '@store'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -11,7 +11,7 @@ import { useRef, useState } from 'react'
 export default function UploadPage() {
   const router = useRouter()
   const { analyzeReceipt, isProcessing, progress, stage } = useAnalysisFlow()
-  const { imageUrl, setImageUrl, clearImageUrl } = useReceiptImageStore()
+  const { previewUrl, setPreviewUrl, clearPreview } = useAnalysisDraftStore()
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -19,8 +19,8 @@ export default function UploadPage() {
     const next = e.target.files?.[0] ?? null
     setReceiptFile(next)
 
-    if (next) setImageUrl(next)
-    else clearImageUrl()
+    if (next) setPreviewUrl(URL.createObjectURL(next))
+    else clearPreview()
   }
 
   const openFilePicker = () => {
@@ -30,7 +30,7 @@ export default function UploadPage() {
 
   const onReset = () => {
     setReceiptFile(null)
-    clearImageUrl()
+    clearPreview()
   }
 
   const onRunOcr = async () => {
@@ -51,8 +51,8 @@ export default function UploadPage() {
     <>
       <div className="h-full overflow-auto p-4 space-y-4 flex-1 flex flex-col items-center justify-around">
         <div className="relative w-full aspect-3/4 overflow-hidden bg-white rounded-2xl shadow-sm">
-          {imageUrl ? (
-            <Image src={imageUrl} alt="Preview" fill className="object-cover" />
+          {previewUrl ? (
+            <Image src={previewUrl} alt="Preview" fill className="object-cover" />
           ) : (
             <>
               <input
@@ -99,7 +99,7 @@ export default function UploadPage() {
       {/* Processing Dialog */}
       <ProcessingDialog
         isOpen={isProcessing}
-        imageUrl={imageUrl}
+        imageUrl={previewUrl}
         progress={progress}
         stage={stage}
       />
