@@ -1,6 +1,6 @@
 'use client'
 
-import { useMapDraftStore, useReceiptDraftStore, useReceiptImageStore } from '@store'
+import { useAnalysisDraftStore } from '@store'
 import { compressImage } from '@utils/imageProcessor'
 import { useCallback, useState } from 'react'
 import { useAnalysisMutation } from './useAnalysisMutation'
@@ -12,9 +12,8 @@ type AnalyzeReceiptOptions = {
 
 export function useAnalysisFlow() {
   const { analyze, reset } = useAnalysisMutation()
-  const { setDraft } = useReceiptDraftStore()
-  const { setLocation } = useMapDraftStore()
-  const { imageUrl, setImageUrl, clearImageUrl } = useReceiptImageStore()
+  const { setLocation, setReceipt, clearPreview, setPreviewUrl, previewUrl } =
+    useAnalysisDraftStore()
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [stage, setStage] = useState('Starting...')
@@ -27,7 +26,7 @@ export function useAnalysisFlow() {
         setStage('Starting...')
 
         const compressedFile = await compressImage(receiptFile)
-        setImageUrl(compressedFile)
+        setPreviewUrl(URL.createObjectURL(compressedFile))
 
         reset()
 
@@ -40,27 +39,27 @@ export function useAnalysisFlow() {
         })
 
         if (result.success) {
-          setDraft(result.receipt)
+          setReceipt(result.receipt)
           setLocation(result.location)
-          clearImageUrl()
+          clearPreview()
           return result
         } else {
           // Error callback
-          clearImageUrl()
+          clearPreview()
           onError?.(result.error)
           return result
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         console.error('Analysis error:', error)
-        clearImageUrl()
+        clearPreview()
         onError?.(errorMessage)
         throw error
       } finally {
         setIsProcessing(false)
       }
     },
-    [analyze, reset, setDraft, setLocation, setImageUrl, clearImageUrl]
+    [analyze, reset, setReceipt, setLocation, setPreviewUrl, clearPreview]
   )
 
   return {
@@ -68,6 +67,6 @@ export function useAnalysisFlow() {
     isProcessing,
     progress,
     stage,
-    imageUrl,
+    previewUrl,
   }
 }
