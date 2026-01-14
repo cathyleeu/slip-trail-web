@@ -3,28 +3,46 @@ import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
 import type { ParsedReceipt, Place } from '@types'
 
+function requireFormString(form: FormData, key: string): string {
+  const v = form.get(key)
+  if (typeof v !== 'string') throw new Error(`${key} is required`)
+  return v
+}
+
 export async function POST(req: Request) {
+  const form = await req.formData()
+
+  const file = form.get('file')
+  if (!(file instanceof File)) return apiError('No file uploaded', { status: 400 })
+
+  let receipt: ParsedReceipt
+  let place: Place
+  try {
+    receipt = JSON.parse(requireFormString(form, 'receipt')) as ParsedReceipt
+    place = JSON.parse(requireFormString(form, 'place')) as Place
+  } catch {
+    return apiError('Invalid JSON in receipt/place', { status: 400 })
+  }
+
   try {
     const supabase = await supabaseServer()
 
     const auth = await requireAuth(supabase)
     if (!auth.ok) return auth.response
 
-    // 요청 body 파싱
-    const body = await req.json()
-    const { receipt, place } = body as {
-      receipt: ParsedReceipt
-      place: Place
-      img_url?: string | null
-    }
+    const { data: imageData, error: imageError } = await supabase.storage
+      .from('sliptrail-bills')
+      .upload(`${auth.user.id}/${Date.now()}_${file.name}`, file, { contentType: file.type })
 
-    if (!receipt) return apiError('Receipt data is required', { status: 400 })
-    if (!place) return apiError('Place data is required', { status: 400 })
+    if (imageError) return apiError(imageError.message, { status: 500 })
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('sliptrail-bills').getPublicUrl(imageData.path)
 
     const { data, error } = await supabase.rpc('save_receipt_with_place', {
-      receipt: body.receipt,
-      place: body.place,
-      img_url: body.imgUrl ?? null,
+      receipt: receipt,
+      place: place,
+      img_url: publicUrl,
     })
 
     if (error) return apiError('Failed to save receipt', { status: 500, details: error.message })
