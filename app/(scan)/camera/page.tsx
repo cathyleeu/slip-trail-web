@@ -3,6 +3,7 @@
 import { ProcessingDialog } from '@components'
 import { useAnalysisFlow, useCamera } from '@hooks'
 import { useAnalysisDraftStore } from '@store'
+import { toWebp } from '@utils/imageProcessor'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -19,8 +20,8 @@ export default function CameraPage() {
     resetPhoto,
   } = useCamera()
   const router = useRouter()
-  const { analyzeReceipt, isProcessing, progress, stage, imageUrl } = useAnalysisFlow()
-  const { setPreviewUrl, clearPreview } = useAnalysisDraftStore()
+  const { analyzeReceipt, isProcessing, progress, stage, previewUrl } = useAnalysisFlow()
+  const { setPreviewUrl, clearPreview, setFile } = useAnalysisDraftStore()
 
   useEffect(() => {
     startCamera()
@@ -28,7 +29,10 @@ export default function CameraPage() {
 
   useEffect(() => {
     if (photoUrl) setPreviewUrl(photoUrl)
-  }, [photoUrl, setPreviewUrl])
+    if (receiptFile) {
+      toWebp(receiptFile).then(setFile)
+    }
+  }, [photoUrl, setPreviewUrl, receiptFile, setFile])
 
   const handleRetake = () => {
     resetPhoto()
@@ -125,7 +129,7 @@ export default function CameraPage() {
       {/* Processing Dialog */}
       <ProcessingDialog
         isOpen={isProcessing}
-        imageUrl={imageUrl}
+        imageUrl={previewUrl}
         progress={progress}
         stage={stage}
       />
