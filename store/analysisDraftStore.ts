@@ -12,6 +12,7 @@ type AnalysisDraftState = {
   location: GeoLocation | null
   previewUrl: string | null
   draftPath: string | null
+  imageFile: File | null
 
   // setters
   setFile: (file: File | null) => void
@@ -34,6 +35,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
   location: null,
   previewUrl: null,
   draftPath: null,
+  imageFile: null,
 
   setFile: (file) => set({ file }),
   setReceipt: (receipt) => set({ receipt }),
@@ -71,6 +73,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
       location: null,
       previewUrl: null,
       draftPath: null,
+      imageFile: null,
     })
   },
 }))
