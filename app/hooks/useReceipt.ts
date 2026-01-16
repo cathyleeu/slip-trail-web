@@ -1,6 +1,12 @@
 import { supabaseClient } from '@lib/supabase/client'
 import type { GeoLocation, ParsedReceipt } from '@types'
 
+type ReceiptPayload = {
+  receipt: ParsedReceipt
+  location: GeoLocation
+  imageFile: File
+}
+
 export function useReceipt() {
   const supabase = supabaseClient()
 
@@ -12,14 +18,14 @@ export function useReceipt() {
     return supabase.from('receipts').select('*').eq('id', id).single()
   }
 
-  async function saveReceipt(receipt: ParsedReceipt, location: GeoLocation) {
+  async function saveReceipt({ receipt, location, imageFile }: ReceiptPayload) {
+    const form = new FormData()
+    form.append('image', imageFile, imageFile.name)
+    form.append('receipt', JSON.stringify(receipt))
+    form.append('place', JSON.stringify(location))
     return await fetch('/api/receipts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        receipt,
-        location,
-      }),
+      body: form,
     })
   }
 
