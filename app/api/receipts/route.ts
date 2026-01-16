@@ -3,52 +3,60 @@ import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
 import type { ParsedReceipt, Place } from '@types'
 
-function requireFormString(form: FormData, key: string): string {
+function requireFormJson<T>(form: FormData, key: string): T {
   const v = form.get(key)
-  if (typeof v !== 'string') throw new Error(`${key} is required`)
-  return v
+  if (typeof v !== 'string') throw new Error(`${key} is required and must be a string`)
+  try {
+    return JSON.parse(v) as T
+  } catch {
+    throw new Error(`Invalid JSON in field "${key}"`)
+  }
 }
 
 export async function POST(req: Request) {
-  const form = await req.formData()
-
-  const file = form.get('file')
-  if (!(file instanceof File)) return apiError('No file uploaded', { status: 400 })
-
-  let receipt: ParsedReceipt
-  let place: Place
-  try {
-    receipt = JSON.parse(requireFormString(form, 'receipt')) as ParsedReceipt
-    place = JSON.parse(requireFormString(form, 'place')) as Place
-  } catch {
-    return apiError('Invalid JSON in receipt/place', { status: 400 })
-  }
-
   try {
     const supabase = await supabaseServer()
-
     const auth = await requireAuth(supabase)
     if (!auth.ok) return auth.response
 
-    const { data: imageData, error: imageError } = await supabase.storage
-      .from('sliptrail-bills')
-      .upload(`${auth.user.id}/${Date.now()}_${file.name}`, file, { contentType: file.type })
+    const form = await req.formData()
+    const image = form.get('image')
+    if (!(image instanceof File)) return apiError('image file is required', { status: 400 })
 
-    if (imageError) return apiError(imageError.message, { status: 500 })
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from('sliptrail-bills').getPublicUrl(imageData.path)
+    const receipt = requireFormJson<ParsedReceipt>(form, 'receipt')
+    const place = requireFormJson<Place>(form, 'place')
+
+    // 1) Storage 업로드
+    const extFromType = image.type === 'image/webp' ? 'webp' : 'bin'
+    const filename = `${auth.user.id}/${Date.now()}.${extFromType}`
+
+    const { data: uploadData, error: uploadErr } = await supabase.storage
+      .from('sliptrail-bills')
+      .upload(filename, image, {
+        contentType: image.type || 'application/octet-stream',
+        upsert: false,
+      })
+
+    if (uploadErr) return apiError(uploadErr.message, { status: 500 })
+
+    const { data: pub } = supabase.storage.from('sliptrail-bills').getPublicUrl(uploadData.path)
 
     const { data, error } = await supabase.rpc('save_receipt_with_place', {
       receipt: receipt,
       place: place,
-      img_url: publicUrl,
+      img_url: pub.publicUrl,
     })
 
     if (error) return apiError('Failed to save receipt', { status: 500, details: error.message })
 
     return apiSuccess(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('required')) {
+      return apiError(error.message, { status: 400 })
+    }
+    if (error instanceof Error && error.message.includes('Invalid JSON')) {
+      return apiError(error.message, { status: 400 })
+    }
     console.error('Unexpected error:', error)
     return apiError('Unexpected error occurred', { status: 500 })
   }
