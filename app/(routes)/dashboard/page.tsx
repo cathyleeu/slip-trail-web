@@ -56,17 +56,19 @@ export default async function DashboardPage({
   const auth = await requireAuth(supabase)
   if (!auth.ok) return auth.response
 
-  const [summaryRes, seriesRes, recentRes, topRes] = await Promise.all([
+  const [summaryRes, seriesRes, recentRes, topRes, momRes] = await Promise.all([
     supabase.rpc('dashboard_summary', { from_ts, to_ts }),
     supabase.rpc('dashboard_timeseries', { from_ts, to_ts, bucket }),
     supabase.rpc('dashboard_recent_places', { limit_n: 10 }),
     supabase.rpc('dashboard_top_places', { from_ts, to_ts, limit_n: 10 }),
+    supabase.rpc('dashboard_mom'),
   ])
 
   if (summaryRes.error) throw new Error(summaryRes.error.message)
   if (seriesRes.error) throw new Error(seriesRes.error.message)
   if (recentRes.error) throw new Error(recentRes.error.message)
   if (topRes.error) throw new Error(topRes.error.message)
+  if (momRes.error) throw new Error(momRes.error.message)
 
   const summary = (summaryRes.data?.[0] ?? {
     total_spent: '0',
@@ -77,6 +79,14 @@ export default async function DashboardPage({
   const series = (seriesRes.data ?? []) as SeriesRow[]
   const recentPlaces = (recentRes.data ?? []) as PlaceRow[]
   const topPlaces = (topRes.data ?? []) as PlaceRow[]
+  const mom = (momRes.data?.[0] ?? null) as {
+    current_total: string
+    previous_total: string
+    pct_change: string | null
+    top_place_id: string | null
+    top_place_name: string | null
+    top_place_increase: string | null
+  } | null
 
   return (
     <div className="p-6 space-y-6">
@@ -147,6 +157,40 @@ export default async function DashboardPage({
           <li>Month-over-month change (+/-%), biggest increase place</li>
           <li>Outlier receipts (unusually high total)</li>
         </ul>
+      </section>
+
+      <section className="rounded-2xl border bg-white p-4">
+        <h2 className="font-semibold">Month-over-month</h2>
+
+        {!mom ? (
+          <div className="mt-2 text-sm text-neutral-500">No data yet.</div>
+        ) : (
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border p-4">
+              <div className="text-sm text-neutral-500">This month</div>
+              <div className="mt-1 text-2xl font-semibold">{money(mom.current_total)}</div>
+            </div>
+
+            <div className="rounded-2xl border p-4">
+              <div className="text-sm text-neutral-500">Last month</div>
+              <div className="mt-1 text-2xl font-semibold">{money(mom.previous_total)}</div>
+            </div>
+
+            <div className="rounded-2xl border p-4">
+              <div className="text-sm text-neutral-500">Change</div>
+              <div className="mt-1 text-2xl font-semibold">
+                {mom.pct_change === null ? '—' : `${Number(mom.pct_change).toFixed(1)}%`}
+              </div>
+              <div className="mt-2 text-xs text-neutral-500">
+                {mom.top_place_name
+                  ? `Biggest increase: ${mom.top_place_name} (+${money(
+                      mom.top_place_increase ?? '0'
+                    )})`
+                  : 'No place increase data yet.'}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
