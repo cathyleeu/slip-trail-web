@@ -1,4 +1,4 @@
-import { SpendChart } from '@components'
+import { SpendChart } from '@components/dashboard'
 import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
 
@@ -46,10 +46,11 @@ function money(n: string | number) {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { period?: 'day' | 'week' | 'month'; bucket?: 'day' | 'week' | 'month' }
+  searchParams: Promise<{ period?: 'day' | 'week' | 'month'; bucket?: 'day' | 'week' | 'month' }>
 }) {
-  const period = searchParams.period ?? 'month'
-  const bucket = searchParams.bucket ?? 'day'
+  const params = await searchParams
+  const period = params.period ?? 'month'
+  const bucket = params.bucket ?? 'day'
   const { from_ts, to_ts } = isoRange(period)
 
   const supabase = await supabaseServer()
