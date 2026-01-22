@@ -1,29 +1,7 @@
-import { SpendChart } from '@components/dashboard'
+import SpendChart from '@components/dashboard/SpendChart'
 import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
-
-type SummaryRow = {
-  total_spent: string // numeric -> string으로 오는 경우 많음
-  receipt_count: number
-  avg_receipt: string
-}
-
-type SeriesRow = {
-  bucket_start: string
-  total_spent: string
-  receipt_count: number
-}
-
-type PlaceRow = {
-  place_id: string
-  name: string | null
-  normalized_address: string | null
-  lat: number | null
-  lon: number | null
-  last_visited_at?: string | null
-  visit_count: number | null
-  total_spent?: string | null
-}
+import { PlaceRow, SeriesRow, SummaryRow } from '@types'
 
 function isoRange(period: 'day' | 'week' | 'month') {
   const now = new Date()
@@ -116,10 +94,9 @@ export default async function DashboardPage({
         </div>
         <div className="mt-3">
           <SpendChart
-            data={series.map((r) => ({
-              date: r.bucket_start,
+            points={series.map((r) => ({
+              label: r.bucket_start,
               total: Number(r.total_spent),
-              count: r.receipt_count,
             }))}
           />
         </div>
