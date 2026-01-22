@@ -38,3 +38,5 @@ export type ReceiptAnalysisFailure = {
  * Receipt analysis result (success or failure)
  */
 export type ReceiptAnalysisResult = ReceiptAnalysisSuccess | ReceiptAnalysisFailure
+
+export type Period = 'last7' | 'last30' | 'ytd'
