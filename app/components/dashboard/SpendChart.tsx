@@ -1,5 +1,7 @@
 'use client'
 
+import { type SpendChartProps } from '@types'
+import { money } from '@utils'
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -8,58 +10,50 @@ import {
   LineElement,
   PointElement,
   Tooltip,
+  type ChartData,
+  type ChartOptions,
+  type TooltipItem,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
-type Row = { date: string; total: number; count: number }
-
-export function SpendChart({ data }: { data: Row[] }) {
-  if (!data.length) {
-    return <div className="text-sm text-neutral-500">No chart data yet.</div>
+export default function SpendChart({ points }: SpendChartProps) {
+  const data: ChartData<'line', number[], string> = {
+    labels: points.map((p) => p.label),
+    datasets: [
+      {
+        label: 'Total spend',
+        data: points.map((p) => p.total),
+        tension: 0.35,
+        pointRadius: 3,
+      },
+    ],
   }
 
-  const labels = data.map((d) => new Date(d.date).toLocaleDateString())
-  const totals = data.map((d) => d.total)
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx: TooltipItem<'line'>) => ` ${money(Number(ctx.parsed.y ?? 0))}`,
+        },
+      },
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: (value) => money(Number(value)),
+        },
+      },
+    },
+  }
 
   return (
-    <div className="h-64 w-full">
-      <Line
-        data={{
-          labels,
-          datasets: [
-            {
-              label: 'Total spent (CAD)',
-              data: totals,
-              tension: 0.3,
-              pointRadius: 0,
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  const v = Number(ctx.parsed.y ?? 0)
-                  return ` $${v.toFixed(2)}`
-                },
-              },
-            },
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: (v) => `$${Number(v).toFixed(0)}`,
-              },
-            },
-          },
-        }}
-      />
+    <div className="h-56">
+      <Line data={data} options={options} />
     </div>
   )
 }
