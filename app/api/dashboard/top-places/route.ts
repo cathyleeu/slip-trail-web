@@ -1,14 +1,7 @@
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
-
-function rangeFromPeriod(period: string) {
-  const now = new Date()
-  const to = now.toISOString()
-  const days = period === 'day' ? 1 : period === 'week' ? 7 : 30
-  const from = new Date(now.getTime() - days * 86400000).toISOString()
-  return { from, to }
-}
+import { rangeFromPeriod } from '@utils/range'
 
 export async function GET(req: Request) {
   try {
