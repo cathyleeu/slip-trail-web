@@ -13,10 +13,13 @@ export async function GET(req: Request) {
     const auth = await requireAuth(supabase)
     if (!auth.ok) return auth.response
 
+    const sort = url.searchParams.get('sort') ?? 'spend'
+
     const { data, error } = await supabase.rpc('dashboard_top_places', {
       from_ts: from,
       to_ts: to,
       limit_n: 10,
+      sort_by: sort,
     })
 
     if (error) return apiError('Failed to load top places', { status: 500, details: error.message })
