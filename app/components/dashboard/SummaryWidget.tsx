@@ -1,8 +1,9 @@
 'use client'
 
+import { Period } from '@types'
 import { money } from '@utils'
 import { useEffect, useMemo, useState } from 'react'
-import { Period, WidgetPeriodToggle } from './WidgetPeriodToggle'
+import { WidgetPeriodToggle } from './WidgetPeriodToggle'
 
 type Summary = {
   total_spent: string
@@ -11,7 +12,7 @@ type Summary = {
 }
 
 export default function SummaryWidget() {
-  const [period, setPeriod] = useState<Period>('month')
+  const [period, setPeriod] = useState<Period>('last30')
   const [data, setData] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

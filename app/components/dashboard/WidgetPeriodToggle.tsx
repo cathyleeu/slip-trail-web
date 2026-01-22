@@ -1,6 +1,5 @@
 'use client'
-
-export type Period = 'day' | 'week' | 'month'
+import { Period } from '@types'
 
 export function WidgetPeriodToggle({
   value,
@@ -10,9 +9,9 @@ export function WidgetPeriodToggle({
   onChange: (v: Period) => void
 }) {
   const opts: { v: Period; label: string }[] = [
-    { v: 'day', label: 'Day' },
-    { v: 'week', label: 'Week' },
-    { v: 'month', label: 'Month' },
+    { v: 'last7', label: 'Last 7 days' },
+    { v: 'last30', label: 'Last 30 days' },
+    { v: 'ytd', label: 'YTD' },
   ]
 
   return (
@@ -25,7 +24,7 @@ export function WidgetPeriodToggle({
             type="button"
             onClick={() => onChange(o.v)}
             className={[
-              'px-3 py-1 text-sm rounded-lg transition',
+              'px-3 py-1 text-sm rounded-lg transition whitespace-nowrap',
               active ? 'bg-neutral-900 text-white' : 'text-neutral-700 hover:bg-neutral-100',
             ].join(' ')}
           >
