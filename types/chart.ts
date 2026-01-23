@@ -3,6 +3,11 @@ export type SeriesPoint = {
   total: number
 }
 
+export type SpendSeriesResponse = {
+  points: SeriesPoint[]
+  currency: string | null
+}
+
 export type SpendChartProps = {
   points: SeriesPoint[]
 }
