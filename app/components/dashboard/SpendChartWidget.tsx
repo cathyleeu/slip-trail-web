@@ -1,15 +1,10 @@
 'use client'
 
-import type { Period, SeriesPoint } from '@types'
+import type { Period, SpendSeriesResponse } from '@types'
 import { useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '../Skeleton'
 import SpendChart from './SpendChart'
 import { WidgetPeriodToggle } from './WidgetPeriodToggle'
-
-type SpendSeriesResponse = {
-  points: SeriesPoint[]
-  currency: string | null
-}
 
 function isSpendSeriesResponse(x: unknown): x is SpendSeriesResponse {
   if (typeof x !== 'object' || x === null) return false
