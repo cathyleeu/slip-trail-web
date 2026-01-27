@@ -1,60 +1,8 @@
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
-import { Period, SeriesPoint, SpendSeriesResponse } from '@types'
-
-function getPeriod(searchParams: URLSearchParams): Period {
-  const p = searchParams.get('period')
-  if (p === 'last7' || p === 'last30' || p === 'ytd') return p
-  return 'last30'
-}
-
-// YYYY-MM-DD (UTC 기준)
-function toYmd(d: Date) {
-  const y = d.getUTCFullYear()
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(d.getUTCDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-// YYYY-MM (UTC 기준)
-function toYm(d: Date) {
-  const y = d.getUTCFullYear()
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
-  return `${y}-${m}`
-}
-
-function startOfUtcDay(d: Date) {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0))
-}
-
-function addUtcDays(d: Date, days: number) {
-  const x = new Date(d)
-  x.setUTCDate(x.getUTCDate() + days)
-  return x
-}
-
-function getRange(period: Period) {
-  const now = new Date()
-  const today0 = startOfUtcDay(now)
-
-  if (period === 'last7') {
-    const start = addUtcDays(today0, -6) // 오늘 포함 7일
-    const endExclusive = addUtcDays(today0, 1)
-    return { start, endExclusive, grain: 'day' as const }
-  }
-
-  if (period === 'last30') {
-    const start = addUtcDays(today0, -29) // 오늘 포함 30일
-    const endExclusive = addUtcDays(today0, 1)
-    return { start, endExclusive, grain: 'day' as const }
-  }
-
-  // ytd
-  const start = new Date(Date.UTC(now.getUTCFullYear(), 0, 1, 0, 0, 0, 0))
-  const endExclusive = addUtcDays(today0, 1)
-  return { start, endExclusive, grain: 'month' as const }
-}
+import type { Period, SeriesPoint, SpendSeriesResponse } from '@types'
+import { addUtcDays, getRangeWithGrain, parsePeriod, toYm, toYmd } from '@utils/range'
 
 function buildBuckets(period: Period, start: Date, endExclusive: Date) {
   // points를 “연속된 버킷”으로 만들기 (빈날도 0으로)
@@ -82,8 +30,8 @@ function buildBuckets(period: Period, start: Date, endExclusive: Date) {
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
-    const period = getPeriod(url.searchParams)
-    const { start, endExclusive, grain } = getRange(period)
+    const period = parsePeriod(url.searchParams)
+    const { start, endExclusive, grain } = getRangeWithGrain(period)
 
     const supabase = await supabaseServer()
     const auth = await requireAuth(supabase)

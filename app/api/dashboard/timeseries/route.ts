@@ -1,32 +1,22 @@
-import { apiError, apiSuccess } from '@lib/apiResponse'
-import { requireAuth } from '@lib/auth'
-import { supabaseServer } from '@lib/supabase/server'
+import { withAuth } from '@lib/apiHandler'
+import { apiSuccess } from '@lib/apiResponse'
 import { rangeFromPeriod } from '@utils/range'
 
-export async function GET(req: Request) {
-  try {
-    const url = new URL(req.url)
-    const period = url.searchParams.get('period') ?? 'month'
-    const bucket = url.searchParams.get('bucket') ?? 'day'
+export const GET = withAuth(async (req, { supabase }) => {
+  const url = new URL(req.url)
+  const period = url.searchParams.get('period') ?? 'month'
+  const bucket = url.searchParams.get('bucket') ?? 'day'
+  const { from, to } = rangeFromPeriod(period)
 
-    const supabase = await supabaseServer()
-    const auth = await requireAuth(supabase)
-    if (!auth.ok) return auth.response
+  const { data, error } = await supabase.rpc('dashboard_timeseries', {
+    from_ts: from,
+    to_ts: to,
+    bucket,
+  })
 
-    const { from, to } = rangeFromPeriod(period)
-
-    const { data, error } = await supabase.rpc('dashboard_timeseries', {
-      from_ts: from,
-      to_ts: to,
-      bucket,
-    })
-
-    if (error) return apiError('Failed to load timeseries', { status: 500, details: error.message })
-    return apiSuccess(data ?? [])
-  } catch (e) {
-    return apiError('Unexpected error', {
-      status: 500,
-      details: e instanceof Error ? e.message : String(e),
-    })
+  if (error) {
+    throw new Error(`Failed to load timeseries: ${error.message}`)
   }
-}
+
+  return apiSuccess(data ?? [])
+})
