@@ -1,67 +1,48 @@
-import { apiError, apiSuccess } from '@lib/apiResponse'
-import { requireAuth } from '@lib/auth'
-import { supabaseServer } from '@lib/supabase/server'
-import type { ParsedReceipt } from '@types'
+import { withAuth } from '@lib/apiHandler'
+import { apiSuccess } from '@lib/apiResponse'
+import { receiptUpdateSchema, validateSchema } from '@lib/validation'
 
 type Params = {
   params: Promise<{ id: string }>
 }
 
 export async function GET(req: Request, { params }: Params) {
-  try {
-    const supabase = await supabaseServer()
+  return withAuth(async (req, { user, supabase }) => {
     const { id } = await params
-    const auth = await requireAuth(supabase)
 
-    if (!auth.ok) return auth.response
-
-    // 특정 영수증 조회
     const { data, error } = await supabase
       .from('receipts')
       .select('*')
       .eq('id', id)
-      .eq('user_id', auth.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
-      console.error('Error fetching receipt:', error)
-      return apiError(error.message, { status: 500 })
+      throw new Error(`Failed to fetch receipt: ${error.message}`)
     }
 
     if (!data) {
-      return apiError('Receipt not found', { status: 404 })
+      throw new Error('Receipt not found')
     }
 
     return apiSuccess(data)
-  } catch (error) {
-    console.error('Unexpected error:', error)
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return apiError('Unauthorized', { status: 401 })
-    }
-    return apiError('Unexpected error occurred', { status: 500 })
-  }
+  })(req)
 }
 
 export async function PATCH(req: Request, { params }: Params) {
-  try {
-    const supabase = await supabaseServer()
+  return withAuth(async (req, { user, supabase }) => {
     const { id } = await params
-    const auth = await requireAuth(supabase)
-
-    if (!auth.ok) return auth.response
-
-    // 요청 body 파싱
     const body = await req.json()
-    const { receipt, location } = body as {
-      receipt?: Partial<ParsedReceipt>
-      location?: { latitude: number; longitude: number } | null
-    }
+
+    // Validate update data with Zod
+    const validated = validateSchema(receiptUpdateSchema, body, 'receipt update')
+    const { receipt, location } = validated
 
     if (!receipt && !location) {
-      return apiError('No data to update', { status: 400 })
+      throw new Error('No data to update')
     }
 
-    // 업데이트할 데이터 준비
+    // Prepare update data
     const allowedFields = [
       'vendor',
       'address',
@@ -79,64 +60,40 @@ export async function PATCH(req: Request, { params }: Params) {
       Object.entries({ ...receipt, ...location }).filter(
         ([key, value]) =>
           value !== undefined &&
-          (allowedFields.includes(key as any) || key === 'latitude' || key === 'longitude')
+          (allowedFields.includes(key as typeof allowedFields[number]) || key === 'latitude' || key === 'longitude')
       )
     )
 
-    // 영수증 업데이트
     const { data, error } = await supabase
       .from('receipts')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', auth.user.id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
     if (error) {
-      console.error('Error updating receipt:', error)
-      return apiError(error.message, { status: 500 })
+      throw new Error(`Failed to update receipt: ${error.message}`)
     }
 
     if (!data) {
-      return apiError('Receipt not found', { status: 404 })
+      throw new Error('Receipt not found')
     }
 
     return apiSuccess(data)
-  } catch (error) {
-    console.error('Unexpected error:', error)
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return apiError('Unauthorized', { status: 401 })
-    }
-    return apiError('Unexpected error occurred', { status: 500 })
-  }
+  })(req)
 }
 
 export async function DELETE(req: Request, { params }: Params) {
-  try {
-    const supabase = await supabaseServer()
+  return withAuth(async (req, { user, supabase }) => {
     const { id } = await params
-    const auth = await requireAuth(supabase)
 
-    if (!auth.ok) return auth.response
-
-    // 영수증 삭제
-    const { error } = await supabase
-      .from('receipts')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', auth.user.id)
+    const { error } = await supabase.from('receipts').delete().eq('id', id).eq('user_id', user.id)
 
     if (error) {
-      console.error('Error deleting receipt:', error)
-      return apiError(error.message, { status: 500 })
+      throw new Error(`Failed to delete receipt: ${error.message}`)
     }
 
     return apiSuccess({ success: true })
-  } catch (error) {
-    console.error('Unexpected error:', error)
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return apiError('Unauthorized', { status: 401 })
-    }
-    return apiError('Unexpected error occurred', { status: 500 })
-  }
+  })(req)
 }
