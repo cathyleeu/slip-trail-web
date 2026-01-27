@@ -85,7 +85,6 @@ export async function requestGeoCoding(address: string): Promise<GeocodeResult> 
       body: JSON.stringify({ address }),
       unwrapApiSuccess: true,
     })
-    console.log('Geocoding location:', location, toGeoLocation(location))
     return { success: true, location: toGeoLocation(location) }
   } catch (err) {
     if (err instanceof ApiError) {
