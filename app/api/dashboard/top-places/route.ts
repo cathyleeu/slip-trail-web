@@ -1,6 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
-import { TOP_PLACES_LIMIT } from '@lib/constants'
+import { ERROR_MESSAGES, TOP_PLACES_LIMIT } from '@lib/constants'
 import { parsePeriod, rangeFromPeriod } from '@utils/range'
 
 export const GET = withAuth(async (req, { supabase }) => {
@@ -17,7 +17,7 @@ export const GET = withAuth(async (req, { supabase }) => {
   })
 
   if (error) {
-    throw new Error(`Failed to load top places: ${error.message}`)
+    throw new Error(`${ERROR_MESSAGES.FAILED_TO_LOAD_TOP_PLACES}: ${error.message}`)
   }
 
   return apiSuccess(data ?? [])

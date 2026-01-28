@@ -1,5 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
+import { ERROR_MESSAGES } from '@lib/constants'
 import { parsePeriod, rangeFromPeriod } from '@utils/range'
 
 export const GET = withAuth(async (req, { supabase }) => {
@@ -15,7 +16,7 @@ export const GET = withAuth(async (req, { supabase }) => {
   })
 
   if (error) {
-    throw new Error(`Failed to load timeseries: ${error.message}`)
+    throw new Error(`${ERROR_MESSAGES.FAILED_TO_LOAD_TIMESERIES}: ${error.message}`)
   }
 
   return apiSuccess(data ?? [])

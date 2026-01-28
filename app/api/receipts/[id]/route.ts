@@ -1,5 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
+import { ERROR_MESSAGES } from '@lib/constants'
 import { receiptUpdateSchema, validateSchema } from '@lib/validation'
 
 type Params = {
@@ -18,15 +19,46 @@ export async function GET(req: Request, { params }: Params) {
       .single()
 
     if (error) {
-      throw new Error(`Failed to fetch receipt: ${error.message}`)
+      throw new Error(`${ERROR_MESSAGES.FAILED_TO_FETCH_RECEIPT}: ${error.message}`)
     }
 
     if (!data) {
-      throw new Error('Receipt not found')
+      throw new Error(ERROR_MESSAGES.RECEIPT_NOT_FOUND)
     }
 
     return apiSuccess(data)
   })(req)
+}
+
+/**
+ * Prepare receipt update data by filtering allowed fields
+ */
+function prepareUpdateData(
+  receipt?: Record<string, unknown>,
+  location?: { latitude: number; longitude: number } | null
+): Record<string, unknown> {
+  const allowedFields = [
+    'vendor',
+    'address',
+    'phone',
+    'purchased_at',
+    'currency',
+    'subtotal',
+    'total',
+    'raw_text',
+    'items',
+    'charges',
+  ] as const
+
+  return Object.fromEntries(
+    Object.entries({ ...receipt, ...location }).filter(
+      ([key, value]) =>
+        value !== undefined &&
+        (allowedFields.includes(key as (typeof allowedFields)[number]) ||
+          key === 'latitude' ||
+          key === 'longitude')
+    )
+  )
 }
 
 export async function PATCH(req: Request, { params }: Params) {
@@ -39,30 +71,10 @@ export async function PATCH(req: Request, { params }: Params) {
     const { receipt, location } = validated
 
     if (!receipt && !location) {
-      throw new Error('No data to update')
+      throw new Error(ERROR_MESSAGES.NO_DATA_TO_UPDATE)
     }
 
-    // Prepare update data
-    const allowedFields = [
-      'vendor',
-      'address',
-      'phone',
-      'purchased_at',
-      'currency',
-      'subtotal',
-      'total',
-      'raw_text',
-      'items',
-      'charges',
-    ] as const
-
-    const updateData = Object.fromEntries(
-      Object.entries({ ...receipt, ...location }).filter(
-        ([key, value]) =>
-          value !== undefined &&
-          (allowedFields.includes(key as typeof allowedFields[number]) || key === 'latitude' || key === 'longitude')
-      )
-    )
+    const updateData = prepareUpdateData(receipt, location)
 
     const { data, error } = await supabase
       .from('receipts')
@@ -73,11 +85,11 @@ export async function PATCH(req: Request, { params }: Params) {
       .single()
 
     if (error) {
-      throw new Error(`Failed to update receipt: ${error.message}`)
+      throw new Error(`${ERROR_MESSAGES.FAILED_TO_UPDATE_RECEIPT}: ${error.message}`)
     }
 
     if (!data) {
-      throw new Error('Receipt not found')
+      throw new Error(ERROR_MESSAGES.RECEIPT_NOT_FOUND)
     }
 
     return apiSuccess(data)
@@ -91,7 +103,7 @@ export async function DELETE(req: Request, { params }: Params) {
     const { error } = await supabase.from('receipts').delete().eq('id', id).eq('user_id', user.id)
 
     if (error) {
-      throw new Error(`Failed to delete receipt: ${error.message}`)
+      throw new Error(`${ERROR_MESSAGES.FAILED_TO_DELETE_RECEIPT}: ${error.message}`)
     }
 
     return apiSuccess({ success: true })

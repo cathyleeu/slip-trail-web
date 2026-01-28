@@ -1,6 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
-import { DEFAULT_CURRENCY } from '@lib/constants'
+import { DEFAULT_CURRENCY, ERROR_MESSAGES } from '@lib/constants'
 import type { Period, SeriesPoint, SpendSeriesResponse } from '@types'
 import { addUtcDays, getRangeWithGrain, parsePeriod, toYm, toYmd } from '@utils/range'
 
@@ -42,7 +42,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
     .order('purchased_at', { ascending: true })
 
   if (error) {
-    throw new Error(`Failed to load spend series: ${error.message}`)
+    throw new Error(`${ERROR_MESSAGES.FAILED_TO_LOAD_SPEND_SERIES}: ${error.message}`)
   }
 
   const buckets = buildBuckets(period, start, endExclusive)

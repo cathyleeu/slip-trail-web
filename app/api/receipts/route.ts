@@ -1,6 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
-import { DEFAULT_LIMIT, DEFAULT_OFFSET, STORAGE_BUCKET } from '@lib/constants'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET, ERROR_MESSAGES, STORAGE_BUCKET } from '@lib/constants'
 import { parseFormJson, parsedReceiptSchema, placeSchema } from '@lib/validation'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
@@ -8,7 +8,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   const image = form.get('image')
 
   if (!(image instanceof File)) {
-    throw new Error('image file is required')
+    throw new Error(ERROR_MESSAGES.IMAGE_REQUIRED)
   }
 
   const receipt = parseFormJson(form, 'receipt', parsedReceiptSchema)
@@ -26,7 +26,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
     })
 
   if (uploadErr) {
-    throw new Error(`Storage upload failed: ${uploadErr.message}`)
+    throw new Error(`${ERROR_MESSAGES.STORAGE_UPLOAD_FAILED}: ${uploadErr.message}`)
   }
 
   const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadData.path)
@@ -38,7 +38,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   })
 
   if (error) {
-    throw new Error(`Failed to save receipt: ${error.message}`)
+    throw new Error(`${ERROR_MESSAGES.FAILED_TO_SAVE_RECEIPT}: ${error.message}`)
   }
 
   return apiSuccess(data)
@@ -57,7 +57,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
     .range(offset, offset + limit - 1)
 
   if (error) {
-    throw new Error(`Failed to fetch receipts: ${error.message}`)
+    throw new Error(`${ERROR_MESSAGES.FAILED_TO_FETCH_RECEIPTS}: ${error.message}`)
   }
 
   return apiSuccess(data)
