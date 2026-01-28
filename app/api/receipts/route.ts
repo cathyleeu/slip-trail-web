@@ -1,5 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET, STORAGE_BUCKET } from '@lib/constants'
 import { parseFormJson, parsedReceiptSchema, placeSchema } from '@lib/validation'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
@@ -18,7 +19,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   const filename = `${user.id}/${Date.now()}.${extFromType}`
 
   const { data: uploadData, error: uploadErr } = await supabase.storage
-    .from('sliptrail-bills')
+    .from(STORAGE_BUCKET)
     .upload(filename, image, {
       contentType: image.type || 'application/octet-stream',
       upsert: false,
@@ -28,7 +29,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
     throw new Error(`Storage upload failed: ${uploadErr.message}`)
   }
 
-  const { data: pub } = supabase.storage.from('sliptrail-bills').getPublicUrl(uploadData.path)
+  const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadData.path)
 
   const { data, error } = await supabase.rpc('save_receipt_with_place', {
     receipt: receipt,
@@ -45,8 +46,8 @@ export const POST = withAuth(async (req, { user, supabase }) => {
 
 export const GET = withAuth(async (req, { user, supabase }) => {
   const { searchParams } = new URL(req.url)
-  const limit = parseInt(searchParams.get('limit') || '50')
-  const offset = parseInt(searchParams.get('offset') || '0')
+  const limit = parseInt(searchParams.get('limit') || String(DEFAULT_LIMIT))
+  const offset = parseInt(searchParams.get('offset') || String(DEFAULT_OFFSET))
 
   const { data, error } = await supabase
     .from('receipts')

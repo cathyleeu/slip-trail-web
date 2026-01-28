@@ -1,5 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
+import { TOP_PLACES_LIMIT } from '@lib/constants'
 import { rangeFromPeriod } from '@utils/range'
 
 export const GET = withAuth(async (req, { supabase }) => {
@@ -11,7 +12,7 @@ export const GET = withAuth(async (req, { supabase }) => {
   const { data, error } = await supabase.rpc('dashboard_top_places', {
     from_ts: from,
     to_ts: to,
-    limit_n: 10,
+    limit_n: TOP_PLACES_LIMIT,
     sort_by: sort,
   })
 

@@ -1,5 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
+import { DEFAULT_CURRENCY } from '@lib/constants'
 import type { Period, SeriesPoint, SpendSeriesResponse } from '@types'
 import { addUtcDays, getRangeWithGrain, parsePeriod, toYm, toYmd } from '@utils/range'
 
@@ -69,7 +70,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
       label: b.label,
       total: Math.round(b.total * 100) / 100,
     })),
-    currency: 'CAD', // 필요하면 user profile / receipt currency로 바꿔도 됨
+    currency: DEFAULT_CURRENCY,
   }
 
   return apiSuccess(payload)
