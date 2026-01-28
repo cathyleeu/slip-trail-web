@@ -18,6 +18,12 @@ export type SummaryRow = {
   avg_receipt: string
 }
 
+export type MoMRow = {
+  current_month_total: string | null
+  previous_month_total: string | null
+  change_percentage: number | null
+}
+
 export type SeriesRow = {
   bucket_start: string
   total_spent: string
