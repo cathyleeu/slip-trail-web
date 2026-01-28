@@ -1,10 +1,10 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
-import { rangeFromPeriod } from '@utils/range'
+import { parsePeriod, rangeFromPeriod } from '@utils/range'
 
 export const GET = withAuth(async (req, { supabase }) => {
   const url = new URL(req.url)
-  const period = url.searchParams.get('period') ?? 'month'
+  const period = parsePeriod(url.searchParams)
   const { from, to } = rangeFromPeriod(period)
 
   const { data, error } = await supabase.rpc('dashboard_summary', {
