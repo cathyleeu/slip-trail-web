@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { parseReceipt } from '@lib/groq'
+import { log } from '@lib/logger'
 import { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     try {
       llmResponse = await parseReceipt(rawText)
     } catch (err) {
-      console.error('[LLM ERROR]', err)
+      log.apiError('/api/parse-receipt', err, { stage: 'LLM request' })
       return apiError('LLM request failed', {
         status: 502,
         details: err instanceof Error ? err.message : 'Unknown LLM error',
@@ -39,14 +40,16 @@ export async function POST(request: NextRequest) {
     let parsedJson: unknown
     try {
       parsedJson = JSON.parse(llmResponse)
-    } catch {
-      console.error('[JSON PARSE ERROR]', llmResponse)
+    } catch (parseError) {
+      log.error('Failed to parse LLM JSON response', parseError, {
+        response: llmResponse.substring(0, 200),
+      })
       return apiError('Invalid JSON returned from LLM', { status: 500, details: llmResponse })
     }
 
     return apiSuccess(parsedJson)
   } catch (err) {
-    console.error('[UNHANDLED ERROR]', err)
+    log.apiError('/api/parse-receipt', err, { stage: 'unhandled' })
 
     return apiError('Internal server error', {
       status: 500,

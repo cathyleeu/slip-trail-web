@@ -1,5 +1,6 @@
 'use client'
 
+import { log } from '@lib/logger'
 import { useAnalysisDraftStore } from '@store'
 import { compressImage } from '@utils/imageProcessor'
 import { useCallback, useState } from 'react'
@@ -51,7 +52,7 @@ export function useAnalysisFlow() {
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-        console.error('Analysis error:', error)
+        log.error('Receipt analysis failed', error, { stage: 'analysis flow' })
         clearPreview()
         onError?.(errorMessage)
         throw error
