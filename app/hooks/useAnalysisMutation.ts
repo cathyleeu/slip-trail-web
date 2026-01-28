@@ -14,7 +14,6 @@ import type {
   ReceiptAnalysisResult,
   RequestParsingOptions,
 } from '@types'
-import { useCallback } from 'react'
 
 export async function requestOcr({ file }: AnalyzeOptions): Promise<OcrResult> {
   const url = process.env.NEXT_PUBLIC_OCR_API_URL
@@ -139,17 +138,8 @@ export function useAnalysisMutation() {
       analyzeRequest({ file }, onProgress),
   })
 
-  const analyze = useCallback(
-    async (
-      options: AnalyzeOptions & { onProgress?: (progress: number, stage: string) => void }
-    ) => {
-      return mutation.mutateAsync(options)
-    },
-    [mutation]
-  )
-
   return {
-    analyze,
+    analyze: mutation.mutateAsync,
     data: mutation.data ?? null,
     loading: mutation.isPending,
     error: mutation.error instanceof Error ? mutation.error.message : null,
