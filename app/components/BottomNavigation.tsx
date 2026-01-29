@@ -2,16 +2,24 @@
 
 import { cn } from '@utils/cn'
 import { usePathname, useRouter } from 'next/navigation'
+import { memo, useCallback } from 'react'
 
-export function BottomNavigation() {
+export const BottomNavigation = memo(function BottomNavigation() {
   const router = useRouter()
   const pathname = usePathname()
 
-  const isActive = (path: string) => pathname === path
+  const isActive = useCallback((path: string) => pathname === path, [pathname])
+
+  const navigate = useCallback(
+    (path: string) => {
+      router.push(path)
+    },
+    [router]
+  )
 
   return (
     <div className="flex justify-around py-2 bg-white border-t border-gray-200">
-      <button onClick={() => router.push('/')} className="flex flex-col items-center gap-1">
+      <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1">
         <svg
           className={cn('w-6 h-6', isActive('/') ? 'text-blue-500' : 'text-gray-400')}
           fill="none"
@@ -30,7 +38,7 @@ export function BottomNavigation() {
         </span>
       </button>
 
-      <button onClick={() => router.push('/camera')} className="flex flex-col items-center gap-1">
+      <button onClick={() => navigate('/camera')} className="flex flex-col items-center gap-1">
         <svg
           className={cn('w-6 h-6', isActive('/camera') ? 'text-blue-500' : 'text-gray-400')}
           fill="none"
@@ -62,4 +70,4 @@ export function BottomNavigation() {
       </button>
     </div>
   )
-}
+})
