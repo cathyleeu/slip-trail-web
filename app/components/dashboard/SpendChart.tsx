@@ -1,6 +1,5 @@
 'use client'
 
-import { type SpendChartProps } from '@types'
 import { money } from '@utils'
 import {
   CategoryScale,
@@ -14,11 +13,21 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js'
+import { memo } from 'react'
 import { Line } from 'react-chartjs-2'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
-export default function SpendChart({ points }: SpendChartProps) {
+type SpendPoint = {
+  label: string
+  total: number
+}
+
+type SpendChartProps = {
+  points: SpendPoint[]
+}
+
+const SpendChart = memo(function SpendChart({ points }: SpendChartProps) {
   const data: ChartData<'line', number[], string> = {
     labels: points.map((p) => p.label),
     datasets: [
@@ -56,4 +65,6 @@ export default function SpendChart({ points }: SpendChartProps) {
       <Line data={data} options={options} />
     </div>
   )
-}
+})
+
+export default SpendChart
