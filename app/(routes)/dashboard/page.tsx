@@ -1,6 +1,7 @@
 import SpendChart from '@components/dashboard/SpendChart'
 import { supabaseServer } from '@lib/supabase/server'
 import { PlaceRow, SeriesRow, SummaryRow } from '@types'
+import { money } from '@utils'
 import { redirect } from 'next/navigation'
 
 function isoRange(period: 'day' | 'week' | 'month') {
@@ -13,12 +14,6 @@ function isoRange(period: 'day' | 'week' | 'month') {
   if (period === 'month') from.setMonth(from.getMonth() - 1)
 
   return { from_ts: from.toISOString(), to_ts: to.toISOString() }
-}
-
-function money(n: string | number) {
-  const v = typeof n === 'string' ? Number(n) : n
-  if (!Number.isFinite(v)) return '—'
-  return v.toLocaleString(undefined, { style: 'currency', currency: 'CAD' })
 }
 
 export default async function DashboardPage({
