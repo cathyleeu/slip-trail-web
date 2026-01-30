@@ -1,7 +1,7 @@
 import SpendChart from '@components/dashboard/SpendChart'
-import { requireAuth } from '@lib/auth'
 import { supabaseServer } from '@lib/supabase/server'
 import { PlaceRow, SeriesRow, SummaryRow } from '@types'
+import { redirect } from 'next/navigation'
 
 function isoRange(period: 'day' | 'week' | 'month') {
   const now = new Date()
@@ -32,8 +32,14 @@ export default async function DashboardPage({
   const { from_ts, to_ts } = isoRange(period)
 
   const supabase = await supabaseServer()
-  const auth = await requireAuth(supabase)
-  if (!auth.ok) return auth.response
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
 
   const [summaryRes, seriesRes, recentRes, topRes, momRes] = await Promise.all([
     supabase.rpc('dashboard_summary', { from_ts, to_ts }),
