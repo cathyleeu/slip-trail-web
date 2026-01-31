@@ -1,20 +1,8 @@
 import SpendChart from '@components/dashboard/SpendChart'
 import { supabaseServer } from '@lib/supabase/server'
 import { PlaceRow, SeriesRow, SummaryRow } from '@types'
-import { money } from '@utils'
+import { isoRange, money } from '@utils'
 import { redirect } from 'next/navigation'
-
-function isoRange(period: 'day' | 'week' | 'month') {
-  const now = new Date()
-  const to = new Date(now)
-  const from = new Date(now)
-
-  if (period === 'day') from.setDate(from.getDate() - 1)
-  if (period === 'week') from.setDate(from.getDate() - 7)
-  if (period === 'month') from.setMonth(from.getMonth() - 1)
-
-  return { from_ts: from.toISOString(), to_ts: to.toISOString() }
-}
 
 export default async function DashboardPage({
   searchParams,
