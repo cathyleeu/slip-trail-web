@@ -6,9 +6,13 @@ import { usePathname } from 'next/navigation'
 export default function ScanLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
+  const hideHeaderOnPaths = ['/camera']
+  if (hideHeaderOnPaths.includes(pathname)) {
+    return <div className="h-screen flex flex-col bg-gray-100">{children}</div>
+  }
+
   const getHeaderTitle = () => {
     if (pathname === '/result') return '영수증 확인'
-    if (pathname === '/camera') return '영수증 촬영'
     if (pathname === '/upload') return '영수증 업로드'
     return 'Slip Trail'
   }
