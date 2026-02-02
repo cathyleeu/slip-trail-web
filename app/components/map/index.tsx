@@ -10,11 +10,12 @@ type MapProps = {
   location?: GeoLocation | null
   zoom?: number
   className?: string
+  style?: React.CSSProperties
 }
 
 // TODO: marker style customization: emoji, color options
 // popup content customization by props: address, custom text
-export default function Map({ location, zoom = 15, className = 'h-64 w-full' }: MapProps) {
+export default function Map({ location, zoom = 15, className = 'h-full w-full', style }: MapProps) {
   // Fix for default marker icon
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,7 +47,7 @@ export default function Map({ location, zoom = 15, className = 'h-64 w-full' }: 
       zoom={zoom}
       scrollWheelZoom={false}
       className={className}
-      style={{ borderRadius: '12px' }}
+      style={style}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
