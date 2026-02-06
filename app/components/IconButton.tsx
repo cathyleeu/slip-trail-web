@@ -1,3 +1,4 @@
+import { cn } from '@utils/cn'
 import React from 'react'
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -29,7 +30,7 @@ export function IconButton({
 
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
       {...props}
     >
       {children}
