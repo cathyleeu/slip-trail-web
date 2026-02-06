@@ -23,12 +23,39 @@ export async function parseReceipt(text: string) {
       •	Normalize numbers to decimals (e.g., 1.23). Remove currency symbols.
       •	Default currency to “CAD” if unclear.
 
-    VENDOR RULES (PREVENT DOMAIN/EMAIL VENDOR BUG):
-      •	Vendor must be a human-facing business name, NOT an email username or domain.
-      •	If an email or website appears (e.g., “orders@vendor.com”, “vendor.com”), NEVER set vendor to the email handle or domain (e.g., “vendor”, “gmail”, “square”, “clover”, “toast”, “shopify”, “stripe”).
-      •	Choose vendor from the most prominent header-like text near the top, or a clear store/restaurant name line.
-      •	If multiple candidates exist, pick the one that looks like a proper business name (capitalized words, brand-like phrase) rather than generic words (“Receipt”, “Order”, “Thank you”, “Terminal”, “Server”).
-      •	If vendor cannot be confidently identified, set vendor to null (better null than wrong).
+    VENDOR RULES (MUST PRODUCE A NON-NULL VENDOR WHEN POSSIBLE):
+      •	vendor should be a human-facing business/store name.
+      •	vendor must NOT be null if the OCR contains ANY plausible business-name-like text.
+      •	Only use null if the OCR contains no plausible business name at all.
+
+    VENDOR CANDIDATE SEARCH (DETERMINISTIC):
+      •	Scan the first 12 non-empty lines of OCR for vendor candidates.
+      •	A candidate line is any line that:
+      •	contains at least 2 letters (A–Z) AND
+      •	is NOT primarily numeric AND
+      •	is NOT an excluded/generic line (see EXCLUSIONS).
+      •	Prefer the earliest candidate line(s) near the top.
+
+    VENDOR ASSEMBLY:
+      •	If there are multiple short adjacent lines that look like the name split across lines (e.g., “OEB” on one line, “Breakfast” on next, “Co.” on next), combine them into one vendor name separated by spaces.
+      •	Keep the combined name concise: at most 6 words.
+      •	Remove trailing punctuation and extra symbols.
+
+    VENDOR EXCLUSIONS (NEVER USE AS VENDOR):
+      •	Any email address or line containing ‘@’
+      •	Any website/domain line containing ‘.com’, ‘.ca’, ‘.net’, ‘.org’, ‘www.’
+      •	Payment processors / platforms / generic tech words:
+    “square”, “squareup”, “clover”, “toast”, “moneris”, “verifone”, “ingenico”, “shopify”, “stripe”, “paypal”, “visa”, “mastercard”, “amex”, “interac”
+      •	Generic receipt words (case-insensitive):
+    “receipt”, “order”, “invoice”, “tax invoice”, “table”, “server”, “employee”, “cashier”, “terminal”, “merchant”, “store”, “thank”, “thanks”, “welcome”, “please”, “balance due”, “amount due”, “total”, “subtotal”, “gst”, “pst”, “hst”, “tax”, “tip”, “gratuity”
+
+    VENDOR FALLBACK (IF STILL UNCERTAIN):
+      •	If no candidate found in the first 12 lines, search the entire OCR for the first line that looks like a proper name (same candidate rules).
+      •	If still none found, set vendor to null.
+
+    IMPORTANT:
+      •	NEVER set vendor to an email handle or domain token (e.g., “eatoeb”).
+      •	If the only brand hint is found in an email/domain (e.g., “event@eatoeb.com”) BUT there is nearby name-like text anywhere (e.g., “Breakfast Co.”), vendor must be that name-like text rather than the domain.
 
     ADDRESS & PHONE:
       •	Extract address and phone if present.
