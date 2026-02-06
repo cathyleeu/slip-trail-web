@@ -9,20 +9,20 @@ export default function Home() {
   const { user } = useAuth()
 
   useEffect(() => {
-    // 1. 로그인된 사용자 → 메인 화면
+    // 1. Authorized user to home
     if (user) {
-      router.push('/map')
+      router.push('/home')
       return
     }
 
-    // 2. 비로그인 + 온보딩 봤음 → 로그인 페이지
+    // 2. unauthorized + has seen onboarding → login page
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
     if (hasSeenOnboarding) {
       router.push('/login')
       return
     }
 
-    // 3. 비로그인 + 온보딩 안봤음 → 온보딩
+    // 3.  unauthorized + has not seen onboarding → onboarding
     router.push('/onboarding')
   }, [user, router])
 
