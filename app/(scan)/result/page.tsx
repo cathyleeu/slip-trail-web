@@ -13,7 +13,7 @@ const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 export default function ResultPage() {
   const router = useRouter()
-  const { location, receipt, setReceipt } = useAnalysisDraftStore()
+  const { location, receipt, setReceipt, file } = useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
 
@@ -22,7 +22,7 @@ export default function ResultPage() {
 
   useEffect(() => {
     if (!receipt) {
-      router.push('/camera')
+      router.back()
     }
   }, [receipt, router])
 
@@ -72,13 +72,46 @@ export default function ResultPage() {
 
   const handleSave = async () => {
     try {
+      if (isEditMode) {
+        setIsEditMode(false)
+        setOriginalReceipt(null)
+        return
+      }
+
+      if (!receipt) return
+      if (!file) {
+        alert('No image file found. Please scan or upload again.')
+        return
+      }
+
+      const place = {
+        name: location?.displayName ?? null,
+        address: location?.address ?? null,
+        latitude: location?.lat ?? null,
+        longitude: location?.lng ?? null,
+      }
+
+      const receiptPayload = {
+        ...receipt,
+        items: receipt.items?.map((item) => ({
+          name: item.name,
+          quantity: item.qty,
+          price: item.unit_price,
+        })),
+        charges: receipt.charges?.map((charge) => ({
+          label: charge.label,
+          amount: charge.amount,
+        })),
+      }
+
+      const formData = new FormData()
+      formData.append('image', file)
+      formData.append('receipt', JSON.stringify(receiptPayload))
+      formData.append('place', JSON.stringify(place))
+
       const response = await fetch('/api/receipts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          receipt,
-          location,
-        }),
+        body: formData,
       })
 
       const data = await response.json()
@@ -89,11 +122,11 @@ export default function ResultPage() {
 
       setIsEditMode(false)
       setOriginalReceipt(null)
-      alert('영수증이 저장되었습니다!')
+      alert('Receipt has been saved!')
       router.push('/')
     } catch (error) {
       console.error('Error saving receipt:', error)
-      alert(error instanceof Error ? error.message : '저장 중 오류가 발생했습니다')
+      // alert(error instanceof Error ? error.message : 'An error occurred while saving.')
     }
   }
 
@@ -138,7 +171,7 @@ export default function ResultPage() {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-2xl shadow-sm overflow-hidden"
         >
-          <Map location={location} zoom={16} className="h-64 w-full" />
+          {/* <Map location={location} zoom={16} className="h-64 w-full" /> */}
         </motion.div>
       )}
 
@@ -299,7 +332,7 @@ export default function ResultPage() {
           onClick={handleSave}
           className="w-full py-3 bg-blue-600 text-white rounded-2xl shadow-sm font-medium"
         >
-          Save
+          {isEditMode ? 'Apply' : 'Save'}
         </motion.button>
       </div>
     </div>
