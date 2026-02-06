@@ -41,10 +41,12 @@ export const parsedReceiptSchema = z.object({
  * Schema for geographic location
  */
 export const placeSchema = z.object({
+  osm_ref: z.string().nullable().optional(),
   name: z.string().nullable(),
   address: z.string().nullable(),
-  latitude: z.number().nullable(),
-  longitude: z.number().nullable(),
+  normalized_address: z.string().nullable().optional(),
+  lat: z.number().nullable().optional(),
+  lon: z.number().nullable().optional(),
 })
 
 // ============ Form Data Schemas ============
@@ -64,8 +66,8 @@ export const receiptUpdateSchema = z.object({
   receipt: parsedReceiptSchema.partial().optional(),
   location: z
     .object({
-      latitude: z.number(),
-      longitude: z.number(),
+      lat: z.number(),
+      lon: z.number(),
     })
     .nullable()
     .optional(),
