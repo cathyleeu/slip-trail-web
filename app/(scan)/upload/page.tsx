@@ -70,7 +70,7 @@ export default function UploadPage() {
                 onClick={openFilePicker}
                 disabled={isProcessing}
               >
-                {receiptFile ? receiptFile.name : '이미지를 선택해주세요'}
+                {receiptFile ? receiptFile.name : 'Select an image'}
               </motion.button>
             </>
           )}
@@ -83,7 +83,7 @@ export default function UploadPage() {
             disabled={isProcessing}
             className="w-full py-3 bg-white rounded-2xl shadow-sm text-gray-800 font-medium"
           >
-            초기화
+            Reset
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -91,7 +91,7 @@ export default function UploadPage() {
             onClick={onRunOcr}
             disabled={!receiptFile || isProcessing}
           >
-            분석 요청
+            Analyze
           </motion.button>
         </div>
       </div>
