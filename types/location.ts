@@ -29,7 +29,7 @@ export type NominatimResponse = {
 export type GeoLocation = {
   lat: number // string → number 변환
   lng: number // lon → lng 통일
-  displayName: string
+  displayName?: string
   address: string
   placeId?: number
   boundingBox?: [number, number, number, number]
