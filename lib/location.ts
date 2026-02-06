@@ -17,11 +17,12 @@ export function normalizeAddress(address?: string | null): string | null {
 
 /**
  * map NominatimResponse to GeoLocation
+ * change string lat/lon to number lat/lon
  */
 export function toGeoLocation(api: NominatimResponse): GeoLocation {
   return {
     lat: Number(api.lat),
-    lng: Number(api.lon),
+    lon: Number(api.lon),
     address: api.display_name,
     displayName: api.name || '',
     placeId: api.place_id,

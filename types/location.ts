@@ -27,8 +27,8 @@ export type NominatimResponse = {
  * Location data stored in Supabase (minimal fields)
  */
 export type GeoLocation = {
-  lat: number // string → number 변환
-  lng: number // lon → lng 통일
+  lat: number
+  lon: number
   displayName?: string
   address: string
   placeId?: number
