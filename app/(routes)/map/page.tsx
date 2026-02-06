@@ -15,6 +15,34 @@ export default function MapPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const updateLocation = (position: GeolocationPosition, doneLoading = false) => {
+    setLocation({
+      lat: position.coords.latitude,
+      lon: position.coords.longitude,
+      address: 'Current Location',
+    })
+    setError(null)
+    if (doneLoading) setIsLoading(false)
+  }
+
+  const handleGeoError = (error: GeolocationPositionError) => {
+    let message = 'Unable to retrieve your location'
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        message = 'Location permission denied. Please enable location access in your browser.'
+        break
+      case error.POSITION_UNAVAILABLE:
+        message = 'Location information is unavailable.'
+        break
+      case error.TIMEOUT:
+        message = 'Location request timed out. Please try again.'
+        break
+    }
+    setError(message)
+    setIsLoading(false)
+    console.error('Geolocation error:', error)
+  }
+
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser')
@@ -24,40 +52,15 @@ export default function MapPage() {
     setIsLoading(true)
     setError(null)
 
-    const successHandler = (position: GeolocationPosition) => {
-      setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        address: 'Current Location',
-      })
-      setError(null)
-      setIsLoading(false)
-    }
+    const successHandler = (position: GeolocationPosition) => updateLocation(position, true)
 
     const errorHandler = (error: GeolocationPositionError) => {
       // 고정밀 모드 실패 시 일반 모드로 재시도
       if (error.code === error.TIMEOUT) {
         console.log('High accuracy timeout, retrying with lower accuracy...')
         navigator.geolocation.getCurrentPosition(
-          successHandler,
-          (fallbackError) => {
-            let message = 'Unable to retrieve your location'
-            switch (fallbackError.code) {
-              case fallbackError.PERMISSION_DENIED:
-                message =
-                  'Location permission denied. Please enable location access in your browser.'
-                break
-              case fallbackError.POSITION_UNAVAILABLE:
-                message = 'Location information is unavailable.'
-                break
-              case fallbackError.TIMEOUT:
-                message = 'Location request timed out. Please try again.'
-                break
-            }
-            setError(message)
-            setIsLoading(false)
-            console.error('Geolocation error:', fallbackError)
-          },
+          (pos) => updateLocation(pos, true),
+          handleGeoError,
           {
             enableHighAccuracy: false, // 일반 모드로 재시도
             timeout: 10000,
@@ -67,21 +70,7 @@ export default function MapPage() {
         return
       }
 
-      let message = 'Unable to retrieve your location'
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          message = 'Location permission denied. Please enable location access in your browser.'
-          break
-        case error.POSITION_UNAVAILABLE:
-          message = 'Location information is unavailable.'
-          break
-        case error.TIMEOUT:
-          message = 'Location request timed out. Please try again.'
-          break
-      }
-      setError(message)
-      setIsLoading(false)
-      console.error('Geolocation error:', error)
+      handleGeoError(error)
     }
 
     // 먼저 고정밀 모드로 시도
@@ -97,14 +86,7 @@ export default function MapPage() {
 
     if (!navigator.geolocation) return
 
-    const successHandler = (position: GeolocationPosition) => {
-      setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        address: 'Current Location',
-      })
-      setError(null)
-    }
+    const successHandler = (position: GeolocationPosition) => updateLocation(position)
 
     const errorHandler = (error: GeolocationPositionError) => {
       console.error('Watch position error:', error)
