@@ -41,14 +41,14 @@ export async function proxy(req: NextRequest) {
   // Root: go to the right starting page.
   if (pathname === '/') {
     const url = req.nextUrl.clone()
-    url.pathname = isAuthed ? '/map' : '/upload' //FIXME
+    url.pathname = isAuthed ? '/home' : '/onboarding'
     return NextResponse.redirect(url)
   }
 
   // If already logged in, keep them out of auth pages.
   if (isAuthed && isAuthPage(pathname)) {
     const url = req.nextUrl.clone()
-    url.pathname = '/map'
+    url.pathname = '/home'
     return NextResponse.redirect(url)
   }
 
