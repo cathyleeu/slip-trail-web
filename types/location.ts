@@ -41,6 +41,7 @@ export type GeoLocation = {
 export type GeocodeSuccess = {
   success: true
   location: GeoLocation
+  place: Place
 }
 
 /**

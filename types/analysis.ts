@@ -3,7 +3,7 @@
  * Complete process: OCR → Parsing → Geocoding
  */
 
-import type { GeoLocation } from './location'
+import type { GeoLocation, Place } from './location'
 import type { OcrResult } from './ocr'
 import type { ParsedReceipt } from './receipt'
 
@@ -22,6 +22,7 @@ export type ReceiptAnalysisSuccess = {
   ocr: Extract<OcrResult, { success: true }>
   receipt: ParsedReceipt
   location: GeoLocation | null
+  place: Place | null
 }
 
 /**
