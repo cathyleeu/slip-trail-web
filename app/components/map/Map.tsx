@@ -53,12 +53,12 @@ export default function Map({
   const isValidLocation =
     location &&
     typeof location.lat === 'number' &&
-    typeof location.lng === 'number' &&
+    typeof location.lon === 'number' &&
     !isNaN(location.lat) &&
-    !isNaN(location.lng)
+    !isNaN(location.lon)
 
   const center: [number, number] = isValidLocation
-    ? [location.lat, location.lng]
+    ? [location.lat, location.lon]
     : [49.2827, -123.1207]
 
   return (
@@ -86,12 +86,12 @@ export default function Map({
         <MapUpdater center={center} />
         {children}
         {isValidLocation && (
-          <Marker position={[location.lat, location.lng]}>
+          <Marker position={[location.lat, location.lon]}>
             <Popup>
               <div>
                 <div className="font-semibold">{location.address}</div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                  {location.lat.toFixed(6)}, {location.lon.toFixed(6)}
                 </div>
               </div>
             </Popup>
