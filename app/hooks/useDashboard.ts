@@ -31,12 +31,18 @@ type TopPlace = {
   place_name: string
   total: string
   count: number
+  lat: number
+  lon: number
+  place_id: string
 }
 
 type RecentPlace = {
   place_name: string
   last_visited: string
   total: string
+  lat: number
+  lon: number
+  place_id: string
 }
 
 // ============ Dashboard Summary ============
