@@ -1,7 +1,7 @@
 'use client'
 
 import { ApiError, request } from '@lib/httpFetcher'
-import { toGeoLocation } from '@lib/location'
+import { toGeoLocation, toPlace } from '@lib/location'
 import { useMutation } from '@tanstack/react-query'
 import type {
   AnalyzeOptions,
@@ -84,7 +84,7 @@ export async function requestGeoCoding(address: string): Promise<GeocodeResult> 
       body: JSON.stringify({ address }),
       unwrapApiSuccess: true,
     })
-    return { success: true, location: toGeoLocation(location) }
+    return { success: true, location: toGeoLocation(location), place: toPlace(location) }
   } catch (err) {
     if (err instanceof ApiError) {
       return {
@@ -126,7 +126,16 @@ async function analyzeRequest(
 
   onProgress?.(100, 'Complete!')
 
-  return { success: true, ocr, receipt: parsed.receipt, location: geo.location }
+  return {
+    success: true,
+    ocr,
+    receipt: parsed.receipt,
+    location: geo.location,
+    place: {
+      ...geo.place,
+      name: geo.place?.name || parsed.receipt.vendor || 'Unknown Place',
+    },
+  }
 }
 
 export function useAnalysisMutation() {
