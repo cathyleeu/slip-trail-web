@@ -2,6 +2,7 @@
 
 import { useAnalysisDraftStore } from '@store'
 import { cn } from '@utils/cn'
+import { formatDateTime, normalizeNumberInput } from '@utils/format'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
@@ -14,8 +15,9 @@ export default function ResultPage() {
   const router = useRouter()
   const { location, receipt, setReceipt } = useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
+  const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
 
-  // TODO: integrate Edit and Save functionality later
+  // TODO: integrate Save functionality later
   // TODO: add tip section
 
   useEffect(() => {
@@ -35,12 +37,36 @@ export default function ResultPage() {
       updatedItems[index] = { ...updatedItems[index], [field]: value }
     }
 
-    setReceipt({ ...receipt, items: updatedItems })
+    // Recalculate total
+    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.qty * item.unit_price, 0)
+    const chargesTotal = receipt.charges?.reduce((sum, charge) => sum + charge.amount, 0) || 0
+    const newTotal = itemsTotal + chargesTotal
+
+    setReceipt({ ...receipt, items: updatedItems, total: newTotal })
   }
 
   const handleDeleteItem = (index: number) => {
     if (!receipt?.items) return
     const updatedItems = receipt.items.filter((_, idx) => idx !== index)
+
+    // Recalculate total after deletion
+    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.qty * item.unit_price, 0)
+    const chargesTotal = receipt.charges?.reduce((sum, charge) => sum + charge.amount, 0) || 0
+    const newTotal = itemsTotal + chargesTotal
+
+    setReceipt({ ...receipt, items: updatedItems, total: newTotal })
+  }
+
+  const handleAddItem = () => {
+    if (!receipt?.items) return
+
+    const newItem = {
+      name: '',
+      qty: 1,
+      unit_price: 0,
+    }
+
+    const updatedItems = [...receipt.items, newItem]
     setReceipt({ ...receipt, items: updatedItems })
   }
 
@@ -62,13 +88,28 @@ export default function ResultPage() {
       }
 
       setIsEditMode(false)
+      setOriginalReceipt(null)
       alert('영수증이 저장되었습니다!')
-      // 선택적: 저장 후 홈으로 이동
-      // router.push('/')
+      router.push('/')
     } catch (error) {
       console.error('Error saving receipt:', error)
       alert(error instanceof Error ? error.message : '저장 중 오류가 발생했습니다')
     }
+  }
+
+  const handleEdit = () => {
+    // 원본 데이터 백업
+    setOriginalReceipt(receipt)
+    setIsEditMode(true)
+  }
+
+  const handleCancel = () => {
+    // 원본 데이터로 복구
+    if (originalReceipt) {
+      setReceipt(originalReceipt)
+    }
+    setOriginalReceipt(null)
+    setIsEditMode(false)
   }
 
   if (!receipt) {
@@ -125,7 +166,7 @@ export default function ResultPage() {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <span>{receipt.purchased_at}</span>
+              <span>{formatDateTime(receipt.purchased_at)}</span>
             </div>
           )}
         </div>
@@ -133,16 +174,36 @@ export default function ResultPage() {
         {/* Items */}
         {receipt.items && receipt.items.length > 0 && (
           <div className="border-t border-gray-100 pt-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Items</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700">Items</h3>
+              {isEditMode && (
+                <button
+                  onClick={handleAddItem}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Add Item
+                </button>
+              )}
+            </div>
             <div className="space-y-2">
               {receipt.items.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm">
+                <div key={idx} className="flex items-center gap-2 text-sm text-gray-800">
                   {isEditMode ? (
                     <>
                       <input
                         type="number"
                         value={item.qty}
-                        onChange={(e) => handleEditItem(idx, 'qty', e.target.value)}
+                        onChange={(e) =>
+                          handleEditItem(idx, 'qty', normalizeNumberInput(e.target.value))
+                        }
                         className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
                         min="1"
                       />
@@ -156,7 +217,9 @@ export default function ResultPage() {
                       <input
                         type="number"
                         value={item.unit_price}
-                        onChange={(e) => handleEditItem(idx, 'unit_price', e.target.value)}
+                        onChange={(e) =>
+                          handleEditItem(idx, 'unit_price', normalizeNumberInput(e.target.value))
+                        }
                         className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
                         step="0.01"
                         min="0"
@@ -223,7 +286,7 @@ export default function ResultPage() {
       <div className="grid grid-cols-2 gap-4">
         <motion.button
           whileTap={{ scale: 0.98 }}
-          onClick={() => setIsEditMode(!isEditMode)}
+          onClick={isEditMode ? handleCancel : handleEdit}
           className={cn(
             'w-full py-3 bg-white rounded-2xl shadow-sm text-gray-800 font-medium',
             isEditMode && 'border border-gray-200'
