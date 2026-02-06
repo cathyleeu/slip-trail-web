@@ -8,8 +8,8 @@
  */
 export type ReceiptItem = {
   name: string
-  qty: number
-  unit_price: number
+  quantity: number
+  price: number
 }
 
 /**

@@ -1,5 +1,8 @@
 'use client'
 
+import { IconButton } from '@components/IconButton'
+import { Button } from '@components/ui'
+import { Plus, Trash } from '@components/ui/icons'
 import { useAnalysisDraftStore } from '@store'
 import { cn } from '@utils/cn'
 import { formatDateTime, normalizeNumberInput } from '@utils/format'
@@ -13,11 +16,10 @@ const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 export default function ResultPage() {
   const router = useRouter()
-  const { location, receipt, setReceipt, file } = useAnalysisDraftStore()
+  const { location, receipt, setReceipt, file, place } = useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
 
-  // TODO: integrate Save functionality later
   // TODO: add tip section
 
   useEffect(() => {
@@ -26,11 +28,11 @@ export default function ResultPage() {
     }
   }, [receipt, router])
 
-  const handleEditItem = (index: number, field: 'name' | 'qty' | 'unit_price', value: string) => {
+  const handleEditItem = (index: number, field: 'name' | 'quantity' | 'price', value: string) => {
     if (!receipt?.items) return
 
     const updatedItems = [...receipt.items]
-    if (field === 'qty' || field === 'unit_price') {
+    if (field === 'quantity' || field === 'price') {
       const numValue = parseFloat(value) || 0
       updatedItems[index] = { ...updatedItems[index], [field]: numValue }
     } else {
@@ -38,7 +40,7 @@ export default function ResultPage() {
     }
 
     // Recalculate total
-    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.qty * item.unit_price, 0)
+    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
     const chargesTotal = receipt.charges?.reduce((sum, charge) => sum + charge.amount, 0) || 0
     const newTotal = itemsTotal + chargesTotal
 
@@ -50,7 +52,7 @@ export default function ResultPage() {
     const updatedItems = receipt.items.filter((_, idx) => idx !== index)
 
     // Recalculate total after deletion
-    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.qty * item.unit_price, 0)
+    const itemsTotal = updatedItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
     const chargesTotal = receipt.charges?.reduce((sum, charge) => sum + charge.amount, 0) || 0
     const newTotal = itemsTotal + chargesTotal
 
@@ -62,8 +64,8 @@ export default function ResultPage() {
 
     const newItem = {
       name: '',
-      qty: 1,
-      unit_price: 0,
+      quantity: 1,
+      price: 0,
     }
 
     const updatedItems = [...receipt.items, newItem]
@@ -78,25 +80,18 @@ export default function ResultPage() {
         return
       }
 
-      if (!receipt) return
+      if (!receipt || !place) return
       if (!file) {
         alert('No image file found. Please scan or upload again.')
         return
-      }
-
-      const place = {
-        name: location?.displayName ?? null,
-        address: location?.address ?? null,
-        latitude: location?.lat ?? null,
-        longitude: location?.lng ?? null,
       }
 
       const receiptPayload = {
         ...receipt,
         items: receipt.items?.map((item) => ({
           name: item.name,
-          quantity: item.qty,
-          price: item.unit_price,
+          quantity: item.quantity,
+          price: item.price,
         })),
         charges: receipt.charges?.map((charge) => ({
           label: charge.label,
@@ -171,7 +166,7 @@ export default function ResultPage() {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-2xl shadow-sm overflow-hidden"
         >
-          {/* <Map location={location} zoom={16} className="h-64 w-full" /> */}
+          <Map location={location} zoom={16} className="h-64 w-full" />
         </motion.div>
       )}
 
@@ -210,20 +205,14 @@ export default function ResultPage() {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-700">Items</h3>
               {isEditMode && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={handleAddItem}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  className="text-xs font-medium flex items-center gap-1"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+                  <Plus className="w-4 h-4" />
                   Add Item
-                </button>
+                </Button>
               )}
             </div>
             <div className="space-y-2">
@@ -233,9 +222,9 @@ export default function ResultPage() {
                     <>
                       <input
                         type="number"
-                        value={item.qty}
+                        value={item.quantity}
                         onChange={(e) =>
-                          handleEditItem(idx, 'qty', normalizeNumberInput(e.target.value))
+                          handleEditItem(idx, 'quantity', normalizeNumberInput(e.target.value))
                         }
                         className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
                         min="1"
@@ -249,42 +238,29 @@ export default function ResultPage() {
                       />
                       <input
                         type="number"
-                        value={item.unit_price}
+                        value={item.price}
                         onChange={(e) =>
-                          handleEditItem(idx, 'unit_price', normalizeNumberInput(e.target.value))
+                          handleEditItem(idx, 'price', normalizeNumberInput(e.target.value))
                         }
                         className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
                         step="0.01"
                         min="0"
                       />
-                      <button
+                      <IconButton
                         onClick={() => handleDeleteItem(idx)}
                         className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        aria-label="Delete item"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                        <Trash className="w-4 h-4" />
+                      </IconButton>
                     </>
                   ) : (
                     <>
                       <span className="flex-1 text-gray-800">
-                        {item.qty > 1 ? `${item.qty}x ` : ''}
+                        {item.quantity > 1 ? `${item.quantity}x ` : ''}
                         {item.name}
                       </span>
-                      <span className="font-medium text-gray-900">
-                        ${item.unit_price.toFixed(2)}
-                      </span>
+                      <span className="font-medium text-gray-900">${item.price.toFixed(2)}</span>
                     </>
                   )}
                 </div>
