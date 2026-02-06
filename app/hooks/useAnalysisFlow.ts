@@ -13,7 +13,7 @@ type AnalyzeReceiptOptions = {
 
 export function useAnalysisFlow() {
   const { analyze, reset } = useAnalysisMutation()
-  const { setLocation, setReceipt, clearPreview, setPreviewUrl, previewUrl } =
+  const { setLocation, setReceipt, clearPreview, setPreviewUrl, previewUrl, setFile } =
     useAnalysisDraftStore()
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -27,6 +27,7 @@ export function useAnalysisFlow() {
         setStage('Starting...')
 
         const compressedFile = await compressImage(receiptFile)
+        setFile(compressedFile)
         setPreviewUrl(URL.createObjectURL(compressedFile))
 
         reset()
@@ -60,7 +61,7 @@ export function useAnalysisFlow() {
         setIsProcessing(false)
       }
     },
-    [analyze, reset, setReceipt, setLocation, setPreviewUrl, clearPreview]
+    [analyze, reset, setReceipt, setLocation, setPreviewUrl, clearPreview, setFile]
   )
 
   return {
