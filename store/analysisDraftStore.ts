@@ -1,4 +1,4 @@
-import type { GeoLocation, ParsedReceipt } from '@types'
+import type { GeoLocation, ParsedReceipt, Place } from '@types'
 import { create } from 'zustand'
 
 function safeRevokeObjectUrl(url: string | null) {
@@ -10,6 +10,7 @@ type AnalysisDraftState = {
   file: File | null
   receipt: ParsedReceipt | null
   location: GeoLocation | null
+  place: Place | null
   previewUrl: string | null
   draftPath: string | null
   imageFile: File | null
@@ -20,7 +21,7 @@ type AnalysisDraftState = {
   setLocation: (location: GeoLocation | null) => void
   setPreviewUrl: (url: string) => void
   setDraftPath: (path: string | null) => void
-
+  setPlace: (place: Place | null) => void
   updateReceipt: (partial: Partial<ParsedReceipt>) => void
 
   // Helpers
@@ -33,6 +34,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
   file: null,
   receipt: null,
   location: null,
+  place: null,
   previewUrl: null,
   draftPath: null,
   imageFile: null,
@@ -47,6 +49,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
       return { previewUrl: url }
     }),
   setDraftPath: (draftPath) => set({ draftPath }),
+  setPlace: (place) => set({ place }),
 
   updateReceipt: (partial) =>
     set((state) => ({
