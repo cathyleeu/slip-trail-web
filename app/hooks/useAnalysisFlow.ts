@@ -2,7 +2,7 @@
 
 import { log } from '@lib/logger'
 import { useAnalysisDraftStore } from '@store'
-import { compressImage } from '@utils/imageProcessor'
+import { compressImage, toWebp } from '@utils/imageProcessor'
 import { useCallback, useState } from 'react'
 import { useAnalysisMutation } from './useAnalysisMutation'
 
@@ -27,8 +27,9 @@ export function useAnalysisFlow() {
         setStage('Starting...')
 
         const compressedFile = await compressImage(receiptFile)
-        setFile(compressedFile)
-        setPreviewUrl(URL.createObjectURL(compressedFile))
+        const webpFile = await toWebp(compressedFile)
+        setFile(webpFile)
+        setPreviewUrl(URL.createObjectURL(webpFile))
 
         reset()
 
