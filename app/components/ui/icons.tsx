@@ -113,3 +113,18 @@ export function User({ className = 'w-6 h-6', size }: IconProps) {
     </svg>
   )
 }
+
+export function Plus({ className = 'w-6 h-6', size }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+    </svg>
+  )
+}
