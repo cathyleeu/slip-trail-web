@@ -11,6 +11,7 @@ type MapProps = {
   zoom?: number
   className?: string
   style?: React.CSSProperties
+  children?: React.ReactNode
 }
 
 // Component to update map center when location changes
@@ -28,7 +29,13 @@ function MapUpdater({ center }: { center: [number, number] }) {
 
 // TODO: marker style customization: emoji, color options
 // popup content customization by props: address, custom text
-export default function Map({ location, zoom = 15, className = 'h-full w-full', style }: MapProps) {
+export default function Map({
+  location,
+  zoom = 15,
+  className = 'h-full w-full',
+  style,
+  children,
+}: MapProps) {
   // Fix for default marker icon
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,30 +62,42 @@ export default function Map({ location, zoom = 15, className = 'h-full w-full', 
     : [49.2827, -123.1207]
 
   return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      scrollWheelZoom={true}
-      className={className}
-      style={style}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapUpdater center={center} />
-      {isValidLocation && (
-        <Marker position={[location.lat, location.lng]}>
-          <Popup>
-            <div>
-              <div className="font-semibold">{location.address}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+    <>
+      <style>{`
+        .leaflet-control-zoom,
+        .leaflet-control-attribution {
+          display: none !important;
+        }
+        .spend-marker {
+          background: transparent;
+          border: none;
+        }
+      `}</style>
+      <MapContainer
+        center={center}
+        zoom={zoom}
+        scrollWheelZoom={true}
+        zoomControl={true}
+        attributionControl={true}
+        className={className}
+        style={style}
+      >
+        <TileLayer attribution="" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MapUpdater center={center} />
+        {children}
+        {isValidLocation && (
+          <Marker position={[location.lat, location.lng]}>
+            <Popup>
+              <div>
+                <div className="font-semibold">{location.address}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                </div>
               </div>
-            </div>
-          </Popup>
-        </Marker>
-      )}
-    </MapContainer>
+            </Popup>
+          </Marker>
+        )}
+      </MapContainer>
+    </>
   )
 }
