@@ -35,7 +35,7 @@ export async function GET(req: Request, { params }: Params) {
  */
 function prepareUpdateData(
   receipt?: Record<string, unknown>,
-  location?: { latitude: number; longitude: number } | null
+  location?: { lat: number; lon: number } | null
 ): Record<string, unknown> {
   const allowedFields = [
     'vendor',
@@ -55,8 +55,8 @@ function prepareUpdateData(
       ([key, value]) =>
         value !== undefined &&
         (allowedFields.includes(key as (typeof allowedFields)[number]) ||
-          key === 'latitude' ||
-          key === 'longitude')
+          key === 'lat' ||
+          key === 'lon')
     )
   )
 }
