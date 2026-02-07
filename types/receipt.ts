@@ -1,3 +1,4 @@
+import type { AddressNormalized } from './address'
 /**
  * Receipt domain types
  * Receipt parsing results and related entities
@@ -37,6 +38,7 @@ export type ReceiptCharge = {
 export interface ParsedReceipt {
   vendor: string
   address: string | null
+  address_normalized: AddressNormalized
   phone: string | null
   purchased_at: string
   items: ReceiptItem[]
