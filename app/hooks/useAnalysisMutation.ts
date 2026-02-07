@@ -2,6 +2,7 @@
 
 import { ApiError, request } from '@lib/httpFetcher'
 import { toGeoLocation, toPlace } from '@lib/location'
+import { buildAddressNormalized } from '@lib/nomalizedAddress'
 import { useMutation } from '@tanstack/react-query'
 import type {
   AnalyzeOptions,
@@ -118,7 +119,8 @@ async function analyzeRequest(
 
   onProgress?.(70, 'Finding location...')
 
-  const geo = await requestGeoCoding(parsed.receipt.address || '')
+  const normalized = buildAddressNormalized(parsed.receipt.address_normalized)
+  const geo = await requestGeoCoding(normalized.query || '')
 
   if (!geo.success) {
     return { success: false, stage: 'geocode', error: 'geocoding failed' }
