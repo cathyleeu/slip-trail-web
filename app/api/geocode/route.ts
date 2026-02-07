@@ -9,12 +9,15 @@ export async function POST(req: Request) {
 
   const url = new URL('https://nominatim.openstreetmap.org/search')
   url.searchParams.set('q', address)
-  url.searchParams.set('format', 'json')
-  url.searchParams.set('limit', '1')
+  url.searchParams.set('format', 'jsonv2')
+  url.searchParams.set('limit', '5')
+  url.searchParams.set('addressdetails', '1')
 
   const res = await fetch(url.toString(), {
     headers: {
       'User-Agent': 'SlipTrail/1.0 (https://github.com/cathyleeu/slip-trail-web)',
+      Referer: 'https://github.com/cathyleeu/slip-trail-web',
+      Accept: 'application/json',
     },
   })
 
