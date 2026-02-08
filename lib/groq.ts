@@ -14,8 +14,10 @@ export async function parseReceipt(text: string) {
     • Always include every key in the required schema.
     • If a value is missing or unclear, use null (except charges.amount; see charges rules).
     • Preserve the original OCR text under "raw_text" EXACTLY as provided.
+    • raw_text MUST be the exact text between RAW_TEXT_START and RAW_TEXT_END below.
     • raw_text must be a STRING value, never a JSON key.
     • Do NOT add/remove/reorder/normalize/pretty-print raw_text.
+    • Do NOT make raw_text empty if any OCR text exists.
 
     GENERAL PARSING PRINCIPLES:
     • Prefer explicit information on the receipt over inference.
@@ -248,10 +250,9 @@ export async function parseReceipt(text: string) {
       "raw_text": string
     }
 
-    Receipt OCR Text:
-    """
+    RAW_TEXT_START
     ${text}
-    """
+    RAW_TEXT_END
     `
 
   const completion = await groq.chat.completions.create({
