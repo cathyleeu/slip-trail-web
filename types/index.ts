@@ -4,6 +4,7 @@ export type * from './http'
 export type * from './profile'
 
 // Domain-based types (refactored from receiptAnalysis)
+export type * from './address'
 export type * from './analysis'
 export type * from './chart'
 export type * from './image'

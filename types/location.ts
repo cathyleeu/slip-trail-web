@@ -3,11 +3,28 @@
  * Nominatim OSM API, Leaflet map rendering
  */
 
+export type { AddressComponents, AddressNormalized, AddressQuality } from './address'
+
+export type NominatimAddress = {
+  amenity?: string
+  house_number?: string
+  road?: string
+  neighbourhood?: string
+  suburb?: string
+  city?: string
+  county?: string
+  state?: string
+  postcode?: string
+  country?: string
+  country_code?: string
+}
 /**
  * Nominatim OSM API raw response
  */
 export type NominatimResponse = {
+  address: NominatimAddress
   addresstype: string
+  category: string
   place_id: number
   licence: string
   osm_type: string
@@ -68,4 +85,8 @@ export type Place = {
   normalized_address?: string | null
   lat: number
   lon: number
+  category: string | null
+  components: NominatimAddress | null
+  addresstype: string | null
+  type: string | null
 }

@@ -1,3 +1,8 @@
+/**
+ * Address normalization types
+ * OCR → normalized address for geocoding
+ */
+
 export type AddressQuality = 'high' | 'medium' | 'low'
 
 export type AddressComponents = {
