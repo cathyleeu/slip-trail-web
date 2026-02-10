@@ -47,9 +47,10 @@ export default function HomePage() {
         {/* Spend Summary */}
         <section className="text-center pt-6">
           <div className="text-6xl font-bold text-gray-900">
-            {summary ? money(summary.total_spent) : '$0'}
+            {summary ? money(summary.total_spent) : '$0.00'}
           </div>
           <div className="text-sm text-gray-400 mt-3">last 30 days</div>
+          {!summary && <div className="mt-3 text-sm text-gray-400">No spending data yet</div>}
         </section>
 
         {/* Insight */}
@@ -73,6 +74,12 @@ export default function HomePage() {
               </span>
             </div>
           )}
+
+          {!mostFrequentArea && !biggestLeak && (
+            <div className="rounded-xl bg-white border border-gray-100 px-4 py-3 text-sm text-gray-400">
+              Insights will appear after you add a few receipts.
+            </div>
+          )}
         </section>
 
         {/* Scan/Upload Button */}
@@ -94,27 +101,38 @@ export default function HomePage() {
         {/* Map Preview - recent places */}
         <section>
           <div className="h-52 rounded-2xl overflow-hidden shadow-sm relative bg-white">
-            <MapPreview zoom={12} className="h-full">
-              {recentPlaces.length > 0 && recentPlaces[0] && (
-                <DynamicSpendMarker
-                  key={recentPlaces[0].place_id}
-                  position={[recentPlaces[0].lat, recentPlaces[0].lon]}
-                  amount={money(recentPlaces[0].total)}
-                  color="bg-blue-400"
-                />
-              )}
-            </MapPreview>
+            {recentPlaces.length === 0 ? (
+              <div className="h-full w-full flex flex-col items-center justify-center text-center bg-neutral-50">
+                <div className="text-sm text-gray-400">No places yet</div>
+                <div className="mt-1 text-xs text-gray-400">
+                  Scan a receipt to see your spend map
+                </div>
+              </div>
+            ) : (
+              <>
+                <MapPreview zoom={12} className="h-full">
+                  {recentPlaces[0] && (
+                    <DynamicSpendMarker
+                      key={recentPlaces[0].place_id}
+                      position={[recentPlaces[0].lat, recentPlaces[0].lon]}
+                      amount={money(recentPlaces[0].total)}
+                      color="bg-blue-400"
+                    />
+                  )}
+                </MapPreview>
 
-            {/* Floating button on map */}
-            <Link
-              href="/map"
-              className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
-            >
-              <span className="text-sm font-medium text-gray-700">View spend map</span>
-              <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
-                →
-              </span>
-            </Link>
+                {/* Floating button on map */}
+                <Link
+                  href="/map"
+                  className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
+                >
+                  <span className="text-sm font-medium text-gray-700">View spend map</span>
+                  <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
+                    →
+                  </span>
+                </Link>
+              </>
+            )}
           </div>
         </section>
       </div>
