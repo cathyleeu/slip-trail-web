@@ -25,6 +25,7 @@ export default function HomePage() {
   const { data: topPlaces = [] } = useDashboardTopPlaces('last30')
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
   const { data: mom } = useDashboardMoM()
+  const recentPlace = recentPlaces[0]
 
   // most frequent area
   const mostFrequentArea = useMemo(() => {
@@ -110,12 +111,26 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                <MapPreview zoom={12} className="h-full">
-                  {recentPlaces[0] && (
+                <MapPreview
+                  zoom={12}
+                  className="h-full"
+                  showDefaultMarker={false}
+                  location={
+                    recentPlace
+                      ? {
+                          lat: recentPlace.lat,
+                          lon: recentPlace.lon,
+                          address: recentPlace.place_name,
+                          displayName: recentPlace.place_name,
+                        }
+                      : null
+                  }
+                >
+                  {recentPlace && (
                     <DynamicSpendMarker
-                      key={recentPlaces[0].place_id}
-                      position={[recentPlaces[0].lat, recentPlaces[0].lon]}
-                      amount={money(recentPlaces[0].total)}
+                      key={recentPlace.place_id}
+                      position={[recentPlace.lat, recentPlace.lon]}
+                      amount={money(recentPlace.total)}
                       color="bg-blue-400"
                     />
                   )}
