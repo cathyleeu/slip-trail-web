@@ -1,3 +1,4 @@
+export * from './CategoryPieChart'
 export * from './MoMWidget'
 export * from './RecentPlacesWidget'
 export * from './SpendChart'
