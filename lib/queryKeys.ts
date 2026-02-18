@@ -12,6 +12,8 @@ export const queryKeys = {
     spendSeries: (period: string) => [...queryKeys.dashboard.all, 'spend-series', period] as const,
     topPlaces: (period: string) => [...queryKeys.dashboard.all, 'top-places', period] as const,
     recentPlaces: () => [...queryKeys.dashboard.all, 'recent-places'] as const,
+    categoryBreakdown: (period: string) =>
+      [...queryKeys.dashboard.all, 'category-breakdown', period] as const,
   },
 
   // Receipt queries
