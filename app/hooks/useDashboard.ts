@@ -45,6 +45,11 @@ type RecentPlace = {
   place_id: string
 }
 
+type CategorySlice = {
+  category: string
+  total: number
+}
+
 // ============ Dashboard Summary ============
 export function useDashboardSummary(
   period: Period = 'last30',
@@ -124,6 +129,23 @@ export function useDashboardRecentPlaces(
       })
     },
     staleTime: 1000 * 60 * 2, // 2분 - 최근 장소는 자주 업데이트됨
+    ...options,
+  })
+}
+
+// ============ Dashboard Category Breakdown =========
+export function useDashboardCategoryBreakdown(
+  period: Period = 'last30',
+  options?: Omit<UseQueryOptions<CategorySlice[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: queryKeys.dashboard.categoryBreakdown(period),
+    queryFn: async () => {
+      return request<CategorySlice[]>(`/api/dashboard/category-breakdown?period=${period}`, {
+        unwrapApiSuccess: true,
+      })
+    },
+    staleTime: 1000 * 60 * 3, // 3분
     ...options,
   })
 }
