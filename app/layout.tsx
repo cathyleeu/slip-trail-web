@@ -29,7 +29,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ReactQueryProvider>
           <AuthProvider>
-            <div className="min-h-screen mx-auto max-w-[430px] w-full bg-white">{children}</div>
+            <div className="min-h-screen mx-auto max-w-[430px] w-full bg-white relative">
+              {children}
+            </div>
           </AuthProvider>
         </ReactQueryProvider>
       </body>
