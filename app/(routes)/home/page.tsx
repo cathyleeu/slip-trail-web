@@ -1,7 +1,9 @@
 'use client'
 
-import CategoryPieChart from '@components/dashboard/CategoryPieChart'
-import { Plus } from '@components/ui/icons'
+import CategoryBarChart from '@components/dashboard/CategoryBarChart'
+import { Card } from '@components/ui'
+import { Camera, Upload } from '@components/ui/icons'
+import { useTab } from '@hooks'
 import {
   useDashboardCategoryBreakdown,
   useDashboardMoM,
@@ -9,6 +11,7 @@ import {
   useDashboardSummary,
   useDashboardTopPlaces,
 } from '@hooks/useDashboard'
+import type { Period } from '@types'
 import { money } from '@utils'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -22,12 +25,18 @@ const MapPreview = dynamic(() => import('@components/map'), {
 
 const DynamicSpendMarker = dynamic(() => import('@components/map/SpendMarker'), { ssr: false })
 
+const PERIOD_TABS: { value: Period; label: string }[] = [
+  { value: 'last7', label: '7 days' },
+  { value: 'last30', label: '30 days' },
+]
+
 export default function HomePage() {
-  const { data: summary } = useDashboardSummary('last30')
-  const { data: topPlaces = [] } = useDashboardTopPlaces('last30')
+  const { value: period, setValue: setPeriod } = useTab<Period>(PERIOD_TABS, 'last7')
+  const { data: summary } = useDashboardSummary(period)
+  const { data: topPlaces = [] } = useDashboardTopPlaces(period)
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
   const { data: mom } = useDashboardMoM()
-  const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown('last30')
+  const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown(period)
   const recentPlace = recentPlaces[0]
   const hasCategoryData = categoryBreakdown.some((item) => item.total > 0)
 
@@ -46,56 +55,74 @@ export default function HomePage() {
     }
   }, [mom])
 
+  const togglePeriod = () => setPeriod(period === 'last7' ? 'last30' : 'last7')
+
+  const periodLabel = period === 'last7' ? 'last 7 days' : 'last 30 days'
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="px-6 py-8 space-y-8">
-        {/* Spend Summary */}
-        <section className="text-center pt-6">
-          <div className="text-6xl font-bold text-gray-900">
-            {summary ? money(summary.total_spent) : '$0.00'}
-          </div>
-          <div className="text-sm text-gray-400 mt-3">last 30 days</div>
-          {!summary && <div className="mt-3 text-sm text-gray-400">No spending data yet</div>}
-        </section>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-6 py-8 pb-28 space-y-8">
+          {/* Spend Summary Card */}
+          <Card className="relative px-7 py-7 pt-6">
+            {/* Period toggle chip */}
+            <button
+              type="button"
+              onClick={togglePeriod}
+              className="absolute top-5 right-5 px-4 py-1.5 rounded-xl bg-white backdrop-blur-sm text-sm font-medium text-gray-600 active:scale-95 transition-all shadow-sm"
+            >
+              {period === 'last7' ? 'Month' : 'Week'}
+            </button>
 
-        {/* Insight */}
-        <section className="space-y-2.5 px-2">
-          {mostFrequentArea && (
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl">📍</span>
-              <span className="text-sm text-gray-500">
-                Most frequent area:{' '}
-                <span className="font-semibold text-gray-900">{mostFrequentArea.place_name}</span>
-              </span>
+            <div className="text-sm text-gray-400 mb-2">
+              {period === 'last7' ? 'This week' : 'This month'}
             </div>
-          )}
-
-          {biggestLeak && (
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl">☕</span>
-              <span className="text-sm text-gray-500">
-                Biggest leak:{' '}
-                <span className="font-semibold text-gray-900">{biggestLeak.name}</span>
-              </span>
+            <div className="text-5xl font-bold text-gray-900 tracking-tight">
+              {summary ? money(summary.total_spent) : '$0.00'}
             </div>
-          )}
+            {summary ? (
+              <div className="mt-3 text-base text-gray-500">
+                <span className="font-semibold text-gray-900">{summary.receipt_count}</span>{' '}
+                receipts
+              </div>
+            ) : (
+              <div className="mt-3 text-sm text-gray-400">No spending data yet</div>
+            )}
+          </Card>
 
-          {!mostFrequentArea && !biggestLeak && (
-            <div className="rounded-xl bg-white border border-gray-100 px-4 py-3 text-sm text-gray-400">
-              Insights will appear after you add a few receipts.
-            </div>
-          )}
-        </section>
+          {/* Insight */}
+          <Card className="space-y-2.5 px-2">
+            {mostFrequentArea && (
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">📍</span>
+                <span className="text-sm text-gray-500">
+                  Most frequent area:{' '}
+                  <span className="font-semibold text-gray-900">{mostFrequentArea.place_name}</span>
+                </span>
+              </div>
+            )}
 
-        {/* Category Breakdown */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between px-2">
-            <div className="text-sm font-semibold text-gray-900">Spending by category</div>
-            <div className="text-xs text-gray-400">last 30 days</div>
-          </div>
-          <div className="rounded-2xl bg-white shadow-sm p-4">
+            {biggestLeak && (
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">☕</span>
+                <span className="text-sm text-gray-500">
+                  Biggest leak:{' '}
+                  <span className="font-semibold text-gray-900">{biggestLeak.name}</span>
+                </span>
+              </div>
+            )}
+
+            {!mostFrequentArea && !biggestLeak && (
+              <p className="px-4 py-3 text-sm text-gray-400">
+                Your spending story starts with one receipt.
+              </p>
+            )}
+          </Card>
+
+          {/* Category Breakdown */}
+          <Card className="p-5">
             {hasCategoryData ? (
-              <CategoryPieChart items={categoryBreakdown} />
+              <CategoryBarChart items={categoryBreakdown} />
             ) : (
               <div className="h-40 flex flex-col items-center justify-center text-center">
                 <div className="text-sm text-gray-400">No category data yet</div>
@@ -104,76 +131,82 @@ export default function HomePage() {
                 </div>
               </div>
             )}
-          </div>
-        </section>
+          </Card>
 
-        {/* Scan/Upload Button */}
-        <section className="flex flex-col items-center py-10">
-          <Link
-            href="/camera"
-            className="relative w-28 h-28 rounded-full bg-white shadow-md flex items-center justify-center hover:shadow-lg transition-all active:scale-95 group"
-          >
-            <Plus className="w-8 h-8 text-gray-300 group-hover:text-gray-400 transition-colors" />
-          </Link>
-          <Link
-            href="/upload"
-            className="mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors inline-block"
-          >
-            or upload
-          </Link>
-        </section>
-
-        {/* Map Preview - recent places */}
-        <section>
-          <div className="h-52 rounded-2xl overflow-hidden shadow-sm relative bg-white">
-            {recentPlaces.length === 0 ? (
-              <div className="h-full w-full flex flex-col items-center justify-center text-center bg-neutral-50">
-                <div className="text-sm text-gray-400">No places yet</div>
-                <div className="mt-1 text-xs text-gray-400">
-                  Scan a receipt to see your spend map
+          {/* Map Preview - recent places */}
+          <section>
+            <Card className="h-52 overflow-hidden relative">
+              {recentPlaces.length === 0 ? (
+                <div className="h-full w-full flex flex-col items-center justify-center text-center bg-neutral-50">
+                  <div className="text-sm text-gray-400">No places yet</div>
+                  <div className="mt-1 text-xs text-gray-400">
+                    Scan a receipt to see your spend map
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <MapPreview
-                  zoom={12}
-                  className="h-full"
-                  showDefaultMarker={false}
-                  location={
-                    recentPlace
-                      ? {
-                          lat: recentPlace.lat,
-                          lon: recentPlace.lon,
-                          address: recentPlace.place_name,
-                          displayName: recentPlace.place_name,
-                        }
-                      : null
-                  }
-                >
-                  {recentPlace && (
-                    <DynamicSpendMarker
-                      key={recentPlace.place_id}
-                      position={[recentPlace.lat, recentPlace.lon]}
-                      amount={money(recentPlace.total)}
-                      color="bg-blue-400"
-                    />
-                  )}
-                </MapPreview>
+              ) : (
+                <>
+                  <MapPreview
+                    zoom={12}
+                    className="h-full"
+                    showDefaultMarker={false}
+                    location={
+                      recentPlace
+                        ? {
+                            lat: recentPlace.lat,
+                            lon: recentPlace.lon,
+                            address: recentPlace.place_name,
+                            displayName: recentPlace.place_name,
+                          }
+                        : null
+                    }
+                  >
+                    {recentPlace && (
+                      <DynamicSpendMarker
+                        key={recentPlace.place_id}
+                        position={[recentPlace.lat, recentPlace.lon]}
+                        amount={money(recentPlace.total)}
+                        color="bg-blue-400"
+                      />
+                    )}
+                  </MapPreview>
 
-                {/* Floating button on map */}
-                <Link
-                  href="/map"
-                  className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
-                >
-                  <span className="text-sm font-medium text-gray-700">View spend map</span>
-                  <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
-                    →
-                  </span>
-                </Link>
-              </>
-            )}
+                  {/* Floating button on map */}
+                  <Link
+                    href="/map"
+                    className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
+                  >
+                    <span className="text-sm font-medium text-gray-700">View spend map</span>
+                    <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
+                      →
+                    </span>
+                  </Link>
+                </>
+              )}
+            </Card>
+          </section>
+        </div>
+      </div>
+
+      {/* CTA — always pinned to bottom of viewport, centered within max-width */}
+      <div className="px-6 pb-6 pt-3 flex items-center gap-3 fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-1000">
+        <Link
+          href="/camera"
+          className="flex-1 flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-5 py-4 active:scale-[0.98] transition-all shadow-lg"
+        >
+          <Camera className="w-5 h-5 shrink-0 text-gray-400" />
+          <div className="flex flex-col">
+            <span className="text-[11px] text-gray-400 leading-tight">
+              What did today cost you?
+            </span>
+            <span className="text-base font-semibold leading-tight">Scan receipt</span>
           </div>
-        </section>
+        </Link>
+        <Link
+          href="/upload"
+          className="w-14 h-14 flex items-center justify-center bg-white rounded-2xl shadow-md active:scale-95 transition-all shrink-0"
+        >
+          <Upload className="w-5 h-5 text-gray-500" />
+        </Link>
       </div>
     </div>
   )
