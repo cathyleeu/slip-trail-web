@@ -57,6 +57,7 @@ export const ERROR_MESSAGES = {
   FAILED_TO_LOAD_MOM: 'Failed to load MoM',
   FAILED_TO_LOAD_TOP_PLACES: 'Failed to load top places',
   FAILED_TO_LOAD_RECENT_PLACES: 'Failed to load recent places',
+  FAILED_TO_LOAD_CATEGORY_BREAKDOWN: 'Failed to load category breakdown',
 } as const
 
 // ============ Success Messages ============
