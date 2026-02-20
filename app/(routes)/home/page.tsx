@@ -1,7 +1,9 @@
 'use client'
 
+import CategoryPieChart from '@components/dashboard/CategoryPieChart'
 import { Plus } from '@components/ui/icons'
 import {
+  useDashboardCategoryBreakdown,
   useDashboardMoM,
   useDashboardRecentPlaces,
   useDashboardSummary,
@@ -25,7 +27,9 @@ export default function HomePage() {
   const { data: topPlaces = [] } = useDashboardTopPlaces('last30')
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
   const { data: mom } = useDashboardMoM()
+  const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown('last30')
   const recentPlace = recentPlaces[0]
+  const hasCategoryData = categoryBreakdown.some((item) => item.total > 0)
 
   // most frequent area
   const mostFrequentArea = useMemo(() => {
@@ -81,6 +85,26 @@ export default function HomePage() {
               Insights will appear after you add a few receipts.
             </div>
           )}
+        </section>
+
+        {/* Category Breakdown */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-2">
+            <div className="text-sm font-semibold text-gray-900">Spending by category</div>
+            <div className="text-xs text-gray-400">last 30 days</div>
+          </div>
+          <div className="rounded-2xl bg-white shadow-sm p-4">
+            {hasCategoryData ? (
+              <CategoryPieChart items={categoryBreakdown} />
+            ) : (
+              <div className="h-40 flex flex-col items-center justify-center text-center">
+                <div className="text-sm text-gray-400">No category data yet</div>
+                <div className="mt-1 text-xs text-gray-400">
+                  Add receipts to see your spending breakdown
+                </div>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Scan/Upload Button */}
