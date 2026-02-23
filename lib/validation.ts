@@ -20,6 +20,19 @@ export const receiptChargeSchema = z.object({
 })
 
 /**
+ * Feeling tag for purchase sentiment tracking
+ */
+export const feelingTagSchema = z.enum([
+  'Necessary',
+  'Impulsive',
+  'Social',
+  'Treat',
+  'Routine',
+  'Stress',
+  'Celebration',
+])
+
+/**
  * Schema for parsed receipt data
  */
 export const parsedReceiptSchema = z.object({
@@ -33,6 +46,8 @@ export const parsedReceiptSchema = z.object({
   raw_text: z.string().optional(),
   items: z.array(receiptItemSchema).optional(),
   charges: z.array(receiptChargeSchema).optional(),
+  feeling: feelingTagSchema.nullable().optional(),
+  memo: z.string().nullable().optional(),
 })
 
 // ============ Location Schemas ============
