@@ -14,11 +14,25 @@ import { useEffect, useState } from 'react'
 // Dynamically import Map component to prevent SSR issues
 const Map = dynamic(() => import('@components/map'), { ssr: false })
 
+const FEELING_TAGS = [
+  'Necessary',
+  'Impulsive',
+  'Social',
+  'Treat',
+  'Routine',
+  'Stress',
+  'Celebration',
+] as const
+
+type FeelingTag = (typeof FEELING_TAGS)[number]
+
 export default function ResultPage() {
   const router = useRouter()
   const { location, receipt, setReceipt, file, place } = useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
+  const [selectedFeeling, setSelectedFeeling] = useState<FeelingTag | null>(null)
+  const [memo, setMemo] = useState('')
 
   // TODO: add tip section
 
@@ -88,6 +102,8 @@ export default function ResultPage() {
 
       const receiptPayload = {
         ...receipt,
+        feeling: selectedFeeling,
+        memo: memo.trim() || null,
         items: receipt.items?.map((item) => ({
           name: item.name,
           quantity: item.quantity,
@@ -288,6 +304,43 @@ export default function ResultPage() {
           <span className="text-2xl font-bold text-blue-600">
             ${receipt.total ? receipt.total.toFixed(2) : '0.00'}
           </span>
+        </div>
+      </motion.div>
+
+      {/* Feeling Tags */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-2xl shadow-sm p-6 space-y-4"
+      >
+        <h3 className="text-sm font-semibold text-gray-700">How did this purchase feel?</h3>
+        <div className="flex flex-wrap gap-2">
+          {FEELING_TAGS.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedFeeling(selectedFeeling === tag ? null : tag)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+                selectedFeeling === tag
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+
+        {/* Memo */}
+        <div className="pt-2">
+          <textarea
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+            placeholder="Add a note about this purchase..."
+            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows={2}
+          />
         </div>
       </motion.div>
 
