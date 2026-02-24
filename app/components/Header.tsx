@@ -1,8 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { IconButton } from './IconButton'
-import { ChevronLeftIcon } from './icons'
+import { ChevronLeftIcon, IconButton } from './ui'
 
 type HeaderProps = {
   title: string
