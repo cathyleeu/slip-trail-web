@@ -3,25 +3,40 @@
 import { cn } from '@utils/cn'
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
-export type ButtonVariant = 'filled' | 'outlined' | 'ghost'
+export type ButtonVariant = 'filled' | 'outlined' | 'ghost' | 'tag'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
   fullWidth?: boolean
+  selected?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'filled', size = 'md', fullWidth = false, children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = 'filled',
+      size = 'md',
+      fullWidth = false,
+      selected = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const baseStyles =
-      'font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+      'font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantStyles = {
-      filled: 'bg-blue-500 text-white hover:bg-blue-600 disabled:hover:bg-blue-500',
+      filled: 'rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:hover:bg-blue-500',
       outlined:
-        'border-2 border-blue-500 text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
-      ghost: 'text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
+        'rounded-lg border-2 border-blue-500 text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
+      ghost: 'rounded-lg text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
+      tag: selected
+        ? 'rounded-full bg-blue-600 text-white'
+        : 'rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200',
     }
 
     const sizeStyles = {
