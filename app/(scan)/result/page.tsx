@@ -1,7 +1,6 @@
 'use client'
 
-import { IconButton } from '@components/IconButton'
-import { Button } from '@components/ui'
+import { Button, IconButton } from '@components/ui'
 import { Plus, Trash } from '@components/ui/icons'
 import { useAnalysisDraftStore } from '@store'
 import { cn } from '@utils/cn'
