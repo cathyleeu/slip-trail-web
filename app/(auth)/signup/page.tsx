@@ -2,7 +2,7 @@
 
 import { Divider } from '@components/Divider'
 import { InputField } from '@components/InputField'
-import { AppleIcon, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/icons'
+import { AppleIcon, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
