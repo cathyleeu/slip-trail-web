@@ -1,11 +1,11 @@
 'use client'
 
 import { ProcessingDialog } from '@components'
+import { Button } from '@components/ui'
 import { Close } from '@components/ui/icons'
 import { useAnalysisFlow, useCamera } from '@hooks'
 import { useAnalysisDraftStore } from '@store'
 import { toWebp } from '@utils/imageProcessor'
-import { motion } from 'motion/react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -58,12 +58,13 @@ export default function CameraPage() {
     <div className="flex flex-col h-screen bg-black relative">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => router.back()}
-          className="w-10 h-10 flex items-center justify-center text-white"
+          className="w-10 h-10 flex items-center justify-center text-white p-0 hover:bg-white/10"
         >
           <Close className="w-6 h-6" />
-        </button>
+        </Button>
         <div className="text-white text-sm font-medium">SCAN RECEIPT</div>
         <div className="w-10" />
       </div>
@@ -94,27 +95,27 @@ export default function CameraPage() {
         <div className="flex justify-center items-center gap-6">
           {showRetake ? (
             <>
-              <motion.button
+              <Button
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRetake}
-                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white rounded-full font-medium"
+                className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white rounded-full"
               >
                 Retake
-              </motion.button>
-              <motion.button
+              </Button>
+              <Button
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAnalyze}
                 disabled={isProcessing}
-                className="px-8 py-3 bg-blue-500 text-white rounded-full font-medium disabled:opacity-50"
+                className="px-8 py-3 rounded-full"
               >
                 {isProcessing ? 'Processing...' : 'Continue'}
-              </motion.button>
+              </Button>
             </>
           ) : (
-            <motion.button
+            <Button
               whileTap={{ scale: 0.95 }}
               onClick={takePhoto}
-              className="w-20 h-20 rounded-full bg-white border-4 border-blue-500 shadow-lg"
+              className="w-20 h-20 rounded-full bg-white border-4 border-blue-500 shadow-lg p-0"
             />
           )}
         </div>
