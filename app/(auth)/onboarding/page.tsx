@@ -1,5 +1,6 @@
 'use client'
 
+import { Check, ChevronRight, LocationPinFilled } from '@components/ui/icons'
 import { cn } from '@utils/cn'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -29,26 +30,14 @@ const onboardingSlides = [
               {/* Location Pins */}
               <div className="absolute top-8 left-12 transform -translate-y-full">
                 <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center shadow-lg">
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <LocationPinFilled className="w-5 h-5 text-white" />
                 </div>
                 <div className="w-0.5 h-12 bg-orange-400/60 mx-auto" />
               </div>
 
               <div className="absolute top-12 right-16 transform -translate-y-full">
                 <div className="w-6 h-6 bg-orange-300 rounded-full flex items-center justify-center shadow-lg">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <LocationPinFilled className="w-4 h-4 text-white" />
                 </div>
                 <div className="w-0.5 h-8 bg-orange-300/60 mx-auto" />
               </div>
@@ -64,19 +53,7 @@ const onboardingSlides = [
               {/* Price Badge */}
               <div className="absolute bottom-4 right-4 bg-white rounded-full px-4 py-2 shadow-xl flex items-center gap-2">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  <Check className="w-4 h-4 text-white" />
                 </div>
                 <div className="text-sm font-bold text-gray-800">
                   <div className="text-xs text-gray-500">SAVED</div>
@@ -160,9 +137,7 @@ export default function OnboardingPage() {
           className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
         >
           Get Started
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRight className="w-5 h-5" />
         </motion.button>
       </div>
     </div>

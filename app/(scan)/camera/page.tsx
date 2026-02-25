@@ -1,6 +1,7 @@
 'use client'
 
 import { ProcessingDialog } from '@components'
+import { Close } from '@components/ui/icons'
 import { useAnalysisFlow, useCamera } from '@hooks'
 import { useAnalysisDraftStore } from '@store'
 import { toWebp } from '@utils/imageProcessor'
@@ -61,14 +62,7 @@ export default function CameraPage() {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center text-white"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <Close className="w-6 h-6" />
         </button>
         <div className="text-white text-sm font-medium">SCAN RECEIPT</div>
         <div className="w-10" />
