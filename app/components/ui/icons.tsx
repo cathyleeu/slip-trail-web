@@ -300,3 +300,60 @@ export function GoogleIcon({ className = 'w-5 h-5', size }: IconProps) {
     </svg>
   )
 }
+
+export function LocationPinFilled({ className = 'w-5 h-5', size }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} fill="currentColor" viewBox="0 0 20 20">
+      <path
+        fillRule="evenodd"
+        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+export function Check({ className = 'w-4 h-4', size }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+export function ChevronRight({ className = 'w-5 h-5', size }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  )
+}
+
+export function Close({ className = 'w-6 h-6', size }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+}
