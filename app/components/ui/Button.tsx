@@ -1,12 +1,13 @@
 'use client'
 
 import { cn } from '@utils/cn'
-import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { motion, type HTMLMotionProps } from 'motion/react'
+import { forwardRef } from 'react'
 
 export type ButtonVariant = 'filled' | 'outlined' | 'ghost' | 'tag'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends HTMLMotionProps<'button'> {
   variant?: ButtonVariant
   size?: ButtonSize
   fullWidth?: boolean
@@ -22,6 +23,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth = false,
       selected = false,
       children,
+      whileTap = undefined,
       ...props
     },
     ref
@@ -46,8 +48,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     return (
-      <button
+      <motion.button
         ref={ref}
+        whileTap={whileTap}
         className={cn(
           baseStyles,
           variantStyles[variant],
@@ -58,7 +61,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
-      </button>
+      </motion.button>
     )
   }
 )
