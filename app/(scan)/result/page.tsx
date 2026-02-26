@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, IconButton } from '@components/ui'
+import { Button, Card, IconButton } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
 import { useAnalysisDraftStore } from '@store'
 import { ChargeType } from '@types'
@@ -220,22 +220,13 @@ export default function ResultPage() {
     <div className="h-full overflow-auto p-4 space-y-4 flex-1 flex flex-col">
       {/* Map */}
       {location && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl shadow-sm overflow-hidden"
-        >
+        <Card>
           <Map location={location} zoom={16} className="h-64 w-full" />
-        </motion.div>
+        </Card>
       )}
 
       {/* Receipt Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-sm p-6 space-y-4"
-      >
+      <Card className="p-6 space-y-4">
         {/* Vendor Info */}
         <div>
           <h2 className="text-xl font-bold text-gray-900">{receipt.vendor}</h2>
@@ -390,15 +381,10 @@ export default function ResultPage() {
             ${receipt.total ? receipt.total.toFixed(2) : '0.00'}
           </span>
         </div>
-      </motion.div>
+      </Card>
 
       {/* Feeling Tags */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-2xl shadow-sm p-6 space-y-4"
-      >
+      <Card className="p-6 space-y-4">
         <h3 className="text-sm font-semibold text-gray-700">How did this purchase feel?</h3>
         <div className="flex flex-wrap gap-2">
           {FEELING_TAGS.map((tag) => (
@@ -424,7 +410,7 @@ export default function ResultPage() {
             rows={2}
           />
         </div>
-      </motion.div>
+      </Card>
 
       {/* Bottom Actions */}
       <div className="grid grid-cols-2 gap-4">
