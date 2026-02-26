@@ -12,8 +12,8 @@ export default function ScanLayout({ children }: { children: React.ReactNode }) 
   }
 
   const getHeaderTitle = () => {
-    if (pathname === '/result') return '영수증 확인'
-    if (pathname === '/upload') return '영수증 업로드'
+    if (pathname === '/result') return 'Receipt Review'
+    if (pathname === '/upload') return 'Upload Receipt'
     return 'Slip Trail'
   }
 
