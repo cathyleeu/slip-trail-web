@@ -3,6 +3,7 @@
 import { Button, IconButton } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
 import { useAnalysisDraftStore } from '@store'
+import { ChargeType } from '@types'
 import { cn } from '@utils/cn'
 import { formatDateTime, normalizeNumberInput } from '@utils/format'
 import { motion } from 'motion/react'
@@ -83,6 +84,50 @@ export default function ResultPage() {
 
     const updatedItems = [...receipt.items, newItem]
     setReceipt({ ...receipt, items: updatedItems })
+  }
+
+  const handleEditCharge = (index: number, field: 'type' | 'amount', value: string) => {
+    if (!receipt?.charges) return
+
+    const updatedCharges = [...receipt.charges]
+    if (field === 'amount') {
+      const numValue = parseFloat(value) || 0
+      updatedCharges[index] = { ...updatedCharges[index], [field]: numValue }
+    } else {
+      updatedCharges[index] = { ...updatedCharges[index], [field]: value as ChargeType }
+    }
+
+    // Recalculate total
+    const itemsTotal =
+      receipt.items?.reduce((sum, item) => sum + item.quantity * item.price, 0) || 0
+    const chargesTotal = updatedCharges.reduce((sum, charge) => sum + charge.amount, 0)
+    const newTotal = itemsTotal + chargesTotal
+
+    setReceipt({ ...receipt, charges: updatedCharges, total: newTotal })
+  }
+
+  const handleDeleteCharge = (index: number) => {
+    if (!receipt?.charges) return
+    const updatedCharges = receipt.charges.filter((_, idx) => idx !== index)
+
+    // Recalculate total after deletion
+    const itemsTotal =
+      receipt.items?.reduce((sum, item) => sum + item.quantity * item.price, 0) || 0
+    const chargesTotal = updatedCharges.reduce((sum, charge) => sum + charge.amount, 0)
+    const newTotal = itemsTotal + chargesTotal
+
+    setReceipt({ ...receipt, charges: updatedCharges, total: newTotal })
+  }
+
+  const handleAddCharge = () => {
+    const newCharge = {
+      type: ChargeType.TAX,
+      label: '',
+      amount: 0,
+    }
+
+    const updatedCharges = [...(receipt?.charges || []), newCharge]
+    setReceipt({ ...receipt!, charges: updatedCharges })
   }
 
   const handleSave = async () => {
@@ -279,12 +324,60 @@ export default function ResultPage() {
 
         {/* Charges */}
         {/* TODO: show details ex PST, GST */}
-        {receipt.charges && receipt.charges.length > 0 && (
+        {((receipt.charges && receipt.charges.length > 0) || isEditMode) && (
           <div className="border-t border-gray-100 pt-3 space-y-2">
-            {receipt.charges.map((charge, idx) => (
-              <div key={idx} className="flex justify-between text-sm">
-                <span className="text-gray-600 capitalize">{charge.type}</span>
-                <span className="text-gray-900">${charge.amount.toFixed(2)}</span>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-700">Charges</h3>
+              {isEditMode && (
+                <Button
+                  variant="ghost"
+                  onClick={handleAddCharge}
+                  className="text-xs font-medium flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Charge
+                </Button>
+              )}
+            </div>
+            {receipt.charges?.map((charge, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm">
+                {isEditMode ? (
+                  <>
+                    <select
+                      value={charge.type}
+                      onChange={(e) => handleEditCharge(idx, 'type', e.target.value)}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded capitalize"
+                    >
+                      {Object.values(ChargeType).map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      value={charge.amount}
+                      onChange={(e) =>
+                        handleEditCharge(idx, 'amount', normalizeNumberInput(e.target.value))
+                      }
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                      step="0.01"
+                      min="0"
+                    />
+                    <IconButton
+                      onClick={() => handleDeleteCharge(idx)}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      aria-label="Delete charge"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </IconButton>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-1 text-gray-600 capitalize">{charge.type}</span>
+                    <span className="text-gray-900">${charge.amount.toFixed(2)}</span>
+                  </>
+                )}
               </div>
             ))}
           </div>
