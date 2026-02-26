@@ -37,13 +37,13 @@ export const feelingTagSchema = z.enum([
  */
 export const parsedReceiptSchema = z.object({
   vendor: z.string(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  purchased_at: z.string().optional(), // ISO date string
+  address: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  purchased_at: z.string().nullable().optional(), // ISO date string
   currency: z.string().default('CAD'),
-  subtotal: z.number().optional(),
+  subtotal: z.number().nullable().optional(),
   total: z.number(),
-  raw_text: z.string().optional(),
+  raw_text: z.string().nullable().optional(),
   items: z.array(receiptItemSchema).optional(),
   charges: z.array(receiptChargeSchema).optional(),
   feeling: feelingTagSchema.nullable().optional(),
