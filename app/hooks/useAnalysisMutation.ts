@@ -120,23 +120,22 @@ async function analyzeRequest(
   onProgress?.(70, 'Finding location...')
 
   const normalized = buildAddressNormalized(parsed.receipt.address_normalized)
-  const geo = await requestGeoCoding(normalized.query || '')
-
-  if (!geo.success) {
-    return { success: false, stage: 'geocode', error: 'geocoding failed' }
-  }
+  const geo = normalized.query ? await requestGeoCoding(normalized.query) : null
 
   onProgress?.(100, 'Complete!')
 
+  // Geocoding 실패해도 성공으로 처리 (location은 null)
   return {
     success: true,
     ocr,
     receipt: parsed.receipt,
-    location: geo.location,
-    place: {
-      ...geo.place,
-      name: geo.place?.name || parsed.receipt.vendor || 'Unknown Place',
-    },
+    location: geo?.success ? geo.location : null,
+    place: geo?.success
+      ? {
+          ...geo.place,
+          name: geo.place?.name || parsed.receipt.vendor || 'Unknown Place',
+        }
+      : null,
   }
 }
 
