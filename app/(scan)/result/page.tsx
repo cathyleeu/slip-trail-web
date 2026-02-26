@@ -163,6 +163,7 @@ export default function ResultPage() {
       formData.append('image', file)
       formData.append('receipt', JSON.stringify(receiptPayload))
       formData.append('place', JSON.stringify(place))
+      console.log(place, '<--- place data being sent to backend')
 
       const response = await fetch('/api/receipts', {
         method: 'POST',
@@ -219,11 +220,36 @@ export default function ResultPage() {
   return (
     <div className="h-full overflow-auto p-4 space-y-4 flex-1 flex flex-col">
       {/* Map */}
-      {location && (
-        <Card>
+      <Card className="h-64">
+        {location ? (
           <Map location={location} zoom={16} className="h-64 w-full" />
-        </Card>
-      )}
+        ) : (
+          <div className="h-64 w-full flex flex-col items-center justify-center bg-gray-100 text-gray-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-12 w-12 mb-3 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <p className="text-sm font-medium">위치를 불러오지 못했습니다</p>
+            <p className="text-xs mt-1">영수증에 주소 정보가 없습니다</p>
+          </div>
+        )}
+      </Card>
 
       {/* Receipt Card */}
       <Card className="p-6 space-y-4">
