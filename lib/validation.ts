@@ -62,6 +62,8 @@ export const placeSchema = z.object({
   normalized_address: z.string().nullable().optional(),
   lat: z.number().nullable().optional(),
   lon: z.number().nullable().optional(),
+  category: z.string().nullable().optional(),
+  type: z.string().nullable().optional(),
 })
 
 // ============ Form Data Schemas ============
