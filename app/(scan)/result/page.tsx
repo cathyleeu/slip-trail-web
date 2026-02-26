@@ -301,7 +301,7 @@ export default function ResultPage() {
                       />
                       <IconButton
                         onClick={() => handleDeleteItem(idx)}
-                        className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        className="p-1 text-red-500 hover:bg-red-50 shadow-none"
                         aria-label="Delete item"
                       >
                         <Trash className="w-4 h-4" />
@@ -340,7 +340,7 @@ export default function ResultPage() {
               )}
             </div>
             {receipt.charges?.map((charge, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-sm">
+              <div key={idx} className="flex items-center gap-2 text-sm text-gray-800">
                 {isEditMode ? (
                   <>
                     <select
@@ -366,7 +366,7 @@ export default function ResultPage() {
                     />
                     <IconButton
                       onClick={() => handleDeleteCharge(idx)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      className="p-1 text-red-500 hover:bg-red-50 shadow-none"
                       aria-label="Delete charge"
                     >
                       <Trash className="w-4 h-4" />
