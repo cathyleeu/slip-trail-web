@@ -11,3 +11,6 @@ export type * from './image'
 export type * from './location'
 export type * from './ocr'
 export type * from './receipt'
+
+// Export enum values
+export { ChargeType } from './receipt'
