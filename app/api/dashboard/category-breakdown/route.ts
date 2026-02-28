@@ -11,7 +11,7 @@ type CategorySlice = {
 type ReceiptRow = {
   total: number | null
   subtotal: number | null
-  place?: { category?: string | null } | null
+  category?: string | null
 }
 
 export const GET = withAuth(async (req, { user, supabase }) => {
@@ -21,7 +21,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
 
   const { data, error } = await supabase
     .from('receipts')
-    .select('total, subtotal, place:places(category)')
+    .select('total, subtotal, category')
     .eq('user_id', user.id)
     .or(
       `and(purchased_at.gte.${from},purchased_at.lt.${to}),and(purchased_at.is.null,created_at.gte.${from},created_at.lt.${to})`
@@ -37,7 +37,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
     const amount = Number(row.total ?? row.subtotal ?? 0)
     if (!amount || Number.isNaN(amount)) continue
 
-    const category = row.place?.category?.trim() || 'Uncategorized'
+    const category = row.category?.trim() || 'Uncategorized'
     totals.set(category, (totals.get(category) ?? 0) + amount)
   }
 
