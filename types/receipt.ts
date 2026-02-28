@@ -35,8 +35,21 @@ export type ReceiptCharge = {
 /**
  * Parsed receipt data
  */
+
+export type ReceiptCategory =
+  | 'restaurant'
+  | 'coffee'
+  | 'mart'
+  | 'bar'
+  | 'fast_food'
+  | 'bakery'
+  | 'pharmacy'
+  | 'gas'
+  | 'other'
+
 export interface ParsedReceipt {
   vendor: string
+  category: ReceiptCategory
   address: string | null
   address_normalized: AddressNormalized
   phone: string | null
