@@ -28,7 +28,7 @@ type SpendPoint = {
 }
 
 type TopPlace = {
-  place_name: string
+  name: string
   total: string
   count: number
   lat: number
@@ -37,7 +37,7 @@ type TopPlace = {
 }
 
 type RecentPlace = {
-  place_name: string
+  name: string
   last_visited: string
   total: string
   lat: number
