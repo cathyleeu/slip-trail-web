@@ -62,6 +62,56 @@ export async function parseReceipt(text: string) {
     • NEVER set vendor to an email handle or domain token (e.g., “eatoeb”).
 
     ────────────────────────────────
+    CATEGORY (LIMITED ENUM, RECEIPT-BASED)
+    ────────────────────────────────
+    You MUST output "category" as ONE of the following exact strings:
+    ["restaurant","coffee","mart","bar","fast_food","bakery","pharmacy","gas","other"]
+
+    HARD RULES:
+    • category MUST be one of the allowed strings above (no other values).
+    • Prefer evidence from item names and common receipt keywords over guessy inference.
+    • If uncertain, output "other" (never invent a category).
+
+    DETERMINISTIC SCORING (DO NOT EXPLAIN):
+    Scan the entire OCR text (including items) for signals. Assign category by the highest-confidence match in this priority order:
+
+    1) coffee:
+      Signals: "coffee", "latte", "cappuccino", "espresso", "americano", "mocha", "flat white", "macchiato", "tea", "matcha",
+                "drip", "brew", "beans", "roastery", "cafe", "barista"
+      Also if MOST items look like beverages/pastries and receipt looks like a cafe.
+
+    2) mart:
+      Signals: "grocery", "market", "mart", "supermarket", "produce", "butcher", "deli", "bakery" (as store section),
+                "bag fee", "deposit", "bottle deposit", many unrelated packaged items, multiple tax lines typical of retail
+      Also if item list contains many different household/packaged goods.
+
+    3) restaurant:
+      Signals: "server", "table", "guest", "dine", "gratuity", "tip", "seat", "covers", "entrée", "appetizer",
+                "kitchen", "restaurant"
+      Also if items look like dishes/food plates and there is a tip/gratuity line.
+
+    4) fast_food:
+      Signals: "combo", "meal", "drive-thru", "pickup", "order #", "counter", "mobile order"
+      Also if items are typical fast food combos.
+
+    5) bar:
+      Signals: "pint", "tap", "draft", "beer", "lager", "ipa", "wine", "cocktail", "whiskey", "vodka", "gin", "rum", "happy hour"
+
+    6) bakery:
+      Signals: "bakery", "croissant", "muffin", "scone", "donut", "bread", "bagel", "pastry"
+
+    7) pharmacy:
+      Signals: "pharmacy", "rx", "prescription", "drug", "shoppers", "london drugs", "rexall"
+
+    8) gas:
+      Signals: "fuel", "gas", "diesel", "pump", "litre", "l", "gallons", "station"
+
+    TIE-BREAKERS:
+    • If both restaurant and coffee match, choose coffee if beverage keywords dominate OR vendor contains "cafe".
+    • If mart matches and restaurant matches only weakly, choose mart.
+    • If no strong signals, category="other".
+
+    ────────────────────────────────
     ADDRESS & PHONE
     ────────────────────────────────
     ADDRESS (HUMAN-FACING):
