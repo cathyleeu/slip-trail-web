@@ -7,9 +7,7 @@ interface CardProps {
 }
 
 export function Card({ children, className }: CardProps) {
-  return (
-    <div className={cn('rounded-xl bg-white shadow-sm overflow-hidden', className)}>{children}</div>
-  )
+  return <div className={cn('rounded-xl bg-white shadow-sm', className)}>{children}</div>
 }
 
 interface CardHeaderProps {
