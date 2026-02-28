@@ -6,7 +6,6 @@ import { Camera, Upload } from '@components/ui/icons'
 import { useProfile, useTab } from '@hooks'
 import {
   useDashboardCategoryBreakdown,
-  useDashboardMoM,
   useDashboardRecentPlaces,
   useDashboardSummary,
   useDashboardTopPlaces,
@@ -36,29 +35,25 @@ export default function HomePage() {
   const { data: summary } = useDashboardSummary(period)
   const { data: topPlaces = [] } = useDashboardTopPlaces(period)
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
-  const { data: mom } = useDashboardMoM()
   const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown(period)
   const recentPlace = recentPlaces[0]
   const hasCategoryData = categoryBreakdown.some((item) => item.total > 0)
 
   // most frequent area
-  const mostFrequentArea = useMemo(() => {
+  // const mostFrequentArea = useMemo(() => {
+  //   if (!topPlaces.length) return null
+  //   return topPlaces[0]
+  // }, [topPlaces])
+
+  const biggestLeak = useMemo(() => {
     if (!topPlaces.length) return null
-    return topPlaces[0]
+    return {
+      name: topPlaces[0].name,
+      total: topPlaces[0].total,
+    }
   }, [topPlaces])
 
-  // biggest leak (category) - to be added later when category API is available
-  const biggestLeak = useMemo(() => {
-    if (!mom?.top_place_name) return null
-    return {
-      name: mom.top_place_name,
-      increase: mom.top_place_increase,
-    }
-  }, [mom])
-
   const togglePeriod = () => setPeriod(period === 'last7' ? 'last30' : 'last7')
-
-  // const periodLabel = period === 'last7' ? 'last 7 days' : 'last 30 days'
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -99,16 +94,16 @@ export default function HomePage() {
           </Card>
 
           {/* Insight */}
-          <Card className="space-y-2.5 px-2">
-            {mostFrequentArea && (
+          <Card className="space-y-2 px-2">
+            {/* {mostFrequentArea && (
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">📍</span>
                 <span className="text-sm text-gray-500">
                   Most frequent area:{' '}
-                  <span className="font-semibold text-gray-900">{mostFrequentArea.place_name}</span>
+                  <span className="font-semibold text-gray-900">{mostFrequentArea.name}</span>
                 </span>
               </div>
-            )}
+            )} */}
 
             {biggestLeak && (
               <div className="flex items-center gap-2.5">
@@ -120,7 +115,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {!mostFrequentArea && !biggestLeak && (
+            {!biggestLeak && (
               <p className="px-4 py-3 text-sm text-gray-400">
                 Your spending story starts with one receipt.
               </p>
@@ -161,8 +156,8 @@ export default function HomePage() {
                       ? {
                           lat: recentPlace.lat,
                           lon: recentPlace.lon,
-                          address: recentPlace.place_name,
-                          displayName: recentPlace.place_name,
+                          address: recentPlace.name,
+                          displayName: recentPlace.name,
                         }
                       : null
                   }
