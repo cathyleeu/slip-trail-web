@@ -265,6 +265,7 @@ export async function parseReceipt(text: string) {
     REQUIRED JSON SCHEMA (RETURN EXACT KEYS):
     {
       "vendor": string | null,
+      "category": "restaurant|coffee|mart|bar|fast_food|bakery|pharmacy|gas|other",
       "address": string | null,
       "address_normalized": {
         "raw_address_text": string,
