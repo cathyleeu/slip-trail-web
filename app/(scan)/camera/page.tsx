@@ -63,9 +63,9 @@ export default function CameraPage() {
           onClick={() => router.back()}
           className="w-10 h-10 flex items-center justify-center text-white p-0 hover:bg-white/10"
         >
-          <Close className="w-6 h-6" />
+          <Close className="w-8 h-8" />
         </Button>
-        <div className="text-white text-sm font-medium">SCAN RECEIPT</div>
+        <span className="text-white text-sm font-medium">SCAN RECEIPT</span>
         <div className="w-10" />
       </div>
 
@@ -115,7 +115,7 @@ export default function CameraPage() {
             <Button
               whileTap={{ scale: 0.95 }}
               onClick={takePhoto}
-              className="w-20 h-20 rounded-full bg-white border-4 border-blue-500 shadow-lg p-0"
+              className="w-16 h-16 rounded-full bg-white border-4 border-blue-500 shadow-lg p-0"
             />
           )}
         </div>
