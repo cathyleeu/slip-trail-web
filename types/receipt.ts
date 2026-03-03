@@ -90,3 +90,30 @@ export type ParseReceiptResult = ParseReceiptSuccess | ParseReceiptFailure
 export type RequestParsingOptions = {
   rawText: string
 }
+
+/**
+ * Feeling tag for purchase sentiment tracking
+ */
+export type FeelingTag =
+  | 'Necessary'
+  | 'Impulsive'
+  | 'Social'
+  | 'Treat'
+  | 'Routine'
+  | 'Stress'
+  | 'Celebration'
+
+/**
+ * Receipt item from database (for list view)
+ */
+export type ReceiptListItem = {
+  id: string
+  vendor: string
+  category: ReceiptCategory | null
+  total: number | null
+  purchased_at: string | null
+  created_at: string
+  feeling: FeelingTag | null
+  memo: string | null
+  img_url: string | null
+}
