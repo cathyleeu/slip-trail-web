@@ -51,9 +51,9 @@ export const GET = withAuth(async (req, { user, supabase }) => {
 
   const { data, error } = await supabase
     .from('receipts')
-    .select('*')
+    .select('id, vendor, category, total, purchased_at, created_at, feeling, memo, img_url')
     .eq('user_id', user.id)
-    .order('purchased_at', { ascending: false })
+    .order('purchased_at', { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1)
 
   if (error) {
