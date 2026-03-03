@@ -1,7 +1,7 @@
 'use client'
 
 import CategoryBarChart from '@components/dashboard/CategoryBarChart'
-import { Card } from '@components/ui'
+import { Button, Card } from '@components/ui'
 import { Camera, Upload } from '@components/ui/icons'
 import { useProfile, useTab } from '@hooks'
 import {
@@ -69,13 +69,12 @@ export default function HomePage() {
           {/* Spend Summary Card */}
           <Card className="relative px-7 py-7">
             {/* Period toggle chip */}
-            <button
-              type="button"
+            <Button
               onClick={togglePeriod}
-              className="absolute top-5 right-5 px-4 py-1.5 rounded-xl bg-white backdrop-blur-sm text-sm font-medium text-gray-600 active:scale-95 transition-all shadow-sm"
+              className="absolute top-5 right-5 px-4 py-1.5 bg-white hover:bg-transparent text-sm font-medium text-gray-600 active:scale-95 transition-all shadow-sm"
             >
               {period === 'last7' ? 'Month' : 'Week'}
-            </button>
+            </Button>
 
             <div className="text-sm text-gray-400 mb-2">
               {period === 'last7' ? 'This week' : 'This month'}
@@ -142,7 +141,7 @@ export default function HomePage() {
               <div className="h-full w-full flex flex-col items-center justify-center text-center bg-neutral-50">
                 <div className="text-sm text-gray-400">No places yet</div>
                 <div className="mt-1 text-xs text-gray-400">
-                  Scan a receipt to see your spend map
+                  Scan a receipt to see your spend journey
                 </div>
               </div>
             ) : (
@@ -174,10 +173,10 @@ export default function HomePage() {
 
                 {/* Floating button on map */}
                 <Link
-                  href="/map"
+                  href="/receipts"
                   className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
                 >
-                  <span className="text-sm font-medium text-gray-700">View spend map</span>
+                  <span className="text-sm font-medium text-gray-700">View spend journey</span>
                   <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
                     →
                   </span>
