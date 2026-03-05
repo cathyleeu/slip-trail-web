@@ -1,7 +1,7 @@
 'use client'
 
 import CategoryBarChart from '@components/dashboard/CategoryBarChart'
-import { Button, Card } from '@components/ui'
+import { Avatar, Button, Card } from '@components/ui'
 import { Camera, Upload } from '@components/ui/icons'
 import { useProfile, useTab } from '@hooks'
 import {
@@ -58,11 +58,14 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="flex-1 overflow-y-auto">
-        {/* Header with user name */}
-        <div className="px-6 pt-8 pb-4">
+        {/* Header with user name and avatar */}
+        <div className="px-6 pt-8 pb-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">
             {profile?.name ? `${profile.name}'s snapshots` : 'Your snapshots'}
           </h1>
+          <Link href="/settings">
+            <Avatar name={profile?.name} size="md" />
+          </Link>
         </div>
 
         <div className="px-6 pb-28 space-y-8">
