@@ -36,7 +36,9 @@ export default function HomePage() {
   const { data: topPlaces = [] } = useDashboardTopPlaces(period)
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
   const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown(period)
-  const recentPlace = recentPlaces[0]
+
+  // 지도 중심점: 가장 최근 방문한 장소
+  const mapCenter = recentPlaces[0] ?? topPlaces[0]
   const hasCategoryData = categoryBreakdown.some((item) => item.total > 0)
 
   // most frequent area
@@ -83,7 +85,7 @@ export default function HomePage() {
               {period === 'last7' ? 'This week' : 'This month'}
             </div>
             <div className="text-5xl font-bold text-gray-900 tracking-tight">
-              {summary ? money(summary.total_spent) : '$0.00'}
+              {summary ? money(summary.total) : '$0.00'}
             </div>
             {summary ? (
               <div className="mt-3 text-base text-gray-500">
@@ -138,9 +140,9 @@ export default function HomePage() {
             )}
           </Card>
 
-          {/* Map Preview - recent places */}
+          {/* Map Preview - top places by period */}
           <Card className="h-52 overflow-hidden relative">
-            {recentPlaces.length === 0 ? (
+            {topPlaces.length === 0 ? (
               <div className="h-full w-full flex flex-col items-center justify-center text-center bg-neutral-50">
                 <div className="text-sm text-gray-400">No places yet</div>
                 <div className="mt-1 text-xs text-gray-400">
@@ -154,24 +156,24 @@ export default function HomePage() {
                   className="h-full"
                   showDefaultMarker={false}
                   location={
-                    recentPlace
+                    mapCenter
                       ? {
-                          lat: recentPlace.lat,
-                          lon: recentPlace.lon,
-                          address: recentPlace.name,
-                          displayName: recentPlace.name,
+                          lat: mapCenter.lat,
+                          lon: mapCenter.lon,
+                          address: mapCenter.name,
+                          displayName: mapCenter.name,
                         }
                       : null
                   }
                 >
-                  {recentPlace && (
+                  {topPlaces.map((place) => (
                     <DynamicSpendMarker
-                      key={recentPlace.place_id}
-                      position={[recentPlace.lat, recentPlace.lon]}
-                      amount={money(recentPlace.total)}
-                      color="bg-blue-400"
+                      key={place.place_id}
+                      position={[place.lat, place.lon]}
+                      amount={money(place.total)}
+                      category={place.category}
                     />
-                  )}
+                  ))}
                 </MapPreview>
 
                 {/* Floating button on map */}
