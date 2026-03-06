@@ -9,7 +9,7 @@ import type { Period } from '@types'
 
 // API 응답 타입
 type SummaryData = {
-  total_spent: string
+  total: string
   receipt_count: number
   avg_per_receipt: string
 }
@@ -34,6 +34,7 @@ type TopPlace = {
   lat: number
   lon: number
   place_id: string
+  category?: string
 }
 
 type RecentPlace = {
