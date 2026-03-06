@@ -23,8 +23,8 @@ const RecentPlacesWidget = memo(function RecentPlacesWidget() {
         ) : (
           <ul className="space-y-2">
             {data.slice(0, 8).map((p) => (
-              <li key={p.place_name} className="rounded-2xl border p-3">
-                <div className="font-medium">{p.place_name ?? 'Unknown place'}</div>
+              <li key={p.name} className="rounded-2xl border p-3">
+                <div className="font-medium">{p.name ?? 'Unknown place'}</div>
                 <div className="text-xs text-neutral-500">
                   {p.last_visited ? new Date(p.last_visited).toLocaleString() : '—'}
                 </div>
