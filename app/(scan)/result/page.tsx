@@ -1,5 +1,6 @@
 'use client'
 
+import { TipPromptDialog } from '@components'
 import { Button, Card, IconButton } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
 import { useAnalysisDraftStore } from '@store'
@@ -33,14 +34,53 @@ export default function ResultPage() {
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
   const [selectedFeeling, setSelectedFeeling] = useState<FeelingTag | null>(null)
   const [memo, setMemo] = useState('')
-
-  // TODO: add tip section
+  const [showTipPrompt, setShowTipPrompt] = useState(false)
+  const [tipPromptShown, setTipPromptShown] = useState(false)
 
   useEffect(() => {
     if (!receipt) {
       router.back()
     }
   }, [receipt, router])
+
+  // Show tip prompt for restaurant/coffee categories without existing tip
+  useEffect(() => {
+    if (!receipt || tipPromptShown) return
+
+    const tipCategories = ['restaurant', 'coffee', 'bar']
+    const hasTipCategory = tipCategories.includes(receipt.category)
+    const hasTip = receipt.charges?.some(
+      (charge) => charge.type === ChargeType.TIP || charge.label?.toLowerCase().includes('tip')
+    )
+
+    if (hasTipCategory && !hasTip) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setShowTipPrompt(true)
+        setTipPromptShown(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [receipt, tipPromptShown])
+
+  const handleAddTip = (tipAmount: number) => {
+    if (!receipt) return
+
+    const tipCharge = {
+      type: ChargeType.TIP,
+      label: 'Tip',
+      amount: tipAmount,
+    }
+
+    const updatedCharges = [...(receipt.charges || []), tipCharge]
+    const itemsTotal =
+      receipt.items?.reduce((sum, item) => sum + item.quantity * item.price, 0) || 0
+    const chargesTotal = updatedCharges.reduce((sum, charge) => sum + charge.amount, 0)
+    const newTotal = itemsTotal + chargesTotal
+
+    setReceipt({ ...receipt, charges: updatedCharges, total: newTotal })
+    setShowTipPrompt(false)
+  }
 
   const handleEditItem = (index: number, field: 'name' | 'quantity' | 'price', value: string) => {
     if (!receipt?.items) return
@@ -458,6 +498,14 @@ export default function ResultPage() {
           {isEditMode ? 'Apply' : 'Save'}
         </motion.button>
       </div>
+
+      {/* Tip Prompt Dialog */}
+      <TipPromptDialog
+        isOpen={showTipPrompt}
+        onClose={() => setShowTipPrompt(false)}
+        onSave={handleAddTip}
+        subtotal={receipt?.subtotal}
+      />
     </div>
   )
 }
