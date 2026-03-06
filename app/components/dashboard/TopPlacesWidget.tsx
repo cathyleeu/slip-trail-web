@@ -88,10 +88,10 @@ const TopPlacesWidget = memo(function TopPlacesWidget() {
         ) : (
           <ul className="space-y-2">
             {sortedData.slice(0, 10).map((p) => (
-              <li key={p.place_name} className="rounded-2xl border p-3">
+              <li key={p.name} className="rounded-2xl border p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 overflow-hidden">
-                    <div className="font-medium">{p.place_name ?? 'Unknown place'}</div>
+                    <div className="font-medium">{p.name ?? 'Unknown place'}</div>
                     <div className="text-xs text-neutral-500">{p.count} visits</div>
                   </div>
                   <div className="text-sm font-semibold">{money(p.total)}</div>
