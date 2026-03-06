@@ -10,12 +10,23 @@ import { useCallback, useSyncExternalStore } from 'react'
 
 const STORAGE_KEY = 'slip-trail-custom-categories'
 
+// 스냅샷 캐싱 (useSyncExternalStore는 동일한 참조를 반환해야 함)
+let cachedCategories: Category[] = []
+let cachedStorageValue: string | null = null
+
 // 로컬 스토리지 접근을 위한 함수들
 function getStoredCategories(): Category[] {
   if (typeof window === 'undefined') return []
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
+    // 값이 변경되지 않았으면 캐시된 배열 반환
+    if (stored === cachedStorageValue) {
+      return cachedCategories
+    }
+    // 값이 변경됐으면 새로 파싱하고 캐시
+    cachedStorageValue = stored
+    cachedCategories = stored ? JSON.parse(stored) : []
+    return cachedCategories
   } catch {
     return []
   }
@@ -23,7 +34,11 @@ function getStoredCategories(): Category[] {
 
 function setStoredCategories(categories: Category[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(categories))
+    const stringified = JSON.stringify(categories)
+    localStorage.setItem(STORAGE_KEY, stringified)
+    // 캐시 업데이트
+    cachedStorageValue = stringified
+    cachedCategories = categories
     // 다른 컴포넌트에 변경 알림
     window.dispatchEvent(new Event('categories-updated'))
   } catch (e) {
@@ -41,6 +56,9 @@ function subscribe(callback: () => void): () => void {
   }
 }
 
+// SSR용 빈 배열 (동일한 참조 유지)
+const EMPTY_CATEGORIES: Category[] = []
+
 /**
  * 카테고리 관리 훅
  * 기본 카테고리 + 사용자 커스텀 카테고리를 함께 관리합니다.
@@ -50,7 +68,7 @@ export function useCategories() {
   const customCategories = useSyncExternalStore(
     subscribe,
     getStoredCategories,
-    () => [] // SSR 시 빈 배열
+    () => EMPTY_CATEGORIES // SSR 시 빈 배열
   )
 
   // 커스텀 카테고리 추가
