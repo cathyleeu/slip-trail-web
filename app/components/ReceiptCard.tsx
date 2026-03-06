@@ -1,22 +1,11 @@
 'use client'
 
 import { Card } from '@components/ui'
+import { getCategoryEmoji } from '@lib/categories'
 import type { FeelingTag, ReceiptListItem } from '@types'
 import { cn } from '@utils/cn'
 import { formatDateTime, money } from '@utils/format'
 import Link from 'next/link'
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  restaurant: '🍽️',
-  coffee: '☕',
-  mart: '🛒',
-  bar: '🍺',
-  fast_food: '🍔',
-  bakery: '🥐',
-  pharmacy: '💊',
-  gas: '⛽',
-  other: '📦',
-}
 
 const FEELING_STYLES: Record<FeelingTag, { bg: string; text: string }> = {
   Necessary: { bg: 'bg-green-100', text: 'text-green-700' },
@@ -33,7 +22,7 @@ type ReceiptCardProps = {
 }
 
 export function ReceiptCard({ receipt }: ReceiptCardProps) {
-  const categoryEmoji = receipt.category ? CATEGORY_EMOJI[receipt.category] || '📦' : '📦'
+  const categoryEmoji = getCategoryEmoji(receipt.category)
   const feelingStyle = receipt.feeling ? FEELING_STYLES[receipt.feeling] : null
   const displayDate = receipt.purchased_at || receipt.created_at
 
