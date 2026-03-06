@@ -1,45 +1,34 @@
 'use client'
 
 import { Button, Card, ChevronLeftIcon } from '@components/ui'
-import { useProfile } from '@hooks'
+import { useCategories, useProfile } from '@hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-
-const DEFAULT_CATEGORIES = [
-  { id: 'restaurant', emoji: '🍽️', label: 'Restaurant' },
-  { id: 'coffee', emoji: '☕', label: 'Coffee' },
-  { id: 'mart', emoji: '🛒', label: 'Mart / Grocery' },
-  { id: 'bar', emoji: '🍺', label: 'Bar' },
-  { id: 'fast_food', emoji: '🍔', label: 'Fast Food' },
-  { id: 'bakery', emoji: '🥐', label: 'Bakery' },
-  { id: 'pharmacy', emoji: '💊', label: 'Pharmacy' },
-  { id: 'gas', emoji: '⛽', label: 'Gas Station' },
-]
-
-type CustomCategory = {
-  id: string
-  emoji: string
-  label: string
-}
 
 export default function SettingsPage() {
   const router = useRouter()
   const { profile } = useProfile()
-  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([])
+  const { settingsCategories, customCategories, addCustomCategory, removeCustomCategory } =
+    useCategories()
   const [newCategory, setNewCategory] = useState({ emoji: '', label: '' })
   const [isAdding, setIsAdding] = useState(false)
 
   const handleAddCategory = () => {
     if (!newCategory.emoji.trim() || !newCategory.label.trim()) return
 
-    const id = newCategory.label.toLowerCase().replace(/\s+/g, '_')
-    setCustomCategories([...customCategories, { id, ...newCategory }])
-    setNewCategory({ emoji: '', label: '' })
-    setIsAdding(false)
+    const success = addCustomCategory({
+      emoji: newCategory.emoji,
+      label: newCategory.label,
+    })
+
+    if (success) {
+      setNewCategory({ emoji: '', label: '' })
+      setIsAdding(false)
+    }
   }
 
   const handleRemoveCategory = (id: string) => {
-    setCustomCategories(customCategories.filter((c) => c.id !== id))
+    removeCustomCategory(id)
   }
 
   return (
@@ -88,7 +77,7 @@ export default function SettingsPage() {
           <div className="mb-4">
             <p className="text-xs text-gray-400 mb-2">Default categories</p>
             <div className="flex flex-wrap gap-2">
-              {DEFAULT_CATEGORIES.map((cat) => (
+              {settingsCategories.map((cat) => (
                 <div
                   key={cat.id}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full text-sm text-gray-600"
