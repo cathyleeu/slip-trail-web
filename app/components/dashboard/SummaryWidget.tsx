@@ -31,7 +31,7 @@ const SummaryWidget = memo(function SummaryWidget() {
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-2xl border p-3">
               <div className="text-xs text-neutral-500">Total</div>
-              <div className="mt-1 text-lg font-semibold">{money(data.total_spent)}</div>
+              <div className="mt-1 text-lg font-semibold">{money(data.total)}</div>
             </div>
             <div className="rounded-2xl border p-3">
               <div className="text-xs text-neutral-500">Receipts</div>

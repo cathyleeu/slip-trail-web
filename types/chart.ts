@@ -13,7 +13,7 @@ export type SpendChartProps = {
 }
 
 export type SummaryRow = {
-  total_spent: string // numeric -> string으로 오는 경우 많음
+  total: string // numeric -> string으로 오는 경우 많음
   receipt_count: number
   avg_receipt: string
 }
@@ -26,7 +26,7 @@ export type MoMRow = {
 
 export type SeriesRow = {
   bucket_start: string
-  total_spent: string
+  total: string
   receipt_count: number
 }
 
@@ -38,5 +38,5 @@ export type PlaceRow = {
   lon: number | null
   last_visited_at?: string | null
   visit_count: number | null
-  total_spent?: string | null
+  total?: string | null
 }
