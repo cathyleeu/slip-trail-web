@@ -1,13 +1,14 @@
 'use client'
 
 import { Button, Card, ChevronLeftIcon } from '@components/ui'
-import { useCategories, useProfile } from '@hooks'
+import { useAuth, useCategories, useProfile } from '@hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function SettingsPage() {
   const router = useRouter()
   const { profile } = useProfile()
+  const { logout } = useAuth()
   const { settingsCategories, customCategories, addCustomCategory, removeCustomCategory } =
     useCategories()
   const [newCategory, setNewCategory] = useState({ emoji: '', label: '' })
@@ -182,6 +183,13 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
+
+        {/* Logout Button */}
+        <div className="pt-4 pb-8 flex justify-center">
+          <Button variant="ghost" onClick={logout} className="text-gray-500 hover:bg-transparent">
+            Log out
+          </Button>
+        </div>
       </div>
     </div>
   )
