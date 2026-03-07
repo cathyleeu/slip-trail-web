@@ -1,7 +1,7 @@
 'use client'
 
 import { Divider, InputField } from '@components'
-import { AppleIcon, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
+import { AppleIcon, Button, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -79,9 +79,12 @@ export default function LoginPage() {
               </InputField.Wrapper>
             </InputField>
             <div className="flex justify-end">
-              <button type="button" className="text-sm text-blue-600 hover:underline">
+              <Button
+                onClick={() => router.push('/forgot-password')}
+                className="text-sm text-blue-600 hover:underline"
+              >
                 Forgot Password?
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -96,27 +99,27 @@ export default function LoginPage() {
           )}
 
           {/* Login Button */}
-          <motion.button
+          <Button
             whileTap={{ scale: 0.98 }}
             disabled={loading}
             className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Log In'}
-          </motion.button>
+          </Button>
         </form>
 
         {/* Divider */}
         <Divider label="Or continue with" />
         {/* Social Login */}
         <div className="space-y-3">
-          <button className="w-full bg-black text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors">
+          <Button className="w-full bg-black text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors">
             <AppleIcon />
             Continue with Apple
-          </button>
-          <button className="w-full bg-white border border-gray-300 text-gray-900 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+          </Button>
+          <Button className="w-full bg-white border border-gray-300 text-gray-900 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
             <GoogleIcon />
             Continue with Google
-          </button>
+          </Button>
         </div>
       </motion.div>
 
@@ -124,12 +127,12 @@ export default function LoginPage() {
       <div className="mt-auto pt-8 text-center">
         <p className="text-gray-600">
           Don&apos;t have an account?{' '}
-          <button
+          <Button
             onClick={() => router.push('/signup')}
             className="text-blue-600 font-semibold hover:underline"
           >
             Sign up
-          </button>
+          </Button>
         </p>
       </div>
     </div>
