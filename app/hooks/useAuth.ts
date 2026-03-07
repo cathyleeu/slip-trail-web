@@ -41,7 +41,21 @@ export function useAuth() {
     if (error) throw error
   }
 
+  async function resetPassword(email: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    return handleResult(error)
+  }
+
+  async function updatePassword(newPassword: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    })
+    return handleResult(error)
+  }
+
   if (!user && !session && loading === undefined)
     throw new Error('useAuth must be used within AuthProvider')
-  return { user, session, loading, login, signup, logout }
+  return { user, session, loading, login, signup, logout, resetPassword, updatePassword }
 }
