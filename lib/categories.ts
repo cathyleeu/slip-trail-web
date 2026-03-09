@@ -67,6 +67,18 @@ export function getCategoryEmoji(
 }
 
 /**
+ * 카테고리 ID로 라벨을 가져옵니다.
+ */
+export function getCategoryLabel(
+  categoryId?: string | null,
+  customCategories?: Category[]
+): string {
+  if (!categoryId) return 'Other'
+  const category = getCategoryById(categoryId, customCategories)
+  return category?.label ?? 'Other'
+}
+
+/**
  * 카테고리 ID로 카테고리 정보를 가져옵니다.
  */
 export function getCategoryById(
