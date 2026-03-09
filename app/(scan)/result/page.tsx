@@ -3,6 +3,7 @@
 import { TipPromptDialog } from '@components'
 import { Button, Card, IconButton } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
+import { FEELING_TAGS } from '@lib/feelings'
 import { useAnalysisDraftStore } from '@store'
 import { ChargeType } from '@types'
 import { cn } from '@utils/cn'
@@ -14,16 +15,6 @@ import { useEffect, useState } from 'react'
 
 // Dynamically import Map component to prevent SSR issues
 const Map = dynamic(() => import('@components/map'), { ssr: false })
-
-const FEELING_TAGS = [
-  'Necessary',
-  'Impulsive',
-  'Social',
-  'Treat',
-  'Routine',
-  'Stress',
-  'Celebration',
-] as const
 
 type FeelingTag = (typeof FEELING_TAGS)[number]
 
