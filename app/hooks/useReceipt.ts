@@ -1,8 +1,8 @@
 import { request } from '@lib/httpFetcher'
 import { queryKeys } from '@lib/queryKeys'
 import { supabaseClient } from '@lib/supabase/client'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import type { GeoLocation, ParsedReceipt, ReceiptListItem } from '@types'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import type { GeoLocation, ParsedReceipt, ReceiptDetail, ReceiptListItem } from '@types'
 
 const DEFAULT_PAGE_SIZE = 20
 
@@ -72,5 +72,21 @@ export function useReceiptList(pageSize: number = DEFAULT_PAGE_SIZE) {
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextOffset,
     staleTime: 1000 * 60 * 3, // 3분
+  })
+}
+
+/**
+ * Hook for fetching a single receipt detail
+ */
+export function useReceiptDetail(id: string) {
+  return useQuery({
+    queryKey: queryKeys.receipts.detail(id),
+    queryFn: async () => {
+      return await request<ReceiptDetail>(`/api/receipts/${id}`, {
+        unwrapApiSuccess: true,
+      })
+    },
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5분
   })
 }
