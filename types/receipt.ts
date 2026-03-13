@@ -117,3 +117,28 @@ export type ReceiptListItem = {
   memo: string | null
   img_url: string | null
 }
+
+/**
+ * Full receipt detail from database
+ */
+export type ReceiptDetail = {
+  id: string
+  vendor: string
+  category: ReceiptCategory | null
+  address: string | null
+  phone: string | null
+  purchased_at: string | null
+  created_at: string
+  currency: string
+  subtotal: number | null
+  total: number | null
+  items: ReceiptItem[] | null
+  charges: ReceiptCharge[] | null
+  feeling: FeelingTag | null
+  memo: string | null
+  img_url: string | null
+  lat: number | null
+  lon: number | null
+  place_name: string | null
+  place_address: string | null
+}
