@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Card, ChevronLeftIcon } from '@components/ui'
+import { Avatar, Button, Card, ChevronLeftIcon } from '@components/ui'
 import { useAuth, useCategories, useProfile } from '@hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* FIXME: Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-4 py-3">
           <Button
@@ -49,15 +49,13 @@ export default function SettingsPage() {
       </div>
 
       <div className="p-4 space-y-6">
-        {/* Profile Section */}
+        {/* FIXME: Profile Section */}
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
             Profile
           </h2>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
-              {profile?.name?.[0]?.toUpperCase() || '?'}
-            </div>
+            <Avatar name={profile?.name} size="lg" />
             <div>
               <p className="font-semibold text-gray-900">{profile?.name || 'User'}</p>
               <p className="text-sm text-gray-500">Edit profile coming soon</p>
