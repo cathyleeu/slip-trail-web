@@ -2,6 +2,7 @@
 
 import { cn } from '@utils/cn'
 import Image from 'next/image'
+import { Person } from './icons'
 
 type AvatarProps = {
   src?: string | null
@@ -11,9 +12,9 @@ type AvatarProps = {
 }
 
 const SIZES = {
-  sm: 'w-8 h-8 text-xs',
-  md: 'w-10 h-10 text-sm',
-  lg: 'w-12 h-12 text-base',
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6',
 }
 
 export default function Avatar({ src, name, size = 'md', className }: AvatarProps) {
@@ -24,20 +25,21 @@ export default function Avatar({ src, name, size = 'md', className }: AvatarProp
         .join('')
         .toUpperCase()
         .slice(0, 2)
-    : '?'
+    : null
 
   return (
     <div
       className={cn(
-        'rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold overflow-hidden shrink-0',
-        SIZES[size],
+        'rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold overflow-hidden shrink-0',
         className
       )}
     >
       {src ? (
         <Image src={src} alt={name || 'Avatar'} fill className="object-cover" />
-      ) : (
+      ) : initials ? (
         <span>{initials}</span>
+      ) : (
+        <Person className={cn(SIZES[size], 'text-gray-300 m-2')} />
       )}
     </div>
   )
