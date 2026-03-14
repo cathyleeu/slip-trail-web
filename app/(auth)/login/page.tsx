@@ -80,8 +80,9 @@ export default function LoginPage() {
             </InputField>
             <div className="flex justify-end">
               <Button
+                variant="ghost"
                 onClick={() => router.push('/forgot-password')}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 hover:bg-transparent"
               >
                 Forgot Password?
               </Button>
@@ -128,8 +129,9 @@ export default function LoginPage() {
         <p className="text-gray-600">
           Don&apos;t have an account?{' '}
           <Button
+            variant="ghost"
             onClick={() => router.push('/signup')}
-            className="text-blue-600 font-semibold hover:underline"
+            className="text-blue-600 font-semibold hover:bg-transparent"
           >
             Sign up
           </Button>
