@@ -90,6 +90,9 @@ export default function SignUpPage() {
                 )}
               </InputField.Action>
             </InputField.Wrapper>
+            <p className="text-xs text-gray-400 mt-1.5">
+              최소 8자, 소문자·대문자·숫자 포함
+            </p>
           </InputField>
 
           {/* Confirm Password Input */}
