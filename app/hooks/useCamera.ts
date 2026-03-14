@@ -64,6 +64,10 @@ export function useCamera() {
   const [showRetake, setShowRetake] = useState(false)
 
   const startCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError('카메라에 접근할 수 없습니다. HTTPS 환경에서 접속해주세요.')
+      return
+    }
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
@@ -74,7 +78,11 @@ export function useCamera() {
         setStream(mediaStream)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error accessing camera')
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        setError('카메라 권한이 거부됐습니다. 브라우저 설정에서 허용해주세요.')
+      } else {
+        setError(err instanceof Error ? err.message : '카메라를 시작할 수 없습니다.')
+      }
     }
   }
 
