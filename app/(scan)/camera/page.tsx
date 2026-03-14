@@ -19,6 +19,7 @@ export default function CameraPage() {
     takePhoto,
     showRetake,
     resetPhoto,
+    error: cameraError,
   } = useCamera()
   const router = useRouter()
   const { analyzeReceipt, isProcessing, progress, stage, previewUrl } = useAnalysisFlow()
@@ -71,7 +72,12 @@ export default function CameraPage() {
 
       {/* Camera/Photo View */}
       <div className="flex-1 relative">
-        {photoUrl ? (
+        {cameraError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+            <div className="text-4xl mb-4">📷</div>
+            <p className="text-white text-sm leading-relaxed">{cameraError}</p>
+          </div>
+        ) : photoUrl ? (
           <div className="absolute inset-0">
             <Image src={photoUrl} alt="Captured" fill className="object-contain" />
           </div>
