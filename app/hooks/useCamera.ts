@@ -102,6 +102,13 @@ export function useCamera() {
     }
   }, [stream, videoRef])
 
+  // Retake 후 video 엘리먼트가 재마운트되면 stream 재연결
+  useEffect(() => {
+    if (!photoUrl && stream && videoRef.current) {
+      videoRef.current.srcObject = stream
+    }
+  }, [photoUrl, stream])
+
   useEffect(() => {
     return () => {
       if (stream) {
