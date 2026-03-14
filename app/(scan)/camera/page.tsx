@@ -77,7 +77,7 @@ export default function CameraPage() {
           </div>
         ) : (
           <>
-            <video ref={videoRef} className="w-full h-full object-cover" />
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
 
             {/* Frame Guide */}
             <div className="absolute inset-0 flex items-center justify-center p-8">
