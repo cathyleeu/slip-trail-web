@@ -1,7 +1,7 @@
 'use client'
 
-import { Divider, InputField } from '@components'
-import { AppleIcon, Button, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
+import { InputField } from '@components'
+import { Button, EmailIcon, EyeIcon, EyeOffIcon } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -110,8 +110,7 @@ export default function LoginPage() {
         </form>
 
         {/* Divider */}
-        <Divider label="Or continue with" />
-        {/* Social Login */}
+        {/* <Divider label="Or continue with" />
         <div className="space-y-3">
           <Button className="w-full bg-black text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors">
             <AppleIcon />
@@ -121,7 +120,7 @@ export default function LoginPage() {
             <GoogleIcon />
             Continue with Google
           </Button>
-        </div>
+        </div> */}
       </motion.div>
 
       {/* Sign Up Link */}
