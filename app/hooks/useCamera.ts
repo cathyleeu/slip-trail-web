@@ -74,7 +74,6 @@ export function useCamera() {
       })
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream
-        await videoRef.current.play()
         setStream(mediaStream)
       }
     } catch (err) {
