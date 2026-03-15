@@ -1,7 +1,8 @@
 'use client'
 
-import { Button, Card, IconButton } from '@components/ui'
-import { ChevronLeftIcon, LocationPin } from '@components/ui/icons'
+import { Header } from '@components'
+import { Button, Card } from '@components/ui'
+import { LocationPin } from '@components/ui/icons'
 import { useReceiptDetail } from '@hooks'
 import { getCategoryEmoji, getCategoryLabel } from '@lib/categories'
 import { getFeelingStyle } from '@lib/feelings'
@@ -46,13 +47,7 @@ export default function ReceiptDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center gap-3">
-        <IconButton variant="ghost" onClick={() => router.back()}>
-          <ChevronLeftIcon className="w-5 h-5" />
-        </IconButton>
-        <h1 className="text-lg font-semibold flex-1">Receipt Details</h1>
-      </div>
+      <Header title="Receipt Details" />
 
       <div className="p-4 space-y-4 pb-8">
         {/* Receipt Image */}

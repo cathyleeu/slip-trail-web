@@ -1,12 +1,11 @@
 'use client'
 
-import { Avatar, Button, Card, ChevronLeftIcon } from '@components/ui'
+import { Header } from '@components'
+import { Avatar, Button, Card } from '@components/ui'
 import { useAuth, useCategories, useProfile } from '@hooks'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function SettingsPage() {
-  const router = useRouter()
   const { profile } = useProfile()
   const { logout } = useAuth()
   const { settingsCategories, customCategories, addCustomCategory, removeCustomCategory } =
@@ -34,19 +33,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* FIXME: Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="w-10 h-10 p-0 flex items-center justify-center"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg font-semibold text-gray-900">Settings</h1>
-        </div>
-      </div>
+      <Header title="Settings" />
 
       <div className="p-4 space-y-6">
         {/* FIXME: Profile Section */}

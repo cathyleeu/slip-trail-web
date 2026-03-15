@@ -1,7 +1,7 @@
 'use client'
 
-import { InputField } from '@components'
-import { Button, ChevronLeftIcon, EmailIcon } from '@components/ui'
+import { Header, InputField } from '@components'
+import { Button, EmailIcon } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -32,16 +32,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="h-full overflow-auto p-4 space-y-4 flex-1 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="w-10 h-10 p-0 flex items-center justify-center"
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-        </Button>
-      </div>
+      <Header title="" showBack />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

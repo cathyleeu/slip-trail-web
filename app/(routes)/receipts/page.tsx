@@ -1,13 +1,10 @@
 'use client'
 
-import { ReceiptCard, Skeleton } from '@components'
-import { Button, ChevronLeftIcon } from '@components/ui'
+import { Header, ReceiptCard, Skeleton } from '@components'
 import { useReceiptList } from '@hooks/useReceipt'
-import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
 export default function ReceiptsPage() {
-  const router = useRouter()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
     useReceiptList()
   const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -34,19 +31,7 @@ export default function ReceiptsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* FIXME Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="w-10 h-10 p-0 flex items-center justify-center"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg font-semibold text-gray-900">All Receipts</h1>
-        </div>
-      </div>
+      <Header title="All Receipts" />
 
       {/* Content */}
       <div className="p-4 space-y-3">
