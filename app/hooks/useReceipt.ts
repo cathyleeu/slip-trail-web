@@ -1,7 +1,7 @@
 import { request } from '@lib/httpFetcher'
 import { queryKeys } from '@lib/queryKeys'
 import { supabaseClient } from '@lib/supabase/client'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { GeoLocation, ParsedReceipt, ReceiptDetail, ReceiptListItem } from '@types'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -88,5 +88,31 @@ export function useReceiptDetail(id: string) {
     },
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5분
+  })
+}
+
+/**
+ * Hook for updating a receipt
+ */
+export function useUpdateReceipt(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: { receipt?: Partial<ParsedReceipt>; location?: { lat: number; lon: number } | null; feeling?: string | null; memo?: string | null }) => {
+      const response = await fetch(`/api/receipts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to update receipt')
+      }
+      return response.json() as Promise<ReceiptDetail>
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.receipts.detail(id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.receipts.lists() })
+    },
   })
 }
