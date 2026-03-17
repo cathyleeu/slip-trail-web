@@ -39,6 +39,7 @@ function prepareUpdateData(
 ): Record<string, unknown> {
   const allowedFields = [
     'vendor',
+    'category',
     'address',
     'phone',
     'purchased_at',
@@ -48,6 +49,8 @@ function prepareUpdateData(
     'raw_text',
     'items',
     'charges',
+    'feeling',
+    'memo',
   ] as const
 
   return Object.fromEntries(
