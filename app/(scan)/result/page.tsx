@@ -162,14 +162,16 @@ export default function ResultPage() {
   }
 
   const handleSave = async () => {
+    console.log('Clicked', { receipt, place, file })
     try {
       if (isEditMode) {
         setIsEditMode(false)
         setOriginalReceipt(null)
         return
       }
-
-      if (!receipt || !place) return
+      console.log('Saving receipt with data:', { receipt, place, file })
+      // FIXME: place 정보가 없는 경우도 처리 (예: OCR에서 주소를 못 뽑아낸 경우) - 현재는 저장 막음, 나중에 장소 정보 없이도 저장 가능하도록 개선 필요
+      if (!receipt) return
       if (!file) {
         alert('No image file found. Please scan or upload again.')
         return
@@ -277,7 +279,6 @@ export default function ResultPage() {
               />
             </svg>
             <p className="text-sm font-medium">위치를 불러오지 못했습니다</p>
-            <p className="text-xs mt-1">영수증에 주소 정보가 없습니다</p>
           </div>
         )}
       </Card>
