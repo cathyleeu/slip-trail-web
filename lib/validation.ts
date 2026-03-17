@@ -37,6 +37,7 @@ export const feelingTagSchema = z.enum([
  */
 export const parsedReceiptSchema = z.object({
   vendor: z.string(),
+  category: z.string().optional(),
   address: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
   purchased_at: z.string().nullable().optional(), // ISO date string
