@@ -126,6 +126,12 @@ export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown, context
 /**
  * Parse JSON from FormData with validation
  */
+export function parseFormJsonOptional<T>(form: FormData, key: string, schema: z.ZodSchema<T>): T | null {
+  const value = form.get(key)
+  if (!value || value === 'null') return null
+  return parseFormJson(form, key, schema)
+}
+
 export function parseFormJson<T>(form: FormData, key: string, schema: z.ZodSchema<T>): T {
   const value = form.get(key)
 
