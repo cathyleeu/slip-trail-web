@@ -1,7 +1,7 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET, ERROR_MESSAGES, STORAGE_BUCKET } from '@lib/constants'
-import { parseFormJson, parsedReceiptSchema, placeSchema } from '@lib/validation'
+import { parseFormJson, parseFormJsonOptional, parsedReceiptSchema, placeSchema } from '@lib/validation'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
   const form = await req.formData()
@@ -12,7 +12,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   }
 
   const receipt = parseFormJson(form, 'receipt', parsedReceiptSchema)
-  const place = parseFormJson(form, 'place', placeSchema)
+  const place = parseFormJsonOptional(form, 'place', placeSchema)
 
   // 1) Storage 업로드
   const extFromType = image.type === 'image/webp' ? 'webp' : 'bin'
