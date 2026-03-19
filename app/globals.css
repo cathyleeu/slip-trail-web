@@ -1,8 +1,39 @@
 @import "tailwindcss";
 
+/* ============================================
+   Design Tokens
+   ============================================ */
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+
+  /* Brand */
+  --brand: #3b82f6;          /* blue-500 */
+  --brand-dark: #2563eb;     /* blue-600 */
+  --brand-muted: #eff6ff;    /* blue-50  */
+  --brand-light: #dbeafe;    /* blue-100 */
+
+  /* Foreground (text) */
+  --fg: #111827;             /* gray-900 — headings, primary labels */
+  --fg-soft: #374151;        /* gray-700 — secondary labels, form text */
+  --fg-muted: #4b5563;       /* gray-600 — body copy, descriptions (WCAG AA ✓) */
+  --fg-subtle: #9ca3af;      /* gray-400 — hints, icons, disabled */
+
+  /* Surface (background) */
+  --surface: #ffffff;
+  --surface-raised: #f9fafb; /* gray-50 */
+  --surface-subtle: #f3f4f6; /* gray-100 */
+  --surface-medium: #e5e7eb; /* gray-200 — hover on subtle */
+
+  /* Border */
+  --border: #e5e7eb;         /* gray-200 */
+  --border-strong: #d1d5db;  /* gray-300 */
+
+  /* Status */
+  --error: #ef4444;          /* red-500 */
+  --error-bg: #fef2f2;       /* red-50 */
+  --success: #16a34a;        /* green-600 */
 }
 
 @theme inline {
@@ -10,17 +41,37 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand */
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-light: var(--brand-light);
+
+  /* Foreground */
+  --color-fg: var(--fg);
+  --color-fg-soft: var(--fg-soft);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  /* Surface */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-medium: var(--surface-medium);
+
+  /* Border */
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  /* Status */
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-success: var(--success);
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--fg);
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
 }
