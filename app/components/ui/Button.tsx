@@ -32,13 +32,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantStyles = {
-      filled: 'rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:hover:bg-blue-500',
+      filled: 'rounded-lg bg-brand text-white hover:bg-brand-dark disabled:hover:bg-brand',
       outlined:
-        'rounded-lg border-2 border-blue-500 text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
-      ghost: 'rounded-lg text-blue-500 hover:bg-blue-50 disabled:hover:bg-transparent',
+        'rounded-lg border-2 border-brand text-brand hover:bg-brand-muted disabled:hover:bg-transparent',
+      ghost: 'rounded-lg text-brand hover:bg-brand-muted disabled:hover:bg-transparent',
       tag: selected
-        ? 'rounded-full bg-blue-600 text-white'
-        : 'rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200',
+        ? 'rounded-full bg-brand text-white'
+        : 'rounded-full bg-surface-subtle text-fg-soft hover:bg-surface-medium',
     }
 
     const sizeStyles = {

@@ -7,7 +7,7 @@ interface CardProps {
 }
 
 export function Card({ children, className }: CardProps) {
-  return <div className={cn('rounded-xl bg-white shadow-sm', className)}>{children}</div>
+  return <div className={cn('rounded-xl bg-surface shadow-sm', className)}>{children}</div>
 }
 
 interface CardHeaderProps {
@@ -20,8 +20,8 @@ interface CardHeaderProps {
 export function CardHeader({ title, subtitle, action, className }: CardHeaderProps) {
   return (
     <div className={cn('flex items-center justify-between px-2', className)}>
-      <div className="text-sm font-semibold text-gray-900">{title}</div>
-      {subtitle && <div className="text-xs text-gray-400">{subtitle}</div>}
+      <div className="text-sm font-semibold text-fg">{title}</div>
+      {subtitle && <div className="text-xs text-fg-subtle">{subtitle}</div>}
       {action}
     </div>
   )

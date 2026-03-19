@@ -19,8 +19,8 @@ export function Header({ title, showBack = true, onBack, rightAction }: HeaderPr
   }
 
   return (
-    <div className="sticky top-0 bg-white border-b border-gray-200 h-[58px] px-4 py-3 flex items-center justify-between z-50">
-      <div className="flex items-center text-cyan-950 flex-1">
+    <div className="sticky top-0 bg-surface border-b border-border h-[58px] px-4 py-3 flex items-center justify-between z-50">
+      <div className="flex items-center text-fg flex-1">
         {showBack && (
           <IconButton onClick={handleBack} className="-ml-2 shadow-none">
             <ChevronLeftIcon />

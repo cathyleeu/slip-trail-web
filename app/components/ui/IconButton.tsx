@@ -20,10 +20,10 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       'inline-flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantStyles = {
-      filled: 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg disabled:hover:bg-white',
+      filled: 'bg-surface text-fg-soft hover:bg-surface-raised shadow-lg disabled:hover:bg-surface',
       outlined:
-        'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-transparent',
-      ghost: 'text-gray-700 hover:bg-gray-100 disabled:hover:bg-transparent',
+        'border-2 border-border-strong text-fg-soft hover:bg-surface-raised disabled:hover:bg-transparent',
+      ghost: 'text-fg-soft hover:bg-surface-subtle disabled:hover:bg-transparent',
     }
 
     const sizeStyles = {
