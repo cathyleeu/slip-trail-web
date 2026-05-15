@@ -1,13 +1,24 @@
 import { cn } from '@utils'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 interface CardProps {
   children: ReactNode
   className?: string
+  style?: CSSProperties
 }
 
-export function Card({ children, className }: CardProps) {
-  return <div className={cn('rounded-xl bg-surface shadow-sm', className)}>{children}</div>
+export function Card({ children, className, style }: CardProps) {
+  return (
+    <div
+      className={cn(
+        'rounded-2xl bg-surface shadow-[0_2px_16px_rgba(0,0,0,0.06)]',
+        className
+      )}
+      style={style}
+    >
+      {children}
+    </div>
+  )
 }
 
 interface CardHeaderProps {

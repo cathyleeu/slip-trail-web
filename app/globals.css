@@ -1,34 +1,40 @@
 @import "tailwindcss";
 
 /* ============================================
-   Design Tokens
+   Design Tokens — Warm Utility
    ============================================ */
 
 :root {
   --background: #ffffff;
-  --foreground: #111827;
+  --foreground: #18181b;
 
-  /* Brand */
-  --brand: #3b82f6;          /* blue-500 */
-  --brand-dark: #2563eb;     /* blue-600 */
-  --brand-muted: #eff6ff;    /* blue-50  */
-  --brand-light: #dbeafe;    /* blue-100 */
+  /* Brand — zinc (neutral-warm primary) */
+  --brand: #18181b;          /* zinc-900 — primary action */
+  --brand-dark: #09090b;     /* zinc-950 — hover on primary */
+  --brand-muted: #f4f4f5;    /* zinc-100 — subtle hover bg */
+  --brand-light: #fafafa;    /* zinc-50  — lightest tint */
+
+  /* Accent — amber (money / spending warmth) */
+  --accent: #f59e0b;         /* amber-500 */
+  --accent-dark: #d97706;    /* amber-600 */
+  --accent-light: #fef3c7;   /* amber-100 */
+  --accent-muted: #fffbeb;   /* amber-50  */
 
   /* Foreground (text) */
-  --fg: #111827;             /* gray-900 — headings, primary labels */
-  --fg-soft: #374151;        /* gray-700 — secondary labels, form text */
-  --fg-muted: #4b5563;       /* gray-600 — body copy, descriptions (WCAG AA ✓) */
-  --fg-subtle: #9ca3af;      /* gray-400 — hints, icons, disabled */
+  --fg: #18181b;             /* zinc-900 — headings, primary labels */
+  --fg-soft: #3f3f46;        /* zinc-700 — secondary labels, form text */
+  --fg-muted: #52525b;       /* zinc-600 — body copy, descriptions (WCAG AA ✓) */
+  --fg-subtle: #a1a1aa;      /* zinc-400 — hints, icons, disabled */
 
   /* Surface (background) */
   --surface: #ffffff;
-  --surface-raised: #f9fafb; /* gray-50 */
-  --surface-subtle: #f3f4f6; /* gray-100 */
-  --surface-medium: #e5e7eb; /* gray-200 — hover on subtle */
+  --surface-raised: #fafafa; /* zinc-50  */
+  --surface-subtle: #f4f4f5; /* zinc-100 */
+  --surface-medium: #e4e4e7; /* zinc-200 — hover on subtle */
 
   /* Border */
-  --border: #e5e7eb;         /* gray-200 */
-  --border-strong: #d1d5db;  /* gray-300 */
+  --border: #e4e4e7;         /* zinc-200 */
+  --border-strong: #d4d4d8;  /* zinc-300 */
 
   /* Status */
   --error: #ef4444;          /* red-500 */
@@ -47,6 +53,12 @@
   --color-brand-dark: var(--brand-dark);
   --color-brand-muted: var(--brand-muted);
   --color-brand-light: var(--brand-light);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-light: var(--accent-light);
+  --color-accent-muted: var(--accent-muted);
 
   /* Foreground */
   --color-fg: var(--fg);

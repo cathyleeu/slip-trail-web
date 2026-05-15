@@ -28,21 +28,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-full overflow-auto p-4 space-y-4 flex-1 flex flex-col">
+    <div className="h-full overflow-auto px-6 pt-12 pb-8 flex-1 flex flex-col">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8"
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="space-y-10 flex-1"
       >
         {/* Title */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-600">Log in to track your receipts and locations efficiently.</p>
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">Welcome back</p>
+          <h1 className="text-3xl font-extrabold text-zinc-900 leading-tight">
+            Pick up where<br />you left off.
+          </h1>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-6">
-          {/* Email Input */}
+        <form onSubmit={handleLogin} className="space-y-5">
           <InputField label="Email address">
             <InputField.Wrapper>
               <InputField.Input
@@ -53,13 +55,12 @@ export default function LoginPage() {
                 required
               />
               <InputField.Action>
-                <EmailIcon className="text-gray-400" />
+                <EmailIcon className="text-zinc-400" />
               </InputField.Action>
             </InputField.Wrapper>
           </InputField>
 
-          {/* Password Input */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <InputField label="Password">
               <InputField.Wrapper>
                 <InputField.Input
@@ -71,9 +72,9 @@ export default function LoginPage() {
                 />
                 <InputField.Action onClick={password.togglePasswordVisibility}>
                   {password.showPassword ? (
-                    <EyeOffIcon className="text-gray-400 w-4 h-4" />
+                    <EyeOffIcon className="text-zinc-400 w-4 h-4" />
                   ) : (
-                    <EyeIcon className="text-gray-400 w-4 h-4" />
+                    <EyeIcon className="text-zinc-400 w-4 h-4" />
                   )}
                 </InputField.Action>
               </InputField.Wrapper>
@@ -82,58 +83,43 @@ export default function LoginPage() {
               <Button
                 variant="ghost"
                 onClick={() => router.push('/forgot-password')}
-                className="text-sm text-blue-600 hover:bg-transparent"
+                className="text-sm text-zinc-500 hover:text-zinc-900 hover:bg-transparent px-0"
               >
-                Forgot Password?
+                Forgot password?
               </Button>
             </div>
           </div>
 
           {error && (
             <motion.p
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-red-500 text-sm bg-red-50 p-3 rounded-lg"
+              className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl"
             >
               {error}
             </motion.p>
           )}
 
-          {/* Login Button */}
-          <Button
-            whileTap={{ scale: 0.98 }}
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-zinc-900 text-white py-4 rounded-2xl font-semibold text-base shadow-sm hover:bg-zinc-800 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
-            {loading ? 'Logging in...' : 'Log In'}
-          </Button>
+            {loading ? 'Signing in…' : 'Log In'}
+          </button>
         </form>
-
-        {/* Divider */}
-        {/* <Divider label="Or continue with" />
-        <div className="space-y-3">
-          <Button className="w-full bg-black text-white py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors">
-            <AppleIcon />
-            Continue with Apple
-          </Button>
-          <Button className="w-full bg-white border border-gray-300 text-gray-900 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
-            <GoogleIcon />
-            Continue with Google
-          </Button>
-        </div> */}
       </motion.div>
 
       {/* Sign Up Link */}
-      <div className="mt-auto pt-8 text-center">
-        <p className="text-gray-600">
+      <div className="pt-8 text-center">
+        <p className="text-zinc-500 text-sm">
           Don&apos;t have an account?{' '}
-          <Button
-            variant="ghost"
+          <button
             onClick={() => router.push('/signup')}
-            className="text-blue-600 font-semibold hover:bg-transparent"
+            className="text-zinc-900 font-semibold hover:underline"
           >
             Sign up
-          </Button>
+          </button>
         </p>
       </div>
     </div>
