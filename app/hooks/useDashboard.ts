@@ -134,6 +134,81 @@ export function useDashboardRecentPlaces(
   })
 }
 
+// ============ Map Receipts (with lat/lon) ============
+type MapReceipt = {
+  id: string
+  vendor: string
+  category: string | null
+  total: number | null
+  feeling: string | null
+  purchased_at: string
+  lat: number
+  lon: number
+  place_name: string | null
+}
+
+export function useMapReceipts(
+  period: Period = 'last30',
+  options?: Omit<UseQueryOptions<MapReceipt[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: queryKeys.mapReceipts.byPeriod(period),
+    queryFn: async () => {
+      return request<MapReceipt[]>(`/api/map-receipts?period=${period}`, {
+        unwrapApiSuccess: true,
+      })
+    },
+    staleTime: 1000 * 60 * 3,
+    ...options,
+  })
+}
+
+// ============ Emotion Breakdown ============
+type EmotionSlice = {
+  feeling: string
+  count: number
+  total: number
+}
+
+export function useEmotionBreakdown(
+  period: Period = 'last30',
+  options?: Omit<UseQueryOptions<EmotionSlice[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: queryKeys.dashboard.emotionBreakdown(period),
+    queryFn: async () => {
+      return request<EmotionSlice[]>(`/api/dashboard/emotion-breakdown?period=${period}`, {
+        unwrapApiSuccess: true,
+      })
+    },
+    staleTime: 1000 * 60 * 3,
+    ...options,
+  })
+}
+
+// ============ Emotion by Time of Day ============
+type EmotionCell = {
+  session: string
+  feeling: string
+  count: number
+}
+
+export function useEmotionByHour(
+  period: Period = 'last30',
+  options?: Omit<UseQueryOptions<EmotionCell[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: queryKeys.dashboard.emotionByHour(period),
+    queryFn: async () => {
+      return request<EmotionCell[]>(`/api/dashboard/emotion-by-hour?period=${period}`, {
+        unwrapApiSuccess: true,
+      })
+    },
+    staleTime: 1000 * 60 * 3,
+    ...options,
+  })
+}
+
 // ============ Dashboard Category Breakdown =========
 export function useDashboardCategoryBreakdown(
   period: Period = 'last30',

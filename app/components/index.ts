@@ -1,3 +1,4 @@
+export { default as BottomNav } from './BottomNav'
 export * from './Divider'
 export * from './Header'
 export * from './Input'

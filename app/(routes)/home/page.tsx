@@ -178,10 +178,10 @@ export default function HomePage() {
 
                 {/* Floating button on map */}
                 <Link
-                  href="/receipts"
+                  href="/map"
                   className="absolute bottom-2 right-2 z-1000 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all group"
                 >
-                  <span className="text-sm font-medium text-gray-700">View spend journey</span>
+                  <span className="text-sm font-medium text-gray-700">View trail</span>
                   <span className="text-gray-400 group-hover:translate-x-1 transition-transform text-sm">
                     →
                   </span>
@@ -193,7 +193,7 @@ export default function HomePage() {
       </div>
 
       {/* CTA — always pinned to bottom of viewport, centered within max-width */}
-      <div className="px-6 pb-6 pt-3 flex items-center gap-3 fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-1000">
+      <div className="px-6 pb-4 pt-3 flex items-center gap-3 fixed bottom-[58px] left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[999]">
         <Link
           href="/camera"
           className="flex-1 flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-5 py-4 active:scale-[0.98] transition-all shadow-lg"
