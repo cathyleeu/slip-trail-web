@@ -26,9 +26,24 @@ export const FEELING_TAGS = [
   'Celebration',
 ] as const
 
+export const FEELING_EMOJIS: Record<FeelingTag, string> = {
+  Necessary: '✅',
+  Impulsive: '⚡',
+  Social: '👥',
+  Treat: '🎁',
+  Routine: '🔄',
+  Stress: '😤',
+  Celebration: '🎉',
+}
+
 /**
  * Feeling 태그에 해당하는 스타일 반환
  */
 export function getFeelingStyle(feeling: FeelingTag | null | undefined) {
   return feeling ? FEELING_STYLES[feeling] : null
+}
+
+export function getFeelingEmoji(feeling: string | null | undefined): string | null {
+  if (!feeling) return null
+  return FEELING_EMOJIS[feeling as FeelingTag] ?? null
 }

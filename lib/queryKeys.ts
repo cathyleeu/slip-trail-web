@@ -14,6 +14,16 @@ export const queryKeys = {
     recentPlaces: () => [...queryKeys.dashboard.all, 'recent-places'] as const,
     categoryBreakdown: (period: string) =>
       [...queryKeys.dashboard.all, 'category-breakdown', period] as const,
+    emotionBreakdown: (period: string) =>
+      [...queryKeys.dashboard.all, 'emotion-breakdown', period] as const,
+    emotionByHour: (period: string) =>
+      [...queryKeys.dashboard.all, 'emotion-by-hour', period] as const,
+  },
+
+  // Map receipts
+  mapReceipts: {
+    all: ['map-receipts'] as const,
+    byPeriod: (period: string) => [...queryKeys.mapReceipts.all, period] as const,
   },
 
   // Receipt queries
