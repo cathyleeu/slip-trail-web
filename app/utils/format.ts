@@ -46,3 +46,26 @@ export function formatDateTime(v: string | Date | null | undefined) {
   const ss = String(d.getUTCSeconds()).padStart(2, '0')
   return `${yyyy}.${mm}.${dd} ${hh}:${min}:${ss}`
 }
+
+export function formatRelativeTime(v: string | Date | null | undefined): string {
+  if (!v) return '—'
+  const d = typeof v === 'string' ? new Date(v) : v
+  if (Number.isNaN(d.getTime())) return '—'
+
+  const now = new Date()
+  const diffMs = now.getTime() - d.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffDays === 0) return `Today · ${timeStr}`
+  if (diffDays === 1) return `Yesterday · ${timeStr}`
+  if (diffDays < 7) {
+    return d.toLocaleDateString('en-US', { weekday: 'short' }) + ` · ${timeStr}`
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}

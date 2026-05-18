@@ -30,7 +30,7 @@ export default function ReceiptsPage() {
   const allReceipts = data?.pages.flatMap((page) => page.items) ?? []
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-zinc-50">
       <Header title="All Receipts" />
 
       {/* Content */}
@@ -54,10 +54,12 @@ export default function ReceiptsPage() {
         ) : isError ? (
           <div className="text-center py-12 text-gray-500">Failed to load receipts</div>
         ) : allReceipts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-3">🧾</div>
-            <p className="text-gray-500">No receipts yet</p>
-            <p className="text-sm text-gray-400 mt-1">Scan your first receipt to get started</p>
+          <div className="text-center py-16 px-6">
+            <div className="text-5xl mb-4">🗺️</div>
+            <p className="text-base font-semibold text-zinc-700">Your trail starts here.</p>
+            <p className="text-sm text-zinc-400 mt-1.5 leading-relaxed">
+              Scan your first receipt to drop a pin and begin tracking your spending journey.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">

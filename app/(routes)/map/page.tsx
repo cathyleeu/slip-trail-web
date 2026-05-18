@@ -5,12 +5,13 @@ import { useMapReceipts } from '@hooks/useDashboard'
 import { getFeelingEmoji } from '@lib/feelings'
 import type { FeelingTag } from '@types'
 import { money } from '@utils'
+import { AnimatePresence, motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
 const Map = dynamic(() => import('@components/map'), {
   ssr: false,
-  loading: () => <div className="flex items-center justify-center h-full bg-gray-100" />,
+  loading: () => <div className="h-full bg-zinc-100" />,
 })
 
 const DynamicSpendMarker = dynamic(() => import('@components/map/SpendMarker'), { ssr: false })
@@ -69,7 +70,6 @@ export default function MapPage() {
 
   const trailPositions: [number, number][] = filtered.map((r) => [r.lat, r.lon])
 
-  // Map center: first receipt or user location or Vancouver default
   const mapCenter =
     filtered.length > 0
       ? { lat: filtered[filtered.length - 1].lat, lon: filtered[filtered.length - 1].lon }
@@ -90,27 +90,30 @@ export default function MapPage() {
 
   return (
     <div className="h-[calc(100vh-116px)] relative">
-      {/* Period filter chips */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex gap-2">
-        {PERIOD_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => { setPeriod(opt.value); setSelected(null) }}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shadow transition-all ${
-              period === opt.value
-                ? 'bg-gray-900 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+      {/* Segment control — period filter */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]">
+        <div className="flex bg-white rounded-2xl shadow-md p-1 gap-0.5 border border-zinc-100">
+          {PERIOD_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => { setPeriod(opt.value); setSelected(null) }}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                period === opt.value
+                  ? 'bg-zinc-900 text-white shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Receipt count badge */}
+      {/* Stops badge */}
       {filtered.length > 0 && (
-        <div className="absolute top-3 right-3 z-[1000] bg-white rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 shadow">
-          {filtered.length} stops
+        <div className="absolute top-3 right-3 z-[1000] bg-white rounded-full px-3 py-1.5 shadow border border-zinc-100 flex items-center gap-1.5">
+          <span className="text-xs">📍</span>
+          <span className="text-xs font-semibold text-zinc-700">{filtered.length} stops</span>
         </div>
       )}
 
@@ -127,44 +130,73 @@ export default function MapPage() {
         {locationLoading ? <Spinner /> : <LocationPin />}
       </IconButton>
 
-      {/* Selected receipt popup */}
-      {selected && (
-        <div
-          className="absolute bottom-32 left-1/2 -translate-x-1/2 z-[9999] bg-white rounded-2xl shadow-xl px-5 py-4 w-72"
-          onClick={() => setSelected(null)}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="font-semibold text-gray-900 text-sm">{selected.vendor}</div>
-              {selected.place_name && (
-                <div className="text-xs text-gray-400 mt-0.5">{selected.place_name}</div>
-              )}
-              <div className="text-xs text-gray-400 mt-0.5">
-                {new Date(selected.purchased_at).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </div>
-            </div>
-            <div className="text-right shrink-0">
-              <div className="font-bold text-gray-900">{money(selected.total ?? 0)}</div>
-              {selected.feeling && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {getFeelingEmoji(selected.feeling as FeelingTag)} {selected.feeling}
+      {/* Bottom sheet popup for selected receipt */}
+      <AnimatePresence>
+        {selected && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-[9998]"
+              onClick={() => setSelected(null)}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: 120, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 120, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+              className="absolute bottom-4 left-4 right-4 z-[9999] bg-white rounded-3xl shadow-2xl px-6 py-5 border border-zinc-100"
+            >
+              {/* Handle */}
+              <div className="w-8 h-1 bg-zinc-200 rounded-full mx-auto mb-4" />
+
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-zinc-900 text-base truncate">{selected.vendor}</div>
+                  {selected.place_name && (
+                    <div className="text-xs text-zinc-400 mt-0.5 truncate">📍 {selected.place_name}</div>
+                  )}
+                  <div className="text-xs text-zinc-400 mt-1">
+                    {new Date(selected.purchased_at).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-          <div className="mt-2 text-xs text-center text-gray-300">tap to dismiss</div>
-        </div>
-      )}
+
+                <div className="text-right shrink-0">
+                  <div className="text-xl font-black text-zinc-900 tabular-nums">
+                    {money(selected.total ?? 0)}
+                  </div>
+                  {selected.feeling && (
+                    <div className="text-xs text-zinc-500 mt-1">
+                      {getFeelingEmoji(selected.feeling as FeelingTag)} {selected.feeling}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelected(null)}
+                className="mt-4 w-full py-2.5 rounded-xl bg-zinc-100 text-xs font-semibold text-zinc-600 hover:bg-zinc-200 transition-colors"
+              >
+                Dismiss
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="absolute inset-x-0 bottom-24 z-[1000] flex justify-center pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow text-sm text-gray-500">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-5 py-3 shadow border border-zinc-100 text-xs font-medium text-zinc-500">
             No receipts with location for this period
           </div>
         </div>

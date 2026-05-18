@@ -1,7 +1,8 @@
 import { apiError, apiSuccess } from '@lib/apiResponse'
 
 export async function POST(req: Request) {
-  const { address } = await req.json()
+  const body = await req.json()
+  const { address, multiple } = body
 
   if (!address) {
     return apiError('Address required', { status: 400 })
@@ -10,7 +11,7 @@ export async function POST(req: Request) {
   const url = new URL('https://nominatim.openstreetmap.org/search')
   url.searchParams.set('q', address)
   url.searchParams.set('format', 'jsonv2')
-  url.searchParams.set('limit', '5')
+  url.searchParams.set('limit', multiple ? '5' : '1')
   url.searchParams.set('addressdetails', '1')
 
   const res = await fetch(url.toString(), {
@@ -27,5 +28,5 @@ export async function POST(req: Request) {
     return apiError('Address not found', { status: 404 })
   }
 
-  return apiSuccess(data[0])
+  return apiSuccess(multiple ? data : data[0])
 }
