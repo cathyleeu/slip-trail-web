@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@components/ui'
-import { AnimatePresence, motion } from 'motion/react'
+import { BaseDialog } from '@components/ui'
+import Button from '@components/ui/Button'
 import { useState } from 'react'
 
 type TipPromptDialogProps = {
@@ -15,19 +15,16 @@ const TIP_PERCENTAGES = [15, 18, 20, 25]
 
 export function TipPromptDialog({ isOpen, onClose, onSave, subtotal }: TipPromptDialogProps) {
   const [tipAmount, setTipAmount] = useState('')
-  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null)
+  const [selectedPct, setSelectedPct] = useState<number | null>(null)
 
-  const handlePercentageClick = (percentage: number) => {
-    setSelectedPercentage(percentage)
-    if (subtotal) {
-      const calculated = (subtotal * percentage) / 100
-      setTipAmount(calculated.toFixed(2))
-    }
+  const handlePctClick = (pct: number) => {
+    setSelectedPct(pct)
+    if (subtotal) setTipAmount(((subtotal * pct) / 100).toFixed(2))
   }
 
   const handleInputChange = (value: string) => {
     setTipAmount(value)
-    setSelectedPercentage(null) // Clear percentage selection when manually entering
+    setSelectedPct(null)
   }
 
   const handleSave = () => {
@@ -35,94 +32,72 @@ export function TipPromptDialog({ isOpen, onClose, onSave, subtotal }: TipPrompt
     if (!isNaN(amount) && amount > 0) {
       onSave(amount)
       setTipAmount('')
-      setSelectedPercentage(null)
+      setSelectedPct(null)
     }
   }
 
-  const handleCancel = () => {
+  const handleClose = () => {
     setTipAmount('')
-    setSelectedPercentage(null)
+    setSelectedPct(null)
     onClose()
   }
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={handleCancel}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-sm mx-4 bg-surface rounded-2xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 space-y-5">
-              {/* Header */}
-              <div className="text-center">
-                <div className="text-3xl mb-2">💰</div>
-                <h2 className="text-xl font-bold text-fg">Add a tip?</h2>
-                <p className="text-sm text-fg-muted mt-1">
-                  Would you like to add a tip to this receipt?
-                </p>
-              </div>
+    <BaseDialog isOpen={isOpen} onClose={handleClose}>
+      <div className="bg-surface rounded-2xl shadow-2xl overflow-hidden">
+        <div className="p-6 space-y-5">
+          <div className="text-center">
+            <div className="text-3xl mb-2">💰</div>
+            <h2 className="text-xl font-bold text-fg">Add a tip?</h2>
+            <p className="text-sm text-fg-muted mt-1">
+              Would you like to add a tip to this receipt?
+            </p>
+          </div>
 
-              {/* Quick percentage buttons */}
-              {subtotal && subtotal > 0 && (
-                <div className="flex gap-2 justify-center">
-                  {TIP_PERCENTAGES.map((pct) => (
-                    <button
-                      key={pct}
-                      onClick={() => handlePercentageClick(pct)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedPercentage === pct
-                          ? 'bg-brand text-white'
-                          : 'bg-surface-subtle text-fg-soft hover:bg-surface-medium'
-                      }`}
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Tip input */}
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-subtle text-lg">
-                  $
-                </span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={tipAmount}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="w-full pl-8 pr-4 py-3 text-center text-2xl font-semibold border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-fg"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3">
-                <Button variant="ghost" onClick={handleCancel} className="flex-1 py-3">
-                  Skip
-                </Button>
+          {subtotal && subtotal > 0 && (
+            <div className="flex gap-2 justify-center">
+              {TIP_PERCENTAGES.map((pct) => (
                 <Button
-                  onClick={handleSave}
-                  disabled={!tipAmount || parseFloat(tipAmount) <= 0}
-                  className="flex-1 py-3"
+                  key={pct}
+                  size="sm"
+                  variant={selectedPct === pct ? 'filled' : 'ghost'}
+                  onClick={() => handlePctClick(pct)}
+                  className="px-3 py-2"
                 >
-                  Add Tip
+                  {pct}%
                 </Button>
-              </div>
+              ))}
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          )}
+
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-subtle text-lg">
+              $
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={tipAmount}
+              onChange={(e) => handleInputChange(e.target.value)}
+              className="w-full pl-8 pr-4 py-3 text-center text-2xl font-semibold border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-fg"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={handleClose} className="flex-1 py-3">
+              Skip
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!tipAmount || parseFloat(tipAmount) <= 0}
+              className="flex-1 py-3"
+            >
+              Add Tip
+            </Button>
+          </div>
+        </div>
+      </div>
+    </BaseDialog>
   )
 }

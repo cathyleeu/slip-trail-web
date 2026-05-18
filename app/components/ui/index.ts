@@ -1,4 +1,6 @@
 export { default as Avatar } from './Avatar'
+export { BaseDialog } from './BaseDialog'
+export type { BaseDialogProps } from './BaseDialog'
 export { default as Button } from './Button'
 export type { ButtonProps, ButtonSize, ButtonVariant } from './Button'
 export { Card, CardContent, CardHeader } from './Card'

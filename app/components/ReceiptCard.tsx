@@ -2,7 +2,7 @@
 
 import { Card } from '@components/ui'
 import { getCategoryEmoji } from '@lib/categories'
-import { FEELING_STYLES } from '@lib/feelings'
+import { FEELING_STYLES, getFeelingBorderColor } from '@lib/feelings'
 import type { FeelingTag, ReceiptListItem } from '@types'
 import { cn } from '@utils/cn'
 import { formatRelativeTime, money } from '@utils/format'
@@ -18,20 +18,7 @@ export function ReceiptCard({ receipt }: ReceiptCardProps) {
   const feelingStyle = receipt.feeling
     ? FEELING_STYLES[receipt.feeling as FeelingTag]
     : null
-
-  // Left border color derived from feeling
-  const borderColorMap: Record<FeelingTag, string> = {
-    Necessary: 'border-l-green-400',
-    Impulsive: 'border-l-rose-400',
-    Social: 'border-l-sky-400',
-    Treat: 'border-l-violet-400',
-    Routine: 'border-l-zinc-300',
-    Stress: 'border-l-orange-400',
-    Celebration: 'border-l-amber-400',
-  }
-  const borderColor = receipt.feeling
-    ? borderColorMap[receipt.feeling as FeelingTag]
-    : 'border-l-transparent'
+  const borderColor = getFeelingBorderColor(receipt.feeling)
 
   return (
     <Link href={`/receipts/${receipt.id}`} className="block">
@@ -42,23 +29,21 @@ export function ReceiptCard({ receipt }: ReceiptCardProps) {
         )}
       >
         <div className="flex items-center justify-between gap-3">
-          {/* Left: Category emoji + vendor info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center text-lg shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-surface-subtle flex items-center justify-center text-lg shrink-0">
               {categoryEmoji}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-zinc-900 truncate leading-tight">{receipt.vendor}</h3>
-              <p className="text-xs text-zinc-400 mt-0.5">{formatRelativeTime(displayDate)}</p>
+              <h3 className="font-semibold text-fg truncate leading-tight">{receipt.vendor}</h3>
+              <p className="text-xs text-fg-subtle mt-0.5">{formatRelativeTime(displayDate)}</p>
               {receipt.memo && (
-                <p className="text-xs text-zinc-400 mt-0.5 truncate">{receipt.memo}</p>
+                <p className="text-xs text-fg-subtle mt-0.5 truncate">{receipt.memo}</p>
               )}
             </div>
           </div>
 
-          {/* Right: Total */}
           <div className="shrink-0 text-right">
-            <span className="text-xl font-black text-zinc-900 tracking-tight tabular-nums">
+            <span className="text-xl font-black text-fg tracking-tight tabular-nums">
               {receipt.total ? money(receipt.total) : '—'}
             </span>
             {receipt.feeling && feelingStyle && (
