@@ -14,6 +14,8 @@ export type AnalyzeOptions = {
   file: File
 }
 
+export type LocationStatus = 'found' | 'no_address' | 'not_found' | 'error'
+
 /**
  * Receipt analysis success result
  */
@@ -23,6 +25,7 @@ export type ReceiptAnalysisSuccess = {
   receipt: ParsedReceipt
   location: GeoLocation | null
   place: Place | null
+  locationStatus: LocationStatus
 }
 
 /**

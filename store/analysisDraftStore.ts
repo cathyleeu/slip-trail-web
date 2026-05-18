@@ -1,4 +1,4 @@
-import type { GeoLocation, ParsedReceipt, Place } from '@types'
+import type { GeoLocation, LocationStatus, ParsedReceipt, Place } from '@types'
 import { create } from 'zustand'
 
 function safeRevokeObjectUrl(url: string | null) {
@@ -11,6 +11,7 @@ type AnalysisDraftState = {
   receipt: ParsedReceipt | null
   location: GeoLocation | null
   place: Place | null
+  locationStatus: LocationStatus | null
   previewUrl: string | null
   draftPath: string | null
   imageFile: File | null
@@ -19,6 +20,7 @@ type AnalysisDraftState = {
   setFile: (file: File | null) => void
   setReceipt: (draft: ParsedReceipt) => void
   setLocation: (location: GeoLocation | null) => void
+  setLocationStatus: (status: LocationStatus | null) => void
   setPreviewUrl: (url: string) => void
   setDraftPath: (path: string | null) => void
   setPlace: (place: Place | null) => void
@@ -35,6 +37,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
   receipt: null,
   location: null,
   place: null,
+  locationStatus: null,
   previewUrl: null,
   draftPath: null,
   imageFile: null,
@@ -42,6 +45,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
   setFile: (file) => set({ file }),
   setReceipt: (receipt) => set({ receipt }),
   setLocation: (location) => set({ location }),
+  setLocationStatus: (locationStatus) => set({ locationStatus }),
   setPreviewUrl: (url) =>
     set((state) => {
       // Prevent leaking blob URLs
@@ -74,6 +78,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
       file: null,
       receipt: null,
       location: null,
+      locationStatus: null,
       previewUrl: null,
       draftPath: null,
       imageFile: null,

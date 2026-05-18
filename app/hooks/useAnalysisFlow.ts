@@ -13,7 +13,7 @@ type AnalyzeReceiptOptions = {
 
 export function useAnalysisFlow() {
   const { analyze, reset } = useAnalysisMutation()
-  const { setLocation, setPlace, setReceipt, clearPreview, setPreviewUrl, previewUrl, setFile } =
+  const { setLocation, setLocationStatus, setPlace, setReceipt, clearPreview, setPreviewUrl, previewUrl, setFile } =
     useAnalysisDraftStore()
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -44,6 +44,7 @@ export function useAnalysisFlow() {
         if (result.success) {
           setReceipt(result.receipt)
           setLocation(result.location)
+          setLocationStatus(result.locationStatus)
           setPlace(result.place)
           clearPreview()
           return result
@@ -63,7 +64,7 @@ export function useAnalysisFlow() {
         setIsProcessing(false)
       }
     },
-    [analyze, reset, setReceipt, setPlace, setLocation, setPreviewUrl, clearPreview, setFile]
+    [analyze, reset, setReceipt, setPlace, setLocation, setLocationStatus, setPreviewUrl, clearPreview, setFile]
   )
 
   return {
