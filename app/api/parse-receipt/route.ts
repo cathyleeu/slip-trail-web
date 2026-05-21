@@ -1,5 +1,5 @@
 import { apiError, apiSuccess } from '@lib/apiResponse'
-import { parseReceipt } from '@lib/groq'
+import { coerceCategory, parseReceipt } from '@lib/groq'
 import { log } from '@lib/logger'
 import { NextRequest } from 'next/server'
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // parse LLM response as JSON
-    let parsedJson: unknown
+    let parsedJson: Record<string, unknown>
     try {
       parsedJson = JSON.parse(llmResponse)
     } catch (parseError) {
@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
       })
       return apiError('Invalid JSON returned from LLM', { status: 500, details: llmResponse })
     }
+
+    // Normalize category to an allowed enum value regardless of what the LLM returned
+    parsedJson.category = coerceCategory(parsedJson.category as string | null | undefined)
 
     return apiSuccess(parsedJson)
   } catch (err) {

@@ -1,3 +1,4 @@
+import type { ReceiptCategoryValue } from '@lib/constants'
 import type { AddressNormalized } from './address'
 /**
  * Receipt domain types
@@ -36,16 +37,7 @@ export type ReceiptCharge = {
  * Parsed receipt data
  */
 
-export type ReceiptCategory =
-  | 'restaurant'
-  | 'coffee'
-  | 'mart'
-  | 'bar'
-  | 'fast_food'
-  | 'bakery'
-  | 'pharmacy'
-  | 'gas'
-  | 'other'
+export type ReceiptCategory = ReceiptCategoryValue
 
 export interface ParsedReceipt {
   vendor: string

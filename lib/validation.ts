@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RECEIPT_CATEGORIES } from './constants'
 
 // ============ Receipt Schemas ============
 
@@ -37,7 +38,7 @@ export const feelingTagSchema = z.enum([
  */
 export const parsedReceiptSchema = z.object({
   vendor: z.string(),
-  category: z.string().optional(),
+  category: z.enum(RECEIPT_CATEGORIES).catch('other'),
   address: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
   purchased_at: z.string().nullable().optional(), // ISO date string
