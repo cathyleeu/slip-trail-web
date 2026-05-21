@@ -2,12 +2,13 @@
 
 import { Card } from '@components/ui'
 import { useEmotionBreakdown, useEmotionByHour } from '@hooks/useDashboard'
-import { useTab } from '@hooks'
-import { FEELING_EMOJIS, FEELING_STYLES } from '@lib/feelings'
+import { FEELING_EMOJIS, FEELING_HEX_COLORS } from '@lib/feelings'
 import type { FeelingTag, Period } from '@types'
 import { money } from '@utils'
+import { motion } from 'motion/react'
+import { useState } from 'react'
 
-const PERIOD_TABS: { value: Period; label: string }[] = [
+const PERIOD_OPTIONS: { value: Period; label: string }[] = [
   { value: 'last7', label: '7 days' },
   { value: 'last30', label: '30 days' },
 ]
@@ -28,40 +29,29 @@ const SESSION_HOURS: Record<string, string> = {
   Night: 'midnight – 6am',
 }
 
-// Actual CSS color values for each feeling (used in bar fill)
-const FEELING_COLORS: Record<FeelingTag, string> = {
-  Necessary: '#22c55e',  // green-500
-  Impulsive: '#f43f5e',  // rose-500
-  Social: '#0ea5e9',     // sky-500
-  Treat: '#8b5cf6',      // violet-500
-  Routine: '#a1a1aa',    // zinc-400
-  Stress: '#f97316',     // orange-500
-  Celebration: '#f59e0b', // amber-500
-}
-
 type EmotionSlice = { feeling: string; count: number; total: number }
 type EmotionCell = { session: string; feeling: string; count: number }
 
 export default function InsightsPage() {
-  const { value: period, setValue: setPeriod } = useTab<Period>(PERIOD_TABS, 'last7')
+  const [period, setPeriod] = useState<Period>('last7')
   const { data: emotionBreakdown = [] } = useEmotionBreakdown(period)
   const { data: emotionByHour = [] } = useEmotionByHour(period)
 
-  const totalSpend = (emotionBreakdown as EmotionSlice[]).reduce((sum, e) => sum + e.total, 0)
-  const totalCount = (emotionBreakdown as EmotionSlice[]).reduce((sum, e) => sum + e.count, 0)
-  const topEmotion = (emotionBreakdown as EmotionSlice[])[0] ?? null
+  const breakdown = emotionBreakdown as EmotionSlice[]
+  const byHour = emotionByHour as EmotionCell[]
+
+  const totalSpend = breakdown.reduce((sum, e) => sum + e.total, 0)
+  const totalCount = breakdown.reduce((sum, e) => sum + e.count, 0)
+  const topEmotion = breakdown[0] ?? null
+  const topFeelingColor = topEmotion
+    ? (FEELING_HEX_COLORS[topEmotion.feeling as FeelingTag] ?? '#6366f1')
+    : '#6366f1'
 
   const heatmap = SESSIONS.map((session) => {
-    const cells = (emotionByHour as EmotionCell[]).filter((c) => c.session === session)
+    const cells = byHour.filter((c) => c.session === session)
     const max = Math.max(...cells.map((c) => c.count), 1)
     return { session, cells, max }
   })
-
-  const togglePeriod = () => setPeriod(period === 'last7' ? 'last30' : 'last7')
-
-  const topFeelingColor = topEmotion
-    ? FEELING_COLORS[topEmotion.feeling as FeelingTag] ?? '#6366f1'
-    : '#6366f1'
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-28">
@@ -69,16 +59,27 @@ export default function InsightsPage() {
       <div className="px-6 pt-8 pb-4 flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase mb-0.5">
-            {period === 'last7' ? 'This week' : 'This month'}
+            Spending patterns
           </p>
           <h1 className="text-2xl font-extrabold text-zinc-900">Insights</h1>
         </div>
-        <button
-          onClick={togglePeriod}
-          className="px-3.5 py-1.5 bg-white rounded-full text-xs font-semibold text-zinc-600 shadow-sm border border-zinc-100 active:scale-95 transition-all"
-        >
-          {period === 'last7' ? 'Month' : 'Week'}
-        </button>
+
+        {/* Segment control — consistent with Map page */}
+        <div className="flex bg-white rounded-2xl shadow-sm p-1 gap-0.5 border border-zinc-100">
+          {PERIOD_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPeriod(opt.value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                period === opt.value
+                  ? 'bg-zinc-900 text-white shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="px-6 space-y-4">
@@ -86,29 +87,39 @@ export default function InsightsPage() {
         {topEmotion ? (
           <Card
             className="px-6 py-6 overflow-hidden relative"
-            style={{ backgroundColor: topFeelingColor + '12' }}
+            style={{ backgroundColor: topFeelingColor + '14' }}
           >
+            {/* Decorative circle */}
             <div
-              className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-8 -mt-8 opacity-10"
+              className="absolute top-0 right-0 w-36 h-36 rounded-full -mr-10 -mt-10 opacity-10"
               style={{ backgroundColor: topFeelingColor }}
             />
-            <p className="text-xs font-semibold tracking-widest uppercase mb-3"
-               style={{ color: topFeelingColor }}>
+
+            <p
+              className="text-xs font-semibold tracking-widest uppercase mb-3"
+              style={{ color: topFeelingColor }}
+            >
               Most felt · {period === 'last7' ? 'this week' : 'this month'}
             </p>
+
             <div className="flex items-center gap-4">
-              <span className="text-5xl">
-                {FEELING_EMOJIS[topEmotion.feeling as FeelingTag] ?? '💸'}
-              </span>
+              <span className="text-5xl">{FEELING_EMOJIS[topEmotion.feeling as FeelingTag] ?? '💸'}</span>
               <div>
-                <div className="text-3xl font-black text-zinc-900 leading-tight">
-                  {topEmotion.feeling}
-                </div>
+                <div className="text-3xl font-black text-zinc-900 leading-tight">{topEmotion.feeling}</div>
                 <div className="text-sm text-zinc-500 mt-0.5">
-                  {topEmotion.count}× · {money(topEmotion.total)}
+                  {topEmotion.count}× — {money(topEmotion.total)}
                 </div>
               </div>
             </div>
+
+            {totalSpend > 0 && (
+              <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                <span className="text-xs text-zinc-500">Total tagged</span>
+                <span className="text-sm font-bold text-zinc-900 tabular-nums">
+                  {money(totalSpend)} · {totalCount} receipts
+                </span>
+              </div>
+            )}
           </Card>
         ) : (
           <Card className="px-6 py-6">
@@ -121,17 +132,22 @@ export default function InsightsPage() {
         )}
 
         {/* Emotion breakdown */}
-        {(emotionBreakdown as EmotionSlice[]).length > 0 && (
+        {breakdown.length > 0 && (
           <Card className="px-5 py-5 space-y-4">
             <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               Emotion breakdown
             </p>
             <div className="space-y-4">
-              {(emotionBreakdown as EmotionSlice[]).map((e) => {
+              {breakdown.map((e, i) => {
                 const widthPct = totalSpend > 0 ? (e.total / totalSpend) * 100 : 0
-                const color = FEELING_COLORS[e.feeling as FeelingTag] ?? '#6366f1'
+                const color = FEELING_HEX_COLORS[e.feeling as FeelingTag] ?? '#6366f1'
                 return (
-                  <div key={e.feeling}>
+                  <motion.div
+                    key={e.feeling}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.3 }}
+                  >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span className="text-base">{FEELING_EMOJIS[e.feeling as FeelingTag]}</span>
@@ -143,12 +159,15 @@ export default function InsightsPage() {
                       </span>
                     </div>
                     <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${widthPct}%`, backgroundColor: color }}
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: color }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${widthPct}%` }}
+                        transition={{ delay: i * 0.06 + 0.15, duration: 0.5, ease: 'easeOut' }}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -156,7 +175,7 @@ export default function InsightsPage() {
         )}
 
         {/* Time of day heatmap */}
-        {(emotionByHour as EmotionCell[]).length > 0 && (
+        {byHour.length > 0 && (
           <Card className="px-5 py-5 space-y-4">
             <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
               When do you spend?
@@ -164,8 +183,8 @@ export default function InsightsPage() {
             <div className="space-y-4">
               {heatmap.map(({ session, cells, max }) => {
                 if (cells.length === 0) return null
-                const totalInSession = cells.reduce((s: number, c: EmotionCell) => s + c.count, 0)
-                const sortedCells = [...cells].sort((a: EmotionCell, b: EmotionCell) => b.count - a.count)
+                const totalInSession = cells.reduce((s, c) => s + c.count, 0)
+                const sortedCells = [...cells].sort((a, b) => b.count - a.count)
                 return (
                   <div key={session}>
                     <div className="flex items-center justify-between mb-2">
@@ -178,18 +197,17 @@ export default function InsightsPage() {
                       <span className="text-xs text-zinc-400">{totalInSession}×</span>
                     </div>
                     <div className="flex gap-1.5 flex-wrap">
-                      {sortedCells.map((cell: EmotionCell) => {
+                      {sortedCells.map((cell) => {
                         const opacity = Math.max(0.25, cell.count / max)
-                        const color = FEELING_COLORS[cell.feeling as FeelingTag] ?? '#6366f1'
+                        const color = FEELING_HEX_COLORS[cell.feeling as FeelingTag] ?? '#6366f1'
+                        const alphaByte = Math.round(opacity * 255).toString(16).padStart(2, '0')
                         return (
                           <div
                             key={cell.feeling}
                             className="flex items-center gap-1 rounded-full px-2.5 py-1"
-                            style={{ backgroundColor: color + Math.round(opacity * 255).toString(16).padStart(2, '0') }}
+                            style={{ backgroundColor: color + alphaByte }}
                           >
-                            <span className="text-xs">
-                              {FEELING_EMOJIS[cell.feeling as FeelingTag]}
-                            </span>
+                            <span className="text-xs">{FEELING_EMOJIS[cell.feeling as FeelingTag]}</span>
                             <span className="text-xs font-semibold text-white">{cell.count}</span>
                           </div>
                         )

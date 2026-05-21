@@ -1,20 +1,22 @@
 'use client'
 
 import CategoryBarChart from '@components/dashboard/CategoryBarChart'
-import { Avatar, Button, Card } from '@components/ui'
+import { Avatar, Card } from '@components/ui'
 import { Camera, Upload } from '@components/ui/icons'
-import { useProfile, useTab } from '@hooks'
+import { useProfile } from '@hooks'
 import {
   useDashboardCategoryBreakdown,
   useDashboardRecentPlaces,
   useDashboardSummary,
   useDashboardTopPlaces,
+  useEmotionBreakdown,
 } from '@hooks/useDashboard'
-import type { Period } from '@types'
+import { FEELING_EMOJIS } from '@lib/feelings'
+import type { FeelingTag, Period } from '@types'
 import { money } from '@utils'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 const MapPreview = dynamic(() => import('@components/map'), {
   ssr: false,
@@ -23,18 +25,19 @@ const MapPreview = dynamic(() => import('@components/map'), {
 
 const DynamicSpendMarker = dynamic(() => import('@components/map/SpendMarker'), { ssr: false })
 
-const PERIOD_TABS: { value: Period; label: string }[] = [
+const PERIOD_OPTIONS: { value: Period; label: string }[] = [
   { value: 'last7', label: '7 days' },
   { value: 'last30', label: '30 days' },
 ]
 
 export default function HomePage() {
   const { profile } = useProfile()
-  const { value: period, setValue: setPeriod } = useTab<Period>(PERIOD_TABS, 'last7')
+  const [period, setPeriod] = useState<Period>('last7')
   const { data: summary } = useDashboardSummary(period)
   const { data: topPlaces = [] } = useDashboardTopPlaces(period)
   const { data: recentPlaces = [] } = useDashboardRecentPlaces()
   const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown(period)
+  const { data: emotionBreakdown = [] } = useEmotionBreakdown(period)
 
   const mapCenter = recentPlaces[0] ?? topPlaces[0]
   const hasCategoryData = categoryBreakdown.some((item: { total: number }) => item.total > 0)
@@ -44,7 +47,7 @@ export default function HomePage() {
     return { name: topPlaces[0].name, total: topPlaces[0].total }
   }, [topPlaces])
 
-  const togglePeriod = () => setPeriod(period === 'last7' ? 'last30' : 'last7')
+  const topEmotion = (emotionBreakdown as { feeling: string; count: number; total: number }[])[0] ?? null
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50">
@@ -67,12 +70,22 @@ export default function HomePage() {
         <div className="px-6 pb-32 space-y-4">
           {/* Spend Summary Card */}
           <Card className="relative px-7 py-6">
-            <Button
-              onClick={togglePeriod}
-              className="absolute top-5 right-5 px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-600 active:scale-95 transition-all rounded-full shadow-none"
-            >
-              {period === 'last7' ? 'Month' : 'Week'}
-            </Button>
+            {/* Segment control — period filter */}
+            <div className="absolute top-4 right-4 flex bg-zinc-100 rounded-xl p-0.5 gap-0.5">
+              {PERIOD_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setPeriod(opt.value)}
+                  className={`px-2.5 py-1 rounded-[10px] text-xs font-semibold transition-all ${
+                    period === opt.value
+                      ? 'bg-zinc-900 text-white shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-800'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
             <div className="text-6xl font-black text-zinc-900 tracking-tighter tabular-nums leading-none">
               {summary ? money(summary.total) : '$0.00'}
@@ -109,6 +122,28 @@ export default function HomePage() {
                 Your spending story starts with one receipt.
               </p>
             </Card>
+          )}
+
+          {/* Top Emotion */}
+          {topEmotion && (
+            <Link href="/insights">
+              <Card className="px-5 py-4 flex items-center justify-between gap-3 active:scale-[0.99] transition-transform">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">
+                    {FEELING_EMOJIS[topEmotion.feeling as FeelingTag] ?? '🏷️'}
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold tracking-widest text-zinc-400 uppercase mb-0.5">
+                      Top feeling
+                    </p>
+                    <p className="text-sm font-semibold text-zinc-900">
+                      {topEmotion.feeling} · {topEmotion.count}×
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs text-zinc-400">See insights →</span>
+              </Card>
+            </Link>
           )}
 
           {/* Map Preview — Trail */}
