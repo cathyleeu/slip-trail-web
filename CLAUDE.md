@@ -238,3 +238,4 @@ Use `FEELING_STYLES`, `FEELING_EMOJIS`, `FEELING_BORDER_COLORS` — never hardco
 - Branch: `claude/plan-receipt-app-LHVkW`
 - Commits: descriptive, present tense, explain the "why"
 - Never push to `main` directly
+=======
