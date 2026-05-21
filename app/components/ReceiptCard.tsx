@@ -30,7 +30,13 @@ export function ReceiptCard({ receipt }: ReceiptCardProps) {
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-surface-subtle flex items-center justify-center text-lg shrink-0">
+            {/* Icon background uses the feeling color when tagged */}
+            <div
+              className={cn(
+                'w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0',
+                feelingStyle ? feelingStyle.bg : 'bg-surface-subtle'
+              )}
+            >
               {categoryEmoji}
             </div>
             <div className="flex-1 min-w-0">
@@ -46,11 +52,6 @@ export function ReceiptCard({ receipt }: ReceiptCardProps) {
             <span className="text-xl font-black text-fg tracking-tight tabular-nums">
               {receipt.total ? money(receipt.total) : '—'}
             </span>
-            {receipt.feeling && feelingStyle && (
-              <p className={cn('text-xs font-medium mt-0.5', feelingStyle.text)}>
-                {receipt.feeling}
-              </p>
-            )}
           </div>
         </div>
       </Card>
