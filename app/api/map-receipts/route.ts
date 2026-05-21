@@ -10,7 +10,7 @@ export const GET = withAuth(async (req, { user, supabase }) => {
 
   const { data, error } = await supabase
     .from('receipts')
-    .select('id, vendor, category, total, feeling, purchased_at, lat, lon, place_name')
+    .select('id, vendor, category, total, feeling, purchased_at, lat, lon, place_name, img_url')
     .eq('user_id', user.id)
     .not('lat', 'is', null)
     .not('lon', 'is', null)

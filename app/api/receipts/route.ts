@@ -1,7 +1,7 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiSuccess } from '@lib/apiResponse'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET, ERROR_MESSAGES, STORAGE_BUCKET } from '@lib/constants'
-import { parseFormJson, parseFormJsonOptional, parsedReceiptSchema, placeSchema } from '@lib/validation'
+import { type Place, parseFormJson, parseFormJsonOptional, parsedReceiptSchema, placeSchema } from '@lib/validation'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
   const form = await req.formData()
@@ -12,7 +12,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   }
 
   const receipt = parseFormJson(form, 'receipt', parsedReceiptSchema)
-  const place = parseFormJsonOptional(form, 'place', placeSchema)
+  const place = parseFormJsonOptional(form, 'place', placeSchema) as Place | null
 
   // 1) Storage 업로드
   const extFromType = image.type === 'image/webp' ? 'webp' : 'bin'
@@ -39,6 +39,17 @@ export const POST = withAuth(async (req, { user, supabase }) => {
 
   if (error) {
     throw new Error(`${ERROR_MESSAGES.FAILED_TO_SAVE_RECEIPT}: ${error.message}`)
+  }
+
+  // Explicitly copy lat/lon from place to the receipts row in case the RPC doesn't handle it
+  const receiptId = (data as { id?: string } | null)?.id
+  if (receiptId && place?.lat != null && place?.lon != null) {
+    await supabase.from('receipts').update({
+      lat: place.lat,
+      lon: place.lon,
+      place_name: place.name,
+      place_address: place.address,
+    }).eq('id', receiptId)
   }
 
   return apiSuccess(data)

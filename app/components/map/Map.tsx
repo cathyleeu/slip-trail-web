@@ -13,6 +13,7 @@ type MapProps = {
   style?: React.CSSProperties
   children?: React.ReactNode
   showDefaultMarker?: boolean
+  disableAutoCenter?: boolean
 }
 
 // Component to update map center when location changes
@@ -37,6 +38,7 @@ export default function Map({
   style,
   children,
   showDefaultMarker = true,
+  disableAutoCenter = false,
 }: MapProps) {
   // Fix for default marker icon
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function Map({
         style={style}
       >
         <TileLayer attribution="" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <MapUpdater center={center} />
+        {!disableAutoCenter && <MapUpdater center={center} />}
         {children}
         {isValidLocation && showDefaultMarker && (
           <Marker position={[location.lat, location.lon]}>

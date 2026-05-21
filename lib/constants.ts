@@ -22,6 +22,22 @@ export const DEFAULT_CURRENCY = 'CAD' as const
 
 export const STORAGE_BUCKET = 'sliptrail-bills' as const
 
+// ============ Receipt Categories ============
+
+export const RECEIPT_CATEGORIES = [
+  'restaurant',
+  'coffee',
+  'mart',
+  'bar',
+  'fast_food',
+  'bakery',
+  'pharmacy',
+  'gas',
+  'other',
+] as const
+
+export type ReceiptCategoryValue = (typeof RECEIPT_CATEGORIES)[number]
+
 // ============ Supported Image Types ============
 
 export const SUPPORTED_IMAGE_TYPES = {

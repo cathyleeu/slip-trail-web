@@ -7,6 +7,8 @@ import type { FeelingTag } from '@types'
 import { money } from '@utils'
 import { AnimatePresence, motion } from 'motion/react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 
 const Map = dynamic(() => import('@components/map'), {
@@ -16,6 +18,7 @@ const Map = dynamic(() => import('@components/map'), {
 
 const DynamicSpendMarker = dynamic(() => import('@components/map/SpendMarker'), { ssr: false })
 const DynamicTrailPolyline = dynamic(() => import('@components/map/TrailPolyline'), { ssr: false })
+const DynamicFitBounds = dynamic(() => import('@components/map/FitBounds'), { ssr: false })
 
 type Period = 'today' | 'last7' | 'last30'
 
@@ -40,6 +43,7 @@ type MapReceipt = {
   lat: number
   lon: number
   place_name: string | null
+  img_url: string | null
 }
 
 type SelectedReceipt = {
@@ -49,6 +53,7 @@ type SelectedReceipt = {
   feeling: string | null
   purchased_at: string
   place_name: string | null
+  img_url: string | null
 }
 
 export default function MapPage() {
@@ -70,10 +75,8 @@ export default function MapPage() {
 
   const trailPositions: [number, number][] = filtered.map((r) => [r.lat, r.lon])
 
-  const mapCenter =
-    filtered.length > 0
-      ? { lat: filtered[filtered.length - 1].lat, lon: filtered[filtered.length - 1].lon }
-      : userLocation ?? { lat: 49.2827, lon: -123.1207 }
+  // When there are no receipts, default to user location or Vancouver
+  const fallbackCenter = userLocation ?? { lat: 49.2827, lon: -123.1207 }
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) return
@@ -134,7 +137,6 @@ export default function MapPage() {
       <AnimatePresence>
         {selected && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -142,52 +144,77 @@ export default function MapPage() {
               className="absolute inset-0 z-[9998]"
               onClick={() => setSelected(null)}
             />
-            {/* Sheet */}
             <motion.div
-              initial={{ y: 120, opacity: 0 }}
+              initial={{ y: 140, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 120, opacity: 0 }}
+              exit={{ y: 140, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-              className="absolute bottom-4 left-4 right-4 z-[9999] bg-white rounded-3xl shadow-2xl px-6 py-5 border border-zinc-100"
+              className="absolute bottom-4 left-4 right-4 z-[9999] bg-white rounded-3xl shadow-2xl border border-zinc-100 overflow-hidden"
             >
               {/* Handle */}
-              <div className="w-8 h-1 bg-zinc-200 rounded-full mx-auto mb-4" />
-
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-zinc-900 text-base truncate">{selected.vendor}</div>
-                  {selected.place_name && (
-                    <div className="text-xs text-zinc-400 mt-0.5 truncate">📍 {selected.place_name}</div>
-                  )}
-                  <div className="text-xs text-zinc-400 mt-1">
-                    {new Date(selected.purchased_at).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <div className="text-xl font-black text-zinc-900 tabular-nums">
-                    {money(selected.total ?? 0)}
-                  </div>
-                  {selected.feeling && (
-                    <div className="text-xs text-zinc-500 mt-1">
-                      {getFeelingEmoji(selected.feeling as FeelingTag)} {selected.feeling}
-                    </div>
-                  )}
-                </div>
+              <div className="pt-3 pb-1 flex justify-center">
+                <div className="w-8 h-1 bg-zinc-200 rounded-full" />
               </div>
 
-              <button
-                onClick={() => setSelected(null)}
-                className="mt-4 w-full py-2.5 rounded-xl bg-zinc-100 text-xs font-semibold text-zinc-600 hover:bg-zinc-200 transition-colors"
-              >
-                Dismiss
-              </button>
+              {/* Thumbnail */}
+              {selected.img_url && (
+                <div className="relative mx-4 h-32 rounded-2xl overflow-hidden mb-3">
+                  <Image
+                    src={selected.img_url}
+                    alt={selected.vendor}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 430px) 100vw, 400px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+              )}
+
+              <div className="px-5 pb-5">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-zinc-900 text-base truncate">{selected.vendor}</div>
+                    {selected.place_name && (
+                      <div className="text-xs text-zinc-400 mt-0.5 truncate">📍 {selected.place_name}</div>
+                    )}
+                    <div className="text-xs text-zinc-400 mt-1">
+                      {new Date(selected.purchased_at).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <div className="text-xl font-black text-zinc-900 tabular-nums">
+                      {money(selected.total ?? 0)}
+                    </div>
+                    {selected.feeling && (
+                      <div className="text-xs text-zinc-500 mt-1">
+                        {getFeelingEmoji(selected.feeling as FeelingTag)} {selected.feeling}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelected(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-100 text-xs font-semibold text-zinc-600 hover:bg-zinc-200 transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                  <Link
+                    href={`/receipts/${selected.id}`}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-900 text-xs font-semibold text-white text-center hover:bg-zinc-800 transition-colors"
+                  >
+                    View receipt
+                  </Link>
+                </div>
+              </div>
             </motion.div>
           </>
         )}
@@ -203,11 +230,13 @@ export default function MapPage() {
       )}
 
       <Map
-        location={{ lat: mapCenter.lat, lon: mapCenter.lon, address: '' }}
+        location={filtered.length === 0 ? { lat: fallbackCenter.lat, lon: fallbackCenter.lon, address: '' } : null}
         className="h-full"
-        zoom={filtered.length > 0 ? 13 : 14}
+        zoom={14}
         showDefaultMarker={false}
+        disableAutoCenter={filtered.length > 0}
       >
+        <DynamicFitBounds positions={trailPositions} />
         <DynamicTrailPolyline positions={trailPositions} />
         {filtered.map((r) => (
           <DynamicSpendMarker
@@ -224,6 +253,7 @@ export default function MapPage() {
                 feeling: r.feeling,
                 purchased_at: r.purchased_at,
                 place_name: r.place_name,
+                img_url: r.img_url,
               })
             }
           />

@@ -1,8 +1,42 @@
 import Groq from 'groq-sdk'
+import { RECEIPT_CATEGORIES, type ReceiptCategoryValue } from './constants'
 
 export const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 })
+
+const CATEGORY_ALIASES: Record<string, ReceiptCategoryValue> = {
+  cafe: 'coffee',
+  coffeeshop: 'coffee',
+  'coffee shop': 'coffee',
+  espresso: 'coffee',
+  grocery: 'mart',
+  groceries: 'mart',
+  supermarket: 'mart',
+  convenience: 'mart',
+  pub: 'bar',
+  lounge: 'bar',
+  nightclub: 'bar',
+  tavern: 'bar',
+  burger: 'fast_food',
+  pizza: 'fast_food',
+  sandwich: 'fast_food',
+  'fast food': 'fast_food',
+  drugstore: 'pharmacy',
+  drugs: 'pharmacy',
+  petrol: 'gas',
+  fuel: 'gas',
+  'gas station': 'gas',
+}
+
+export function coerceCategory(raw: string | null | undefined): ReceiptCategoryValue {
+  if (!raw) return 'other'
+  const normalized = raw.toLowerCase().trim()
+  if ((RECEIPT_CATEGORIES as readonly string[]).includes(normalized)) {
+    return normalized as ReceiptCategoryValue
+  }
+  return CATEGORY_ALIASES[normalized] ?? 'other'
+}
 
 export async function parseReceipt(text: string) {
   const prompt = `
