@@ -1,8 +1,6 @@
 'use client'
 
-function cx(...xs: Array<string | false | null | undefined>) {
-  return xs.filter(Boolean).join(' ')
-}
+import { cn } from '@utils/cn'
 
 export function Skeleton({
   className,
@@ -11,5 +9,5 @@ export function Skeleton({
   className?: string
   rounded?: string
 }) {
-  return <div className={cx('animate-pulse bg-neutral-200/70', rounded, className)} />
+  return <div className={cn('animate-pulse bg-neutral-200/70', rounded, className)} />
 }
