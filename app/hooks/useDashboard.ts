@@ -145,6 +145,7 @@ type MapReceipt = {
   lat: number
   lon: number
   place_name: string | null
+  img_url: string | null
 }
 
 export function useMapReceipts(
