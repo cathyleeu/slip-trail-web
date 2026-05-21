@@ -39,9 +39,9 @@ export default function ReceiptsPage() {
           // Loading skeleton
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl p-4">
+              <div key={i} className="bg-surface rounded-2xl p-4 border border-border">
                 <div className="flex items-start gap-3">
-                  <Skeleton className="w-10 h-10" rounded="rounded-full" />
+                  <Skeleton className="w-10 h-10" rounded="rounded-xl" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-1/2" />
                     <Skeleton className="h-3 w-1/3" />
@@ -52,7 +52,7 @@ export default function ReceiptsPage() {
             ))}
           </div>
         ) : isError ? (
-          <div className="text-center py-12 text-gray-500">Failed to load receipts</div>
+          <div className="text-center py-12 text-fg-muted">Failed to load receipts</div>
         ) : allReceipts.length === 0 ? (
           <div className="text-center py-16 px-6">
             <div className="text-5xl mb-4">🗺️</div>
@@ -70,11 +70,11 @@ export default function ReceiptsPage() {
             {/* Load more trigger */}
             <div ref={loadMoreRef} className="py-4 flex justify-center">
               {isFetchingNextPage ? (
-                <div className="text-sm text-gray-400">Loading more...</div>
+                <div className="text-sm text-fg-subtle">Loading more...</div>
               ) : hasNextPage ? (
-                <div className="text-sm text-gray-300">Scroll for more</div>
+                <div className="text-sm text-fg-subtle">Scroll for more</div>
               ) : allReceipts.length > 0 ? (
-                <div className="text-sm text-gray-400">You&apos;ve seen all receipts</div>
+                <div className="text-sm text-fg-subtle">You&apos;ve seen all receipts</div>
               ) : null}
             </div>
           </div>
