@@ -1,23 +1,21 @@
 # Slip Trail — Development Guide
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
-
-> **Core Tradeoff:** These guidelines heavily bias toward caution and precision over raw speed. For trivial tasks, use your engineering judgment.
+> These guidelines bias toward caution and precision over raw speed. For trivial tasks, use your engineering judgment.
 
 ---
 
-## 1. Think Before Coding
+## Behavioral Guidelines
+
+### 1. Think Before Coding
 
 **Do not assume. Do not hide confusion. Surface tradeoffs early.**
-
-Before writing any code, adhere to the following checklist:
 
 - **Explicit Assumptions:** State your assumptions clearly before implementing. If anything is uncertain, ask for clarification first.
 - **Present Alternatives:** If a requirement allows multiple interpretations, present the options instead of picking one silently.
 - **Push for Simplicity:** If a simpler approach exists, suggest it. Push back against over-engineering when warranted.
 - **Stop on Ambiguity:** If a concept or requirement is unclear, stop immediately. Name the confusion and ask the user.
 
-## 2. Simplicity First
+### 2. Simplicity First
 
 **Write the minimum code required to solve the exact problem. Zero speculative engineering.**
 
@@ -28,7 +26,7 @@ Before writing any code, adhere to the following checklist:
 
 > 💡 **The Senior Test:** "Would a senior engineer look at this and say it is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+### 3. Surgical Changes
 
 **Touch only what is strictly necessary. Clean up only your own mess.**
 
@@ -44,7 +42,7 @@ When your changes create orphans:
 
 > 💡 **The Diff Test:** Every single line in the final diff must trace directly and uniquely back to the user's explicit request.
 
-## 4. Goal-Driven Execution
+### 4. Goal-Driven Execution
 
 **Define success criteria before you start. Loop and verify independently.**
 
@@ -59,22 +57,21 @@ For multi-step or complex tasks, always output a brief, sequential plan using th
 1. [Step Description] → verify: [Specific, measurable check]
 2. [Step Description] → verify: [Specific, measurable check]
 3. [Step Description] → verify: [Specific, measurable check]
-
 ```
 
 > **Success Metrics:** These guidelines are working effectively if your diffs contain zero unnecessary changes, no rewrites are required due to over-complication, and clarifying questions are raised _before_ implementation rather than after a mistake.
 
 ---
 
-## Project Overview
+## Project Reference
+
+### Overview
 
 Receipt management app: camera → OCR → Groq parse → map trail + emotion pattern analysis.
 
 - **Target Users:** North American, 25–35, smartphone-native.
 
----
-
-## Tech Stack
+### Tech Stack
 
 | Layer         | Tool                                                              |
 | ------------- | ----------------------------------------------------------------- |
@@ -87,9 +84,7 @@ Receipt management app: camera → OCR → Groq parse → map trail + emotion pa
 | **Maps**      | Leaflet + react-leaflet                                           |
 | **Geocoding** | Nominatim / OpenStreetMap                                         |
 
----
-
-## Folder Structure
+### Folder Structure
 
 ```text
 app/
@@ -109,83 +104,74 @@ app/
 lib/                # Server-safe utilities: Supabase clients, apiResponse
 store/              # Zustand stores
 types/              # TypeScript types (barrel: types/index.ts)
-
 ```
 
----
+### Architecture Patterns
 
-## Architecture Patterns
+#### 1. Atomic Design for Components
 
-### 1. Atomic Design for Components
+| Level         | Location                          | Examples                                           |
+| ------------- | --------------------------------- | -------------------------------------------------- |
+| **Atoms**     | app/components/ui/                | Button, IconButton, Avatar, Card, Skeleton, BaseDialog, all icons |
+| **Molecules** | app/components/ui/ or components/ | InputField, Header, LocationSearch                 |
+| **Organisms** | app/components/                   | ReceiptCard, TipPromptDialog, ProcessingDialog, BottomNav |
+| **Pages**     | app/(routes)/                     | Compose organisms, own data fetching via hooks     |
 
-- **Atoms** (app/components/ui/): Single-responsibility, no business logic.
-- _Examples:_ Button, IconButton, Avatar, Card, Skeleton, BaseDialog, all icons.
+#### 2. Feature-Collocated Data Fetching
 
-- **Molecules** (app/components/ui/ or root components/): Composed from atoms.
-- _Examples:_ InputField, Header, LocationSearch.
+Each page owns its React Query hooks. Hooks live in `app/hooks/` named after the domain:
 
-- **Organisms** (app/components/): Composed from molecules, may include domain logic.
-- _Examples:_ ReceiptCard, TipPromptDialog, ProcessingDialog, BottomNav.
+- `useReceipt.ts` — receipt list / detail
+- `useDashboard.ts` — home dashboard
+- `useAnalysisFlow.ts` — scanner pipeline
 
-- **Pages** (app/(routes)/): Compose organisms, own data fetching via hooks.
-
-### 2. Feature-Collocated Data Fetching
-
-Each page owns its React Query hooks. Hooks live in app/hooks/ named after the domain:
-
-- useReceipt.ts (receipt list / detail)
-- useDashboard.ts (home dashboard)
-- useAnalysisFlow.ts (scanner pipeline)
-
-### 3. Single Source of Truth for Domain Constants
+#### 3. Single Source of Truth for Domain Constants
 
 Never duplicate these constants in component files. Use centralized files:
 
-- **Feelings:** lib/feelings.ts — FEELING_TAGS, FEELING_STYLES, FEELING_EMOJIS, FEELING_BORDER_COLORS
-- **Categories:** lib/categories.ts — DEFAULT_CATEGORIES, getCategoryEmoji()
-- **Design Tokens:** app/globals.css — CSS variables mapped via @theme inline
+- **Feelings:** `lib/feelings.ts` — `FEELING_TAGS`, `FEELING_STYLES`, `FEELING_EMOJIS`, `FEELING_BORDER_COLORS`
+- **Categories:** `lib/categories.ts` — `DEFAULT_CATEGORIES`, `getCategoryEmoji()`
+- **Design Tokens:** `app/globals.css` — CSS variables mapped via `@theme inline`
 
-### 4. Server / Client Boundary
+#### 4. Server / Client Boundary
 
-- lib/supabase/server.ts — Server components and API routes only.
-- lib/supabase/client.ts — Client components only.
-- **API Routes:** All endpoints in app/api/ must use the withAuth() wrapper from lib/apiHandler.ts.
+- `lib/supabase/server.ts` — Server components and API routes only.
+- `lib/supabase/client.ts` — Client components only.
+- **API Routes:** All endpoints in `app/api/` must use the `withAuth()` wrapper from `lib/apiHandler.ts`.
 
----
+### Coding Rules
 
-## Coding Rules
+#### TypeScript
 
-### TypeScript
-
-- All files must use TypeScript (.ts / .tsx).
-- Prefer explicit types on function parameters; strictly avoid any.
-- Use type for unions/intersections; use interface only for extendable object shapes.
+- All files must use TypeScript (`.ts` / `.tsx`).
+- Prefer explicit types on function parameters; strictly avoid `any`.
+- Use `type` for unions/intersections; use `interface` only for extendable object shapes.
 - Export types alongside their components within the same file.
 
-### Styling
+#### Styling
 
-- Use cn() from @utils/cn (wraps clsx + tailwind-merge) for all class merging.
-- Use CSS variables from globals.css via Tailwind tokens (text-fg, bg-surface, border-border).
-- Avoid hardcoding hex values or raw Tailwind colors directly—always use semantic tokens.
-- **Mobile-First Constraints:** max-w-[430px] viewport, bottom nav at bottom-0, fixed CTAs at bottom-[58px].
+- Use `cn()` from `@utils/cn` (wraps clsx + tailwind-merge) for all class merging.
+- Use CSS variables from `globals.css` via Tailwind tokens (`text-fg`, `bg-surface`, `border-border`).
+- Avoid hardcoding hex values or raw Tailwind colors directly — always use semantic tokens.
+- **Mobile-First Constraints:** `max-w-[430px]` viewport, bottom nav at `bottom-0`, fixed CTAs at `bottom-[58px]`.
 
-### Animations
+#### Animations
 
-- All enter/exit animations must use Framer Motion (motion/react).
-- **Dialog Entrances:** scale: 0.9 → 1, y: 20 → 0, opacity: 0 → 1.
-- **Page Transitions:** x: ±60 → 0, opacity: 0 → 1.
-- **Bottom Sheets:** Use spring dynamics: { type: 'spring', stiffness: 380, damping: 38 }.
+- All enter/exit animations must use Framer Motion (`motion/react`).
+- **Dialog Entrances:** `scale: 0.9 → 1`, `y: 20 → 0`, `opacity: 0 → 1`.
+- **Page Transitions:** `x: ±60 → 0`, `opacity: 0 → 1`.
+- **Bottom Sheets:** Use spring dynamics: `{ type: 'spring', stiffness: 380, damping: 38 }`.
 
-### State Management
+#### State Management
 
-- **Server State:** TanStack React Query via domain hooks in app/hooks/.
-- **Draft / Ephemeral UI State:** Zustand stores located in store/.
-- **URL / Navigation State:** Next.js useRouter and usePathname.
-- _Rule:_ Do not use React Context for data that React Query or Zustand can naturally handle.
+- **Server State:** TanStack React Query via domain hooks in `app/hooks/`.
+- **Draft / Ephemeral UI State:** Zustand stores located in `store/`.
+- **URL / Navigation State:** Next.js `useRouter` and `usePathname`.
+- Do not use React Context for data that React Query or Zustand can naturally handle.
 
-### Imports
+#### Imports
 
-Always use path aliases configured in tsconfig.json:
+Always use path aliases configured in `tsconfig.json`:
 
 ```ts
 @components     → app/components
@@ -195,44 +181,38 @@ Always use path aliases configured in tsconfig.json:
 @store          → store
 @types          → types
 @utils          → app/utils
-
 ```
 
----
+### Design System — Warm Utility
 
-## Design System — Warm Utility
+#### Palette (from globals.css)
 
-### Palette (from globals.css)
+| Token                   | Value      | Use                                |
+| ----------------------- | ---------- | ---------------------------------- |
+| `bg-brand` / `text-brand` | zinc-900 | Primary actions, headings          |
+| `bg-accent`             | amber-500  | Money amounts, spending highlights |
+| `text-fg`               | zinc-900   | Primary text                       |
+| `text-fg-muted`         | zinc-600   | Body copy                          |
+| `text-fg-subtle`        | zinc-400   | Hints, disabled states             |
+| `bg-surface`            | white      | Cards, modals                      |
+| `bg-surface-subtle`     | zinc-100   | Inputs, subtle backgrounds         |
+| `border-border`         | zinc-200   | Default borders                    |
 
-| Token                 | Value     | Use                                |
-| --------------------- | --------- | ---------------------------------- |
-| bg-brand / text-brand | zinc-900  | Primary actions, headings          |
-| bg-accent             | amber-500 | Money amounts, spending highlights |
-| text-fg               | zinc-900  | Primary text                       |
-| text-fg-muted         | zinc-600  | Body copy                          |
-| text-fg-subtle        | zinc-400  | Hints, disabled states             |
-| bg-surface            | white     | Cards, modals                      |
-| bg-surface-subtle     | zinc-100  | Inputs, subtle backgrounds         |
-| border-border         | zinc-200  | Default borders                    |
+#### Feeling Colors
 
-### Feeling Colors
-
-- Mandatorily use FEELING_STYLES, FEELING_EMOJIS, and FEELING_BORDER_COLORS from lib/feelings.ts.
+- Mandatorily use `FEELING_STYLES`, `FEELING_EMOJIS`, and `FEELING_BORDER_COLORS` from `lib/feelings.ts`.
 - Never hardcode per-feeling colors or styles directly inside components.
 
-### Typography Hierarchy
+#### Typography Hierarchy
 
-- **Large Amounts:** text-6xl font-black tracking-tighter tabular-nums
-- **Page Titles:** text-3xl font-extrabold
-- **Section Labels:** text-xs font-semibold tracking-widest uppercase text-fg-subtle
-- **Body Text:** text-sm text-fg-muted leading-relaxed
+| Role              | Classes                                              |
+| ----------------- | ---------------------------------------------------- |
+| **Large Amounts** | `text-6xl font-black tracking-tighter tabular-nums`  |
+| **Page Titles**   | `text-3xl font-extrabold`                            |
+| **Section Labels**| `text-xs font-semibold tracking-widest uppercase text-fg-subtle` |
+| **Body Text**     | `text-sm text-fg-muted leading-relaxed`              |
 
----
+### Git Workflow
 
-## Git Workflow
-
-- **Active Branch:** claude/plan-receipt-app-LHVkW
 - **Commits:** Descriptive, present tense, always explain the "why".
-- **Constraint:** Never push directly to the main branch.
-
----
+- **Constraint:** Never push directly to the `main` branch.
