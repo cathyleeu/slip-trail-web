@@ -1,14 +1,15 @@
 'use client'
 
 import { LocationSearch, TipPromptDialog } from '@components'
-import { Button, Card, IconButton } from '@components/ui'
+import { Button, Card, IconButton, Toast, useToast } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
+import { getCategoryEmoji } from '@lib/categories'
 import { FEELING_TAGS } from '@lib/feelings'
 import { useAnalysisDraftStore } from '@store'
 import { ChargeType, type ReceiptCharge, type ReceiptItem } from '@types'
 import { cn } from '@utils/cn'
 import { formatDateTime, normalizeNumberInput } from '@utils/format'
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -28,7 +29,7 @@ export default function ResultPage() {
   const [showTipPrompt, setShowTipPrompt] = useState(false)
   const [tipPromptShown, setTipPromptShown] = useState(false)
   const [showLocationSearch, setShowLocationSearch] = useState(false)
-  const [saveToast, setSaveToast] = useState<'success' | 'error' | null>(null)
+  const { toastState, showToast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
@@ -114,11 +115,6 @@ export default function ResultPage() {
     setReceipt({ ...receipt!, charges: updatedCharges })
   }
 
-  const showToast = (type: 'success' | 'error') => {
-    setSaveToast(type)
-    setTimeout(() => setSaveToast(null), 3000)
-  }
-
   const handleSave = async () => {
     if (isEditMode) {
       setIsEditMode(false)
@@ -127,7 +123,7 @@ export default function ResultPage() {
     }
     if (!receipt) return
     if (!file) {
-      showToast('error')
+      showToast('✗ Save failed — try again', 'error')
       return
     }
 
@@ -153,10 +149,10 @@ export default function ResultPage() {
 
       setIsEditMode(false)
       setOriginalReceipt(null)
-      showToast('success')
+      showToast('✓ Receipt saved to your trail', 'success')
       setTimeout(() => router.push('/'), 1200)
     } catch {
-      showToast('error')
+      showToast('✗ Save failed — try again', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -203,7 +199,12 @@ export default function ResultPage() {
         {/* Map / Location card */}
         <Card className="h-64 overflow-hidden">
           {location ? (
-            <Map location={location} zoom={16} className="h-64 w-full" />
+            <Map
+              location={location}
+              zoom={16}
+              className="h-64 w-full"
+              markerEmoji={getCategoryEmoji(receipt.category)}
+            />
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
@@ -422,25 +423,11 @@ export default function ResultPage() {
         </div>
       </div>
 
-      {/* Toast */}
-      <AnimatePresence>
-        {saveToast && (
-          <motion.div
-            key="toast"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={cn(
-              'fixed bottom-8 left-1/2 -translate-x-1/2 z-[2000] px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg',
-              saveToast === 'success'
-                ? 'bg-zinc-900 text-white'
-                : 'bg-rose-500 text-white'
-            )}
-          >
-            {saveToast === 'success' ? '✓ Receipt saved to your trail' : '✗ Save failed — try again'}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Toast
+        visible={!!toastState}
+        message={toastState?.message ?? ''}
+        type={toastState?.type ?? 'success'}
+      />
 
       {/* Location search bottom sheet */}
       <LocationSearch

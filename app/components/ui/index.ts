@@ -1,4 +1,5 @@
 export { default as Avatar } from './Avatar'
+export { Toast, useToast } from './Toast'
 export { BaseDialog } from './BaseDialog'
 export type { BaseDialogProps } from './BaseDialog'
 export { default as Button } from './Button'

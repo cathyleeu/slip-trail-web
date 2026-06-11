@@ -2,7 +2,7 @@
 
 import { Divider } from '@components/Divider'
 import { InputField } from '@components/InputField'
-import { AppleIcon, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
+import { AppleIcon, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon, Toast, useToast } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -53,6 +53,7 @@ export default function SignUpPage() {
   const confirmPassword = useInput({ type: 'password' })
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const { toastState, showToast } = useToast()
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
@@ -72,12 +73,13 @@ export default function SignUpPage() {
     if (error) {
       setError(error)
     } else {
-      alert('Check your email for a confirmation link!')
-      router.push('/login')
+      showToast('Check your email for a confirmation link!', 'success')
+      setTimeout(() => router.push('/login'), 2000)
     }
   }
 
   return (
+    <>
     <div className="h-full px-6 pt-12 pb-8 flex-1 flex flex-col overflow-auto">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -197,5 +199,11 @@ export default function SignUpPage() {
         </p>
       </div>
     </div>
+    <Toast
+      visible={!!toastState}
+      message={toastState?.message ?? ''}
+      type={toastState?.type ?? 'success'}
+    />
+    </>
   )
 }

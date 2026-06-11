@@ -1,7 +1,7 @@
 'use client'
 
 import { ProcessingDialog } from '@components'
-import { Button } from '@components/ui'
+import { Button, Toast, useToast } from '@components/ui'
 import { Close } from '@components/ui/icons'
 import { useAnalysisFlow, useCamera } from '@hooks'
 import { useAnalysisDraftStore } from '@store'
@@ -24,6 +24,7 @@ export default function CameraPage() {
   const router = useRouter()
   const { analyzeReceipt, isProcessing, progress, stage, previewUrl } = useAnalysisFlow()
   const { setPreviewUrl, clearPreview, setFile } = useAnalysisDraftStore()
+  const { toastState, showToast } = useToast()
 
   useEffect(() => {
     startCamera()
@@ -48,7 +49,7 @@ export default function CameraPage() {
       receiptFile,
       onError: (error) => {
         console.error('Analysis failed:', error)
-        alert(`분석 실패: ${error}`)
+        showToast(`분석 실패: ${error}`, 'error')
       },
     })
 
@@ -133,6 +134,11 @@ export default function CameraPage() {
         imageUrl={previewUrl}
         progress={progress}
         stage={stage}
+      />
+      <Toast
+        visible={!!toastState}
+        message={toastState?.message ?? ''}
+        type={toastState?.type ?? 'error'}
       />
     </div>
   )

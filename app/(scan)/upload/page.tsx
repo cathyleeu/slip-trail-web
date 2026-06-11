@@ -1,6 +1,7 @@
 'use client'
 
 import { ProcessingDialog } from '@components'
+import { Toast, useToast } from '@components/ui'
 import { useAnalysisFlow } from '@hooks'
 import { useAnalysisDraftStore } from '@store'
 import { motion } from 'motion/react'
@@ -11,6 +12,7 @@ import { useRef, useState } from 'react'
 export default function UploadPage() {
   const router = useRouter()
   const { analyzeReceipt, isProcessing, progress, stage } = useAnalysisFlow()
+  const { toastState, showToast } = useToast()
   const { previewUrl, setPreviewUrl, clearPreview } = useAnalysisDraftStore()
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -40,7 +42,7 @@ export default function UploadPage() {
       receiptFile,
       onError: (error) => {
         console.error('Analysis failed:', error)
-        alert(`분석 실패: ${error}`)
+        showToast(`분석 실패: ${error}`, 'error')
       },
     })
 
@@ -102,6 +104,11 @@ export default function UploadPage() {
         imageUrl={previewUrl}
         progress={progress}
         stage={stage}
+      />
+      <Toast
+        visible={!!toastState}
+        message={toastState?.message ?? ''}
+        type={toastState?.type ?? 'error'}
       />
     </>
   )
