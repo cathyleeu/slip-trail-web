@@ -16,7 +16,7 @@ import type {
   RequestParsingOptions,
 } from '@types'
 
-export async function requestOcr({ file }: AnalyzeOptions): Promise<OcrResult> {
+export async function requestOcr({ file }: AnalyzeOptions, signal?: AbortSignal): Promise<OcrResult> {
   const url = process.env.NEXT_PUBLIC_OCR_API_URL
   if (!url) return { success: false, error: 'NEXT_PUBLIC_OCR_API_URL is not set' }
 
@@ -27,6 +27,7 @@ export async function requestOcr({ file }: AnalyzeOptions): Promise<OcrResult> {
     const externalData = await request<ExternalOcrApiResponse>(url, {
       method: 'POST',
       body: formData,
+      signal,
     })
 
     if (!externalData.text) {
@@ -52,9 +53,10 @@ export async function requestOcr({ file }: AnalyzeOptions): Promise<OcrResult> {
   }
 }
 
-export async function requestParsing({
-  rawText,
-}: RequestParsingOptions): Promise<ParseReceiptResult> {
+export async function requestParsing(
+  { rawText }: RequestParsingOptions,
+  signal?: AbortSignal
+): Promise<ParseReceiptResult> {
   try {
     // 내부 API - apiSuccess 자동 unwrap
     const receipt = await request<ParsedReceipt>('/api/parse-receipt', {
@@ -62,6 +64,7 @@ export async function requestParsing({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rawText }),
       unwrapApiSuccess: true,
+      signal,
     })
 
     return { success: true, receipt }
@@ -77,13 +80,14 @@ export async function requestParsing({
   }
 }
 
-export async function requestGeoCoding(address: string): Promise<GeocodeResult> {
+export async function requestGeoCoding(address: string, signal?: AbortSignal): Promise<GeocodeResult> {
   try {
     const location = await request<NominatimResponse>('/api/geocode', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address }),
       unwrapApiSuccess: true,
+      signal,
     })
     return { success: true, location: toGeoLocation(location), place: toPlace(location) }
   } catch (err) {
@@ -100,18 +104,19 @@ export async function requestGeoCoding(address: string): Promise<GeocodeResult> 
 
 async function analyzeRequest(
   { file }: AnalyzeOptions,
-  onProgress?: (progress: number, stage: string) => void
+  onProgress?: (progress: number, stage: string) => void,
+  signal?: AbortSignal
 ): Promise<ReceiptAnalysisResult> {
   onProgress?.(10, 'Starting OCR...')
 
-  const ocr = await requestOcr({ file })
+  const ocr = await requestOcr({ file }, signal)
   if (!ocr.success) {
     return { success: false, stage: 'ocr', error: ocr.error, details: ocr.details }
   }
 
   onProgress?.(40, 'Parsing receipt...')
 
-  const parsed = await requestParsing({ rawText: ocr.text })
+  const parsed = await requestParsing({ rawText: ocr.text }, signal)
 
   if (!parsed.success) {
     return { success: false, stage: 'parse', error: parsed.error, details: parsed.details }
@@ -126,7 +131,7 @@ async function analyzeRequest(
   let resolvedPlace = null
 
   if (normalized.query) {
-    const geo = await requestGeoCoding(normalized.query)
+    const geo = await requestGeoCoding(normalized.query, signal)
     if (geo.success) {
       locationStatus = 'found'
       resolvedLocation = geo.location
@@ -156,8 +161,11 @@ export function useAnalysisMutation() {
     mutationFn: ({
       file,
       onProgress,
-    }: AnalyzeOptions & { onProgress?: (progress: number, stage: string) => void }) =>
-      analyzeRequest({ file }, onProgress),
+      signal,
+    }: AnalyzeOptions & {
+      onProgress?: (progress: number, stage: string) => void
+      signal?: AbortSignal
+    }) => analyzeRequest({ file }, onProgress, signal),
   })
 
   return {
