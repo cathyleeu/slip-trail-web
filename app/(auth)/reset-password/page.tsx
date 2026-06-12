@@ -9,7 +9,7 @@ import { useState } from 'react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const { updatePassword } = useAuth()
+  const { session, loading, updatePassword } = useAuth()
   const password = useInput({ type: 'password' })
   const confirmPassword = useInput({ type: 'password' })
   const [error, setError] = useState<string | null>(null)
@@ -40,6 +40,32 @@ export default function ResetPasswordPage() {
     } else {
       setError(error as string)
     }
+  }
+
+  if (!loading && !session) {
+    return (
+      <div className="h-full overflow-auto p-4 flex-1 flex flex-col items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-sm w-full space-y-6 text-center"
+        >
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-gray-900">Link Expired</h1>
+            <p className="text-gray-600">
+              This password reset link is invalid or has expired. Please request a new one.
+            </p>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/forgot-password')}
+            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors"
+          >
+            Request New Link
+          </motion.button>
+        </motion.div>
+      </div>
+    )
   }
 
   if (success) {
