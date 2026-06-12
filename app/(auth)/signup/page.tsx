@@ -46,7 +46,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { signup } = useAuth()
+  const { signup, loginWithOAuth } = useAuth()
 
   const email = useInput({ type: 'email' })
   const password = useInput({ type: 'password' })
@@ -54,6 +54,11 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { toastState, showToast } = useToast()
+
+  async function handleOAuthLogin(provider: 'apple' | 'google') {
+    const { error } = await loginWithOAuth(provider)
+    if (error) setError(error)
+  }
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
@@ -176,11 +181,17 @@ export default function SignUpPage() {
 
         {/* Social Login */}
         <div className="space-y-3">
-          <button className="w-full bg-zinc-900 text-white py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-800 active:scale-[0.98] transition-all">
+          <button
+            onClick={() => handleOAuthLogin('apple')}
+            className="w-full bg-zinc-900 text-white py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-800 active:scale-[0.98] transition-all"
+          >
             <AppleIcon />
             Continue with Apple
           </button>
-          <button className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all">
+          <button
+            onClick={() => handleOAuthLogin('google')}
+            className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all"
+          >
             <GoogleIcon />
             Continue with Google
           </button>
