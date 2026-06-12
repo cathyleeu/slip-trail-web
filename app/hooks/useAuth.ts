@@ -35,6 +35,15 @@ export function useAuth() {
     return handleResult(error)
   }
 
+  async function loginWithGoogle(): Promise<AuthResult> {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${siteUrl}/auth/callback` },
+    })
+    return handleResult(error)
+  }
+
   async function logout() {
     const { error } = await supabase.auth.signOut()
     router.push('/login')
@@ -58,5 +67,5 @@ export function useAuth() {
 
   if (!user && !session && loading === undefined)
     throw new Error('useAuth must be used within AuthProvider')
-  return { user, session, loading, login, signup, logout, resetPassword, updatePassword }
+  return { user, session, loading, login, signup, loginWithGoogle, logout, resetPassword, updatePassword }
 }
