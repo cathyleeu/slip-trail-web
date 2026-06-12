@@ -1,5 +1,6 @@
 'use client'
 
+import { Skeleton } from '@components'
 import CategoryBarChart from '@components/dashboard/CategoryBarChart'
 import { Avatar, Card } from '@components/ui'
 import { Camera, Upload } from '@components/ui/icons'
@@ -33,11 +34,14 @@ const PERIOD_OPTIONS: { value: Period; label: string }[] = [
 export default function HomePage() {
   const { profile } = useProfile()
   const [period, setPeriod] = useState<Period>('last7')
-  const { data: summary } = useDashboardSummary(period)
-  const { data: topPlaces = [] } = useDashboardTopPlaces(period)
-  const { data: recentPlaces = [] } = useDashboardRecentPlaces()
-  const { data: categoryBreakdown = [] } = useDashboardCategoryBreakdown(period)
-  const { data: emotionBreakdown = [] } = useEmotionBreakdown(period)
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useDashboardSummary(period)
+  const { data: topPlaces = [], isLoading: topPlacesLoading, isError: topPlacesError } = useDashboardTopPlaces(period)
+  const { data: recentPlaces = [], isLoading: recentPlacesLoading, isError: recentPlacesError } = useDashboardRecentPlaces()
+  const { data: categoryBreakdown = [], isLoading: categoryLoading, isError: categoryError } = useDashboardCategoryBreakdown(period)
+  const { data: emotionBreakdown = [], isLoading: emotionLoading, isError: emotionError } = useEmotionBreakdown(period)
+
+  const isLoading = summaryLoading || topPlacesLoading || recentPlacesLoading || categoryLoading || emotionLoading
+  const isError = summaryError || topPlacesError || recentPlacesError || categoryError || emotionError
 
   const mapCenter = recentPlaces[0] ?? topPlaces[0]
   const hasCategoryData = categoryBreakdown.some((item: { total: number }) => item.total > 0)
@@ -48,6 +52,50 @@ export default function HomePage() {
   }, [topPlaces])
 
   const topEmotion = (emotionBreakdown as { feeling: string; count: number; total: number }[])[0] ?? null
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-zinc-50">
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 pt-8 pb-4 flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <Skeleton className="w-10 h-10" rounded="rounded-full" />
+          </div>
+
+          <div className="px-6 pb-32 space-y-4">
+            <Card className="px-7 py-6 space-y-3">
+              <Skeleton className="h-12 w-40" />
+              <Skeleton className="h-4 w-24" />
+            </Card>
+            <Card className="px-5 py-4">
+              <Skeleton className="h-10 w-full" />
+            </Card>
+            <Card className="h-64 p-0 overflow-hidden">
+              <Skeleton className="h-full w-full" rounded="rounded-none" />
+            </Card>
+            <Card className="p-5">
+              <Skeleton className="h-32 w-full" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-6">
+        <div className="text-center">
+          <div className="text-3xl mb-2">⚠️</div>
+          <p className="text-sm font-medium text-zinc-700">Couldn&apos;t load your dashboard.</p>
+          <p className="text-xs text-zinc-400 mt-1">Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50">
