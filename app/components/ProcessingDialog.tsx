@@ -1,6 +1,6 @@
 'use client'
 
-import { BaseDialog } from '@components/ui'
+import { BaseDialog, Button } from '@components/ui'
 import { motion } from 'motion/react'
 import Image from 'next/image'
 
@@ -9,9 +9,10 @@ type ProcessingDialogProps = {
   imageUrl: string | null
   progress: number
   stage: string
+  onCancel?: () => void
 }
 
-export function ProcessingDialog({ isOpen, imageUrl, progress, stage }: ProcessingDialogProps) {
+export function ProcessingDialog({ isOpen, imageUrl, progress, stage, onCancel }: ProcessingDialogProps) {
   return (
     <BaseDialog
       isOpen={isOpen}
@@ -50,6 +51,12 @@ export function ProcessingDialog({ isOpen, imageUrl, progress, stage }: Processi
             <div className="text-center text-sm font-semibold text-fg-muted tabular-nums">
               {progress}%
             </div>
+
+            {onCancel && (
+              <Button variant="ghost" onClick={onCancel} className="w-full">
+                Cancel
+              </Button>
+            )}
           </div>
         </div>
       </div>

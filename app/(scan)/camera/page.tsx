@@ -22,7 +22,7 @@ export default function CameraPage() {
     error: cameraError,
   } = useCamera()
   const router = useRouter()
-  const { analyzeReceipt, isProcessing, progress, stage, previewUrl } = useAnalysisFlow()
+  const { analyzeReceipt, cancelAnalysis, isProcessing, progress, stage, previewUrl } = useAnalysisFlow()
   const { setPreviewUrl, clearPreview, setFile } = useAnalysisDraftStore()
   const { toastState, showToast } = useToast()
 
@@ -134,6 +134,7 @@ export default function CameraPage() {
         imageUrl={previewUrl}
         progress={progress}
         stage={stage}
+        onCancel={cancelAnalysis}
       />
       <Toast
         visible={!!toastState}
