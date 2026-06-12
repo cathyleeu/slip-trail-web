@@ -3,13 +3,15 @@
 import { log } from '@lib/logger'
 import { useAnalysisDraftStore } from '@store'
 import { compressImage, toWebp } from '@utils/imageProcessor'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useAnalysisMutation } from './useAnalysisMutation'
 
 type AnalyzeReceiptOptions = {
   receiptFile: File | Blob
   onError?: (error: string) => void
 }
+
+const ANALYSIS_TIMEOUT_MS = 45000
 
 export function useAnalysisFlow() {
   const { analyze, reset } = useAnalysisMutation()
@@ -18,9 +20,18 @@ export function useAnalysisFlow() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [stage, setStage] = useState('Starting...')
+  const controllerRef = useRef<AbortController | null>(null)
+
+  const cancelAnalysis = useCallback(() => {
+    controllerRef.current?.abort()
+  }, [])
 
   const analyzeReceipt = useCallback(
     async ({ receiptFile, onError }: AnalyzeReceiptOptions) => {
+      const controller = new AbortController()
+      controllerRef.current = controller
+      const timeoutId = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS)
+
       try {
         setIsProcessing(true)
         setProgress(0)
@@ -39,6 +50,7 @@ export function useAnalysisFlow() {
             setProgress(progress)
             setStage(stage)
           },
+          signal: controller.signal,
         })
 
         if (result.success) {
@@ -61,6 +73,8 @@ export function useAnalysisFlow() {
         onError?.(errorMessage)
         throw error
       } finally {
+        clearTimeout(timeoutId)
+        controllerRef.current = null
         setIsProcessing(false)
       }
     },
@@ -69,6 +83,7 @@ export function useAnalysisFlow() {
 
   return {
     analyzeReceipt,
+    cancelAnalysis,
     isProcessing,
     progress,
     stage,

@@ -11,7 +11,7 @@ import { useRef, useState } from 'react'
 
 export default function UploadPage() {
   const router = useRouter()
-  const { analyzeReceipt, isProcessing, progress, stage } = useAnalysisFlow()
+  const { analyzeReceipt, cancelAnalysis, isProcessing, progress, stage } = useAnalysisFlow()
   const { toastState, showToast } = useToast()
   const { previewUrl, setPreviewUrl, clearPreview } = useAnalysisDraftStore()
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
@@ -104,6 +104,7 @@ export default function UploadPage() {
         imageUrl={previewUrl}
         progress={progress}
         stage={stage}
+        onCancel={cancelAnalysis}
       />
       <Toast
         visible={!!toastState}
