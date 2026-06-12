@@ -9,7 +9,7 @@ import { useState } from 'react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const { session, loading, updatePassword } = useAuth()
+  const { session, loading: sessionLoading, updatePassword } = useAuth()
   const password = useInput({ type: 'password' })
   const confirmPassword = useInput({ type: 'password' })
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
     }
   }
 
-  if (!loading && !session) {
+  if (!sessionLoading && !session) {
     return (
       <div className="h-full overflow-auto p-4 flex-1 flex flex-col items-center justify-center">
         <motion.div
