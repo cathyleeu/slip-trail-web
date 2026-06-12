@@ -38,7 +38,7 @@ export default function UploadPage() {
   const onRunOcr = async () => {
     if (!receiptFile) return
 
-    await analyzeReceipt({
+    const result = await analyzeReceipt({
       receiptFile,
       onError: (error) => {
         console.error('Analysis failed:', error)
@@ -46,7 +46,7 @@ export default function UploadPage() {
       },
     })
 
-    router.push('/result')
+    if (result.success) router.push('/result')
   }
 
   return (
