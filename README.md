@@ -74,8 +74,8 @@ bun dev
 - [x] Supabase schema
 - [x] Storage: create bucket `sliptrail-bills` + public policy
 - [ ] Apollo GraphQL server at `/api/graphql`
-- [ ] Client queries/mutations for receipts/items/places
-- [ ] Image upload UI with progress + retry
+- [x] Client queries/mutations for receipts/items/places
+- [x] Image upload UI with progress + retry
 
 **OCR & AI Pipeline**
 
@@ -98,7 +98,7 @@ bun dev
 - [ ] Pin-based visualization
 - [ ] Simple heatmap version
 - [ ] List/card view
-- [ ] `/api/geocode` using Nominatim
+- [x] `/api/geocode` using Nominatim
 - [ ] Persist lat/lon to `places` and link receipts
 
 **Receipts UX & Insights**
