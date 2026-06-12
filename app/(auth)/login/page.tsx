@@ -1,7 +1,8 @@
 'use client'
 
 import { InputField } from '@components'
-import { Button, EmailIcon, EyeIcon, EyeOffIcon } from '@components/ui'
+import { Divider } from '@components/Divider'
+import { Button, EmailIcon, EyeIcon, EyeOffIcon, GoogleIcon } from '@components/ui'
 import { useAuth, useInput } from '@hooks'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -9,7 +10,7 @@ import { useState } from 'react'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const email = useInput({ type: 'email' })
   const password = useInput({ type: 'password' })
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +26,12 @@ export default function LoginPage() {
 
     if (success) router.push('/')
     else setError(error as string)
+  }
+
+  async function handleGoogleLogin() {
+    setError(null)
+    const { success, error } = await loginWithGoogle()
+    if (!success) setError(error as string)
   }
 
   return (
@@ -108,6 +115,16 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Log In'}
           </button>
         </form>
+
+        <Divider label="Or continue with" />
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </button>
       </motion.div>
 
       {/* Sign Up Link */}

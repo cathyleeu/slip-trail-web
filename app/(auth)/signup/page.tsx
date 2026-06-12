@@ -46,7 +46,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { signup } = useAuth()
+  const { signup, loginWithGoogle } = useAuth()
 
   const email = useInput({ type: 'email' })
   const password = useInput({ type: 'password' })
@@ -76,6 +76,12 @@ export default function SignUpPage() {
       showToast('Check your email for a confirmation link!', 'success')
       setTimeout(() => router.push('/login'), 2000)
     }
+  }
+
+  async function handleGoogleSignUp() {
+    setError(null)
+    const { success, error } = await loginWithGoogle()
+    if (!success) setError(error as string)
   }
 
   return (
@@ -180,7 +186,10 @@ export default function SignUpPage() {
             <AppleIcon />
             Continue with Apple
           </button>
-          <button className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all">
+          <button
+            onClick={handleGoogleSignUp}
+            className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all"
+          >
             <GoogleIcon />
             Continue with Google
           </button>
