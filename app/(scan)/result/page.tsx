@@ -12,7 +12,7 @@ import { formatDateTime, normalizeNumberInput } from '@utils/format'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const Map = dynamic(() => import('@components/map'), { ssr: false })
 
@@ -20,7 +20,7 @@ type FeelingTag = (typeof FEELING_TAGS)[number]
 
 export default function ResultPage() {
   const router = useRouter()
-  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place } =
+  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place, reset } =
     useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
@@ -31,9 +31,10 @@ export default function ResultPage() {
   const [showLocationSearch, setShowLocationSearch] = useState(false)
   const { toastState, showToast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
+  const hasSavedRef = useRef(false)
 
   useEffect(() => {
-    if (!receipt) router.back()
+    if (!receipt && !hasSavedRef.current) router.back()
   }, [receipt, router])
 
   useEffect(() => {
@@ -150,6 +151,8 @@ export default function ResultPage() {
       setIsEditMode(false)
       setOriginalReceipt(null)
       showToast('✓ Receipt saved to your trail', 'success')
+      hasSavedRef.current = true
+      reset()
       setTimeout(() => router.push('/'), 1200)
     } catch {
       showToast('✗ Save failed — try again', 'error')
