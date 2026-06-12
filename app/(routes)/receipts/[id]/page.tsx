@@ -84,12 +84,12 @@ export default function ReceiptDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-surface-subtle">
         <Header title="Receipt Details" />
         <div className="p-4 animate-pulse space-y-4">
-          <div className="h-48 bg-gray-200 rounded-xl" />
-          <div className="h-32 bg-gray-200 rounded-xl" />
-          <div className="h-24 bg-gray-200 rounded-xl" />
+          <div className="h-48 bg-surface-medium rounded-xl" />
+          <div className="h-32 bg-surface-medium rounded-xl" />
+          <div className="h-24 bg-surface-medium rounded-xl" />
         </div>
       </div>
     )
@@ -97,10 +97,10 @@ export default function ReceiptDetailPage() {
 
   if (error || !receipt) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-surface-subtle flex flex-col">
         <Header title="Receipt Details" />
         <div className="flex-1 flex flex-col items-center justify-center">
-          <p className="text-gray-500 mb-4">Receipt not found</p>
+          <p className="text-fg-muted mb-4">Receipt not found</p>
           <Button onClick={() => router.back()}>Go Back</Button>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function ReceiptDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-surface-subtle pb-24">
       <Header title="Receipt Details" />
 
       <div className="p-4 space-y-4">
@@ -226,7 +226,7 @@ export default function ReceiptDetailPage() {
                 src={receipt.img_url}
                 alt="Receipt"
                 fill
-                className="object-contain bg-gray-100"
+                className="object-contain bg-surface-subtle"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
@@ -238,20 +238,20 @@ export default function ReceiptDetailPage() {
           {isEditMode && draft ? (
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Vendor</label>
+                <label className="text-xs text-fg-muted mb-1 block">Vendor</label>
                 <input
                   type="text"
                   value={draft.vendor}
                   onChange={(e) => setDraft((d) => d && { ...d, vendor: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-fg"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Category</label>
+                <label className="text-xs text-fg-muted mb-1 block">Category</label>
                 <select
                   value={draft.category ?? ''}
                   onChange={(e) => setDraft((d) => d && { ...d, category: (e.target.value || null) as ReceiptCategory | null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-fg"
                 >
                   <option value="">Other</option>
                   {DEFAULT_CATEGORIES.map((cat) => (
@@ -264,13 +264,13 @@ export default function ReceiptDetailPage() {
             </div>
           ) : (
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl shrink-0">
+              <div className="w-12 h-12 rounded-full bg-surface-subtle flex items-center justify-center text-2xl shrink-0">
                 {categoryEmoji}
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-gray-900">{displayVendor}</h2>
-                <p className="text-sm text-gray-500 mt-0.5">{categoryLabel}</p>
-                <p className="text-sm text-gray-400 mt-1">{formatDateTime(displayDate)}</p>
+                <h2 className="text-xl font-bold text-fg">{displayVendor}</h2>
+                <p className="text-sm text-fg-muted mt-0.5">{categoryLabel}</p>
+                <p className="text-sm text-fg-subtle mt-1">{formatDateTime(displayDate)}</p>
               </div>
               {feelingStyle && (
                 <span
@@ -291,12 +291,12 @@ export default function ReceiptDetailPage() {
         {(receipt.place_name || receipt.place_address || receipt.address) && (
           <Card className="p-4">
             <div className="flex items-start gap-3">
-              <LocationPin className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+              <LocationPin className="w-5 h-5 text-fg-subtle shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 {receipt.place_name && (
-                  <p className="font-medium text-gray-900">{receipt.place_name}</p>
+                  <p className="font-medium text-fg">{receipt.place_name}</p>
                 )}
-                <p className="text-sm text-gray-500">{receipt.place_address || receipt.address}</p>
+                <p className="text-sm text-fg-muted">{receipt.place_address || receipt.address}</p>
               </div>
             </div>
           </Card>
@@ -306,7 +306,7 @@ export default function ReceiptDetailPage() {
         {(displayItems.length > 0 || isEditMode) && (
           <Card className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Items</h3>
+              <h3 className="font-semibold text-fg">Items</h3>
               {isEditMode && (
                 <Button
                   variant="ghost"
@@ -320,34 +320,34 @@ export default function ReceiptDetailPage() {
             </div>
             <div className="space-y-2">
               {displayItems.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm text-gray-800">
+                <div key={idx} className="flex items-center gap-2 text-sm text-fg">
                   {isEditMode ? (
                     <>
                       <input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => handleEditItem(idx, 'quantity', normalizeNumberInput(e.target.value))}
-                        className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+                        className="w-12 px-2 py-1 border border-border-strong rounded text-center"
                         min="1"
                       />
-                      <span className="text-gray-400">x</span>
+                      <span className="text-fg-subtle">x</span>
                       <input
                         type="text"
                         value={item.name}
                         onChange={(e) => handleEditItem(idx, 'name', e.target.value)}
-                        className="flex-1 px-2 py-1 border border-gray-300 rounded"
+                        className="flex-1 px-2 py-1 border border-border-strong rounded"
                       />
                       <input
                         type="number"
                         value={item.price}
                         onChange={(e) => handleEditItem(idx, 'price', normalizeNumberInput(e.target.value))}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                        className="w-20 px-2 py-1 border border-border-strong rounded text-right"
                         step="0.01"
                         min="0"
                       />
                       <IconButton
                         onClick={() => handleDeleteItem(idx)}
-                        className="p-1 text-red-500 hover:bg-red-50 shadow-none"
+                        className="p-1 text-error hover:bg-error-bg shadow-none"
                         aria-label="Delete item"
                       >
                         <Trash className="w-4 h-4" />
@@ -355,11 +355,11 @@ export default function ReceiptDetailPage() {
                     </>
                   ) : (
                     <>
-                      <span className="flex-1 text-gray-800">
+                      <span className="flex-1 text-fg">
                         {item.quantity > 1 ? `${item.quantity}x ` : ''}
                         {item.name}
                       </span>
-                      <span className="font-medium text-gray-900">{money(item.price)}</span>
+                      <span className="font-medium text-fg">{money(item.price)}</span>
                     </>
                   )}
                 </div>
@@ -373,7 +373,7 @@ export default function ReceiptDetailPage() {
           {(displayCharges.length > 0 || isEditMode) && (
             <div className="space-y-2 mb-3">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">Charges</h3>
+                <h3 className="font-semibold text-fg">Charges</h3>
                 {isEditMode && (
                   <Button
                     variant="ghost"
@@ -386,19 +386,19 @@ export default function ReceiptDetailPage() {
                 )}
               </div>
               {receipt.subtotal !== null && !isEditMode && (
-                <div className="flex justify-between text-gray-600 text-sm">
+                <div className="flex justify-between text-fg-muted text-sm">
                   <span>Subtotal</span>
                   <span>{money(receipt.subtotal)}</span>
                 </div>
               )}
               {displayCharges.map((charge, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm text-gray-800">
+                <div key={idx} className="flex items-center gap-2 text-sm text-fg">
                   {isEditMode ? (
                     <>
                       <select
                         value={charge.type}
                         onChange={(e) => handleEditCharge(idx, 'type', e.target.value)}
-                        className="flex-1 px-2 py-1 border border-gray-300 rounded capitalize"
+                        className="flex-1 px-2 py-1 border border-border-strong rounded capitalize"
                       >
                         {Object.values(ChargeType).map((type) => (
                           <option key={type} value={type}>
@@ -410,13 +410,13 @@ export default function ReceiptDetailPage() {
                         type="number"
                         value={charge.amount}
                         onChange={(e) => handleEditCharge(idx, 'amount', normalizeNumberInput(e.target.value))}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                        className="w-20 px-2 py-1 border border-border-strong rounded text-right"
                         step="0.01"
                         min="0"
                       />
                       <IconButton
                         onClick={() => handleDeleteCharge(idx)}
-                        className="p-1 text-red-500 hover:bg-red-50 shadow-none"
+                        className="p-1 text-error hover:bg-error-bg shadow-none"
                         aria-label="Delete charge"
                       >
                         <Trash className="w-4 h-4" />
@@ -424,17 +424,17 @@ export default function ReceiptDetailPage() {
                     </>
                   ) : (
                     <>
-                      <span className="flex-1 text-gray-600 capitalize">
+                      <span className="flex-1 text-fg-muted capitalize">
                         {charge.label || charge.type}
                       </span>
-                      <span className="text-gray-900">{money(charge.amount)}</span>
+                      <span className="text-fg">{money(charge.amount)}</span>
                     </>
                   )}
                 </div>
               ))}
             </div>
           )}
-          <div className="border-t pt-2 flex justify-between text-lg font-bold text-gray-900">
+          <div className="border-t border-border pt-2 flex justify-between text-lg font-bold text-fg">
             <span>Total</span>
             <span>{displayTotal ? money(displayTotal) : '-'}</span>
           </div>
@@ -442,7 +442,7 @@ export default function ReceiptDetailPage() {
 
         {/* Feeling Tags */}
         <Card className="p-4 space-y-3">
-          <h3 className="font-semibold text-gray-900">How did this feel?</h3>
+          <h3 className="font-semibold text-fg">How did this feel?</h3>
           <div className="flex flex-wrap gap-2">
             {FEELING_TAGS.map((tag) => {
               const isSelected = isEditMode ? draft?.feeling === tag : receipt.feeling === tag
@@ -471,12 +471,12 @@ export default function ReceiptDetailPage() {
                 value={draft?.memo ?? ''}
                 onChange={(e) => setDraft((d) => d && { ...d, memo: e.target.value })}
                 placeholder="Add a note about this purchase..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm text-fg-soft placeholder:text-fg-subtle resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 rows={2}
               />
             ) : (
               displayMemo && (
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{displayMemo}</p>
+                <p className="text-sm text-fg-muted whitespace-pre-wrap">{displayMemo}</p>
               )
             )}
           </div>
@@ -484,13 +484,13 @@ export default function ReceiptDetailPage() {
       </div>
 
       {/* Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border p-4 flex gap-3">
         {isEditMode ? (
           <>
             <Button
               variant="ghost"
               onClick={handleCancel}
-              className="flex-1 py-3 rounded-2xl border border-gray-200"
+              className="flex-1 py-3 rounded-2xl border border-border"
             >
               Cancel
             </Button>
