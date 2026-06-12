@@ -78,6 +78,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
       file: null,
       receipt: null,
       location: null,
+      place: null,
       locationStatus: null,
       previewUrl: null,
       draftPath: null,
