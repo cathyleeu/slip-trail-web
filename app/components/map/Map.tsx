@@ -14,6 +14,7 @@ type MapProps = {
   children?: React.ReactNode
   showDefaultMarker?: boolean
   disableAutoCenter?: boolean
+  markerEmoji?: string
 }
 
 // Component to update map center when location changes
@@ -29,8 +30,6 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null
 }
 
-// TODO: marker style customization: emoji, color options
-// popup content customization by props: address, custom text
 export default function Map({
   location,
   zoom = 15,
@@ -39,6 +38,7 @@ export default function Map({
   children,
   showDefaultMarker = true,
   disableAutoCenter = false,
+  markerEmoji,
 }: MapProps) {
   // Fix for default marker icon
   useEffect(() => {
@@ -90,7 +90,19 @@ export default function Map({
         {!disableAutoCenter && <MapUpdater center={center} />}
         {children}
         {isValidLocation && showDefaultMarker && (
-          <Marker position={[location.lat, location.lon]}>
+          <Marker
+            position={[location.lat, location.lon]}
+            icon={
+              markerEmoji
+                ? L.divIcon({
+                    html: `<span style="font-size:22px;line-height:1">${markerEmoji}</span>`,
+                    className: 'spend-marker',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                  })
+                : undefined
+            }
+          >
             <Popup>
               <div>
                 <div className="font-semibold">{location.address}</div>

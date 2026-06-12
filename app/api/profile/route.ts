@@ -9,9 +9,13 @@ export async function PATCH(req: Request) {
 
   const { display_name } = await req.json()
 
-  const { error } = await supabase.from('profiles').update({ display_name }).eq('id', auth.user.id)
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ display_name })
+    .eq('id', auth.user.id)
+    .select('id, name, created_at, updated_at')
+    .single()
 
   if (error) return apiError(error.message, { status: 400 })
-  // FIXME: return updated profile data
-  return apiSuccess({ ok: true })
+  return apiSuccess(data)
 }

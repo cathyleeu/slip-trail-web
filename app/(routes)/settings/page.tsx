@@ -1,17 +1,38 @@
 'use client'
 
 import { Header } from '@components'
-import { Avatar, Button, Card } from '@components/ui'
+import { Avatar, Button, Card, Toast, useToast } from '@components/ui'
 import { useAuth, useCategories, useProfile } from '@hooks'
 import { useState } from 'react'
 
 export default function SettingsPage() {
-  const { profile } = useProfile()
+  const { profile, updateProfile } = useProfile()
   const { logout } = useAuth()
   const { settingsCategories, customCategories, addCustomCategory, removeCustomCategory } =
     useCategories()
   const [newCategory, setNewCategory] = useState({ emoji: '', label: '' })
   const [isAdding, setIsAdding] = useState(false)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileName, setProfileName] = useState('')
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const { toastState, showToast } = useToast()
+
+  const handleEditProfile = () => {
+    setProfileName(profile?.name ?? '')
+    setIsEditingProfile(true)
+  }
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true)
+    const { success, error } = await updateProfile({ name: profileName.trim() || null })
+    setIsSavingProfile(false)
+    if (success) {
+      setIsEditingProfile(false)
+      showToast('Profile updated', 'success')
+    } else {
+      showToast(error ?? 'Failed to update profile', 'error')
+    }
+  }
 
   const handleAddCategory = () => {
     if (!newCategory.emoji.trim() || !newCategory.label.trim()) return
@@ -32,22 +53,55 @@ export default function SettingsPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <Header title="Settings" />
 
       <div className="p-4 space-y-6">
-        {/* FIXME: Profile Section */}
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
             Profile
           </h2>
-          <div className="flex items-center gap-4">
-            <Avatar name={profile?.name} size="lg" />
-            <div>
-              <p className="font-semibold text-gray-900">{profile?.name || 'User'}</p>
-              <p className="text-sm text-gray-500">Edit profile coming soon</p>
+          {isEditingProfile ? (
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Your name"
+                className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingProfile(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveProfile}
+                  disabled={isSavingProfile}
+                  className="flex-1"
+                >
+                  {isSavingProfile ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar name={profile?.name} size="lg" />
+                <p className="font-semibold text-gray-900">{profile?.name || 'User'}</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleEditProfile}>
+                Edit
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Category Customization */}
@@ -177,5 +231,11 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+    <Toast
+      visible={!!toastState}
+      message={toastState?.message ?? ''}
+      type={toastState?.type ?? 'success'}
+    />
+    </>
   )
 }
