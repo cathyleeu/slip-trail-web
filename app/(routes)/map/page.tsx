@@ -62,7 +62,7 @@ export default function MapPage() {
   const [locationLoading, setLocationLoading] = useState(false)
   const [selected, setSelected] = useState<SelectedReceipt | null>(null)
 
-  const { data: receipts = [] } = useMapReceipts(periodToQuery(period))
+  const { data: receipts = [], isError } = useMapReceipts(periodToQuery(period))
 
   const filtered: MapReceipt[] =
     period === 'today'
@@ -88,6 +88,18 @@ export default function MapPage() {
       },
       () => setLocationLoading(false),
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="h-[calc(100vh-116px)] flex items-center justify-center px-6">
+        <div className="text-center">
+          <div className="text-3xl mb-2">⚠️</div>
+          <p className="text-sm font-medium text-zinc-700">Couldn&apos;t load your trail.</p>
+          <p className="text-xs text-zinc-400 mt-1">Please try again later.</p>
+        </div>
+      </div>
     )
   }
 

@@ -34,8 +34,9 @@ type EmotionCell = { session: string; feeling: string; count: number }
 
 export default function InsightsPage() {
   const [period, setPeriod] = useState<Period>('last7')
-  const { data: emotionBreakdown = [] } = useEmotionBreakdown(period)
-  const { data: emotionByHour = [] } = useEmotionByHour(period)
+  const { data: emotionBreakdown = [], isError: breakdownError } = useEmotionBreakdown(period)
+  const { data: emotionByHour = [], isError: byHourError } = useEmotionByHour(period)
+  const isError = breakdownError || byHourError
 
   const breakdown = emotionBreakdown as EmotionSlice[]
   const byHour = emotionByHour as EmotionCell[]
@@ -52,6 +53,18 @@ export default function InsightsPage() {
     const max = Math.max(...cells.map((c) => c.count), 1)
     return { session, cells, max }
   })
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center px-6">
+        <div className="text-center">
+          <div className="text-3xl mb-2">⚠️</div>
+          <p className="text-sm font-medium text-zinc-700">Couldn&apos;t load your insights.</p>
+          <p className="text-xs text-zinc-400 mt-1">Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-28">
