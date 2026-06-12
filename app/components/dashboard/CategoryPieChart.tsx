@@ -1,5 +1,6 @@
 'use client'
 
+import { CHART_COLORS } from '@lib/chartColors'
 import { money } from '@utils'
 import {
   ArcElement,
@@ -24,17 +25,7 @@ type CategoryPieChartProps = {
   items: CategorySlice[]
 }
 
-const COLORS = [
-  '#60A5FA',
-  '#34D399',
-  '#FBBF24',
-  '#F87171',
-  '#A78BFA',
-  '#F472B6',
-  '#22D3EE',
-  '#FB923C',
-  '#94A3B8',
-]
+const COLORS = CHART_COLORS
 
 const CategoryPieChart = memo(function CategoryPieChart({ items }: CategoryPieChartProps) {
   const labels = items.map((i) => i.category)

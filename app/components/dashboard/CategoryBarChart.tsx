@@ -1,5 +1,6 @@
 'use client'
 
+import { CHART_COLORS } from '@lib/chartColors'
 import { money } from '@utils'
 import { memo } from 'react'
 
@@ -13,15 +14,7 @@ type CategoryBarChartProps = {
   title?: string
 }
 
-// Alternating amber/zinc two-tone palette — warm utility design system
-const COLORS = [
-  '#18181b', // zinc-900
-  '#f59e0b', // amber-500
-  '#a1a1aa', // zinc-400
-  '#fcd34d', // amber-300
-  '#e4e4e7', // zinc-200
-  '#fef3c7', // amber-100
-]
+const COLORS = CHART_COLORS
 
 const CategoryBarChart = memo(function CategoryBarChart({
   items,
