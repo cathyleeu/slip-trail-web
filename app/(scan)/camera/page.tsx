@@ -45,7 +45,7 @@ export default function CameraPage() {
   const handleAnalyze = async () => {
     if (!receiptFile || isProcessing) return
 
-    await analyzeReceipt({
+    const result = await analyzeReceipt({
       receiptFile,
       onError: (error) => {
         console.error('Analysis failed:', error)
@@ -53,7 +53,7 @@ export default function CameraPage() {
       },
     })
 
-    router.push('/result')
+    if (result.success) router.push('/result')
   }
 
   return (
