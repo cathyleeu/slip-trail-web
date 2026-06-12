@@ -2,8 +2,17 @@ import { createServerClient } from '@supabase/ssr'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-const PROTECTED_PREFIXES = ['/map', '/camera', '/dashboard', '/account']
-const AUTH_PAGES = ['/upload', '/login', '/signup']
+const PROTECTED_PREFIXES = [
+  '/home',
+  '/map',
+  '/insights',
+  '/receipts',
+  '/settings',
+  '/camera',
+  '/upload',
+  '/result',
+]
+const AUTH_PAGES = ['/login', '/signup', '/onboarding', '/forgot-password']
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
@@ -64,5 +73,20 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/login', '/signup', '/map/:path*', '/camera/:path*', '/account/:path*'],
+  matcher: [
+    '/',
+    '/login',
+    '/signup',
+    '/onboarding',
+    '/forgot-password',
+    '/reset-password',
+    '/home/:path*',
+    '/map/:path*',
+    '/insights/:path*',
+    '/receipts/:path*',
+    '/settings/:path*',
+    '/camera/:path*',
+    '/upload/:path*',
+    '/result/:path*',
+  ],
 }
