@@ -1,11 +1,18 @@
+import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
 
-export async function POST(req: Request) {
+const MAX_ADDRESS_LENGTH = 500
+
+export const POST = withAuth(async (req) => {
   const body = await req.json()
   const { address, multiple } = body
 
-  if (!address) {
+  if (typeof address !== 'string' || !address.trim()) {
     return apiError('Address required', { status: 400 })
+  }
+
+  if (address.length > MAX_ADDRESS_LENGTH) {
+    return apiError('Address too long', { status: 422 })
   }
 
   const url = new URL('https://nominatim.openstreetmap.org/search')
@@ -29,4 +36,4 @@ export async function POST(req: Request) {
   }
 
   return apiSuccess(multiple ? data : data[0])
-}
+})

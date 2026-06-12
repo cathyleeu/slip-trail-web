@@ -1,9 +1,11 @@
+import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { coerceCategory, parseReceipt } from '@lib/groq'
 import { log } from '@lib/logger'
-import { NextRequest } from 'next/server'
 
-export async function POST(request: NextRequest) {
+const MAX_RAW_TEXT_LENGTH = 20000
+
+export const POST = withAuth(async (request) => {
   try {
     const body = await request.json().catch(() => null)
     if (!body || typeof body.rawText !== 'string') {
@@ -17,6 +19,13 @@ export async function POST(request: NextRequest) {
       return apiError('OCR text too short', {
         status: 422,
         details: 'The provided OCR text is not sufficient for parsing',
+      })
+    }
+
+    if (rawText.length > MAX_RAW_TEXT_LENGTH) {
+      return apiError('OCR text too long', {
+        status: 422,
+        details: `OCR text must not exceed ${MAX_RAW_TEXT_LENGTH} characters`,
       })
     }
 
@@ -59,4 +68,4 @@ export async function POST(request: NextRequest) {
       details: err instanceof Error ? err.message : String(err),
     })
   }
-}
+})
