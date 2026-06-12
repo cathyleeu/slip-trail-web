@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@components'
 import CategoryBarChart from '@components/dashboard/CategoryBarChart'
-import { Avatar, Card } from '@components/ui'
+import { Avatar, Card, SegmentToggle } from '@components/ui'
 import { Camera, Upload } from '@components/ui/icons'
 import { useProfile } from '@hooks'
 import {
@@ -119,21 +119,13 @@ export default function HomePage() {
           {/* Spend Summary Card */}
           <Card className="relative px-7 py-6">
             {/* Segment control — period filter */}
-            <div className="absolute top-4 right-4 flex bg-zinc-100 rounded-xl p-0.5 gap-0.5">
-              {PERIOD_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setPeriod(opt.value)}
-                  className={`px-2.5 py-1 rounded-[10px] text-xs font-semibold transition-all ${
-                    period === opt.value
-                      ? 'bg-zinc-900 text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-800'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <SegmentToggle
+              options={PERIOD_OPTIONS}
+              value={period}
+              onChange={setPeriod}
+              className="absolute top-4 right-4 gap-0.5 p-0.5"
+              optionClassName="px-2.5 py-1 rounded-[10px]"
+            />
 
             <div className="text-6xl font-black text-zinc-900 tracking-tighter tabular-nums leading-none">
               {summary ? money(summary.total) : '$0.00'}

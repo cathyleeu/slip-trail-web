@@ -5,6 +5,8 @@ export type { BaseDialogProps } from './BaseDialog'
 export { default as Button } from './Button'
 export type { ButtonProps, ButtonSize, ButtonVariant } from './Button'
 export { Card, CardContent, CardHeader } from './Card'
+export { SegmentToggle } from './SegmentToggle'
+export type { SegmentOption } from './SegmentToggle'
 export { default as IconButton } from './IconButton'
 export type {
   IconButtonProps,

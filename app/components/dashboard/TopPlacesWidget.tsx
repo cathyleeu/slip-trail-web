@@ -1,5 +1,6 @@
 'use client'
 
+import { SegmentToggle } from '@components/ui'
 import { useDashboardTopPlaces } from '@hooks/useDashboard'
 import { Period } from '@types'
 import { money } from '@utils'
@@ -10,29 +11,18 @@ import { WidgetPeriodToggle } from './WidgetPeriodToggle'
 type SortBy = 'spend' | 'visits'
 
 function SortTabs({ value, onChange }: { value: SortBy; onChange: (v: SortBy) => void }) {
-  const tabs: { v: SortBy; label: string }[] = [
-    { v: 'spend', label: 'Spend' },
-    { v: 'visits', label: 'Visits' },
+  const tabs: { value: SortBy; label: string }[] = [
+    { value: 'spend', label: 'Spend' },
+    { value: 'visits', label: 'Visits' },
   ]
   return (
-    <div className="inline-flex rounded-xl border bg-white p-1">
-      {tabs.map((t) => {
-        const active = t.v === value
-        return (
-          <button
-            key={t.v}
-            type="button"
-            onClick={() => onChange(t.v)}
-            className={[
-              'px-3 py-1 text-sm rounded-lg transition',
-              active ? 'bg-neutral-900 text-white' : 'text-neutral-700 hover:bg-neutral-100',
-            ].join(' ')}
-          >
-            {t.label}
-          </button>
-        )
-      })}
-    </div>
+    <SegmentToggle
+      options={tabs}
+      value={value}
+      onChange={onChange}
+      className="border border-border"
+      optionClassName="px-3 py-1 text-sm rounded-lg"
+    />
   )
 }
 

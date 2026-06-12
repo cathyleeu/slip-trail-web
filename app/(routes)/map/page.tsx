@@ -1,6 +1,6 @@
 'use client'
 
-import { IconButton, LocationPin, Spinner } from '@components/ui'
+import { IconButton, LocationPin, SegmentToggle, Spinner } from '@components/ui'
 import { useMapReceipts } from '@hooks/useDashboard'
 import { getFeelingEmoji } from '@lib/feelings'
 import type { FeelingTag } from '@types'
@@ -107,21 +107,13 @@ export default function MapPage() {
     <div className="h-[calc(100vh-116px)] relative">
       {/* Segment control — period filter */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]">
-        <div className="flex bg-white rounded-2xl shadow-md p-1 gap-0.5 border border-zinc-100">
-          {PERIOD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => { setPeriod(opt.value); setSelected(null) }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                period === opt.value
-                  ? 'bg-zinc-900 text-white shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <SegmentToggle
+          options={PERIOD_OPTIONS}
+          value={period}
+          onChange={(v) => { setPeriod(v); setSelected(null) }}
+          className="bg-surface rounded-2xl shadow-md border border-border gap-0.5"
+          optionClassName="px-3.5 py-1.5 rounded-xl"
+        />
       </div>
 
       {/* Stops badge */}
