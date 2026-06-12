@@ -1,6 +1,8 @@
 'use client'
 
 import { ChevronRight } from '@components/ui/icons'
+import { FEELING_EMOJIS, FEELING_STYLES } from '@lib/feelings'
+import type { FeelingTag } from '@types'
 import { cn } from '@utils/cn'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -57,11 +59,7 @@ function SlideSnap() {
 }
 
 function SlideResult() {
-  const feelings = [
-    { label: 'Routine', emoji: '🔄', className: 'bg-zinc-100 text-zinc-600' },
-    { label: 'Treat', emoji: '🎁', className: 'bg-violet-100 text-violet-700' },
-    { label: 'Impulsive', emoji: '⚡', className: 'bg-rose-100 text-rose-600' },
-  ]
+  const feelings: FeelingTag[] = ['Routine', 'Treat', 'Impulsive']
 
   return (
     <div className="w-full h-72 flex items-center justify-center">
@@ -85,20 +83,21 @@ function SlideResult() {
           How did this feel?
         </p>
         <div className="flex gap-2">
-          {feelings.map((f, i) => (
+          {feelings.map((tag, i) => (
             <motion.div
-              key={f.label}
+              key={tag}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.1 }}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium',
-                f.className,
+                FEELING_STYLES[tag].bg,
+                FEELING_STYLES[tag].text,
                 i === 0 && 'ring-2 ring-fg ring-offset-1'
               )}
             >
-              <span>{f.emoji}</span>
-              {f.label}
+              <span>{FEELING_EMOJIS[tag]}</span>
+              {tag}
             </motion.div>
           ))}
         </div>
