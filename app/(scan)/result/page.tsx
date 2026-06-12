@@ -3,10 +3,11 @@
 import { LocationSearch, TipPromptDialog } from '@components'
 import { Button, Card, IconButton, Toast, useToast } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
-import { getCategoryEmoji } from '@lib/categories'
+import { getCategoryEmoji, getCategoryLabel } from '@lib/categories'
+import { RECEIPT_CATEGORIES } from '@lib/constants'
 import { FEELING_TAGS } from '@lib/feelings'
 import { useAnalysisDraftStore } from '@store'
-import { ChargeType, type ReceiptCharge, type ReceiptItem } from '@types'
+import { ChargeType, type ParsedReceipt, type ReceiptCharge, type ReceiptItem } from '@types'
 import { cn } from '@utils/cn'
 import { formatDateTime, normalizeNumberInput } from '@utils/format'
 import { motion } from 'motion/react'
@@ -17,6 +18,18 @@ import { useEffect, useState } from 'react'
 const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 type FeelingTag = (typeof FEELING_TAGS)[number]
+
+function toDatetimeLocalValue(iso?: string | null) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
+}
+
+function fromDatetimeLocalValue(value: string): string {
+  return value ? `${value}:00.000Z` : ''
+}
 
 export default function ResultPage() {
   const router = useRouter()
@@ -81,6 +94,21 @@ export default function ResultPage() {
     const itemsTotal = updatedItems.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0)
     const chargesTotal = receipt.charges?.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0) || 0
     setReceipt({ ...receipt, items: updatedItems, total: itemsTotal + chargesTotal })
+  }
+
+  const handleEditVendor = (value: string) => {
+    if (!receipt) return
+    setReceipt({ ...receipt, vendor: value })
+  }
+
+  const handleEditCategory = (value: string) => {
+    if (!receipt) return
+    setReceipt({ ...receipt, category: value as ParsedReceipt['category'] })
+  }
+
+  const handleEditPurchasedAt = (value: string) => {
+    if (!receipt) return
+    setReceipt({ ...receipt, purchased_at: fromDatetimeLocalValue(value) })
   }
 
   const handleAddItem = () => {
@@ -244,15 +272,55 @@ export default function ResultPage() {
         {/* Receipt Card */}
         <Card className="p-6 space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-zinc-900">{receipt.vendor}</h2>
+            {isEditMode ? (
+              <input
+                type="text"
+                value={receipt.vendor}
+                onChange={(e) => handleEditVendor(e.target.value)}
+                className="w-full text-xl font-bold text-zinc-900 px-2 py-1 border border-zinc-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              />
+            ) : (
+              <h2 className="text-xl font-bold text-zinc-900">{receipt.vendor}</h2>
+            )}
             {receipt.address && <p className="text-sm text-zinc-500 mt-1">{receipt.address}</p>}
           </div>
 
-          <div className="flex gap-4 text-sm text-zinc-500">
-            {receipt.purchased_at && (
+          <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
+            {isEditMode ? (
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>{formatDateTime(receipt.purchased_at)}</span>
+                <input
+                  type="datetime-local"
+                  value={toDatetimeLocalValue(receipt.purchased_at)}
+                  onChange={(e) => handleEditPurchasedAt(e.target.value)}
+                  className="px-2 py-1 border border-zinc-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                />
+              </div>
+            ) : (
+              receipt.purchased_at && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDateTime(receipt.purchased_at)}</span>
+                </div>
+              )
+            )}
+
+            {isEditMode ? (
+              <select
+                value={receipt.category}
+                onChange={(e) => handleEditCategory(e.target.value)}
+                className="px-2 py-1 border border-zinc-200 rounded-lg capitalize focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              >
+                {RECEIPT_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {getCategoryEmoji(cat)} {getCategoryLabel(cat)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span>{getCategoryEmoji(receipt.category)}</span>
+                <span>{getCategoryLabel(receipt.category)}</span>
               </div>
             )}
           </div>
