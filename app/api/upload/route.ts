@@ -1,26 +1,35 @@
+import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
-import { requireAuth } from '@lib/auth'
-import { STORAGE_BUCKET } from '@lib/constants'
-import { supabaseServer } from '@lib/supabase/server'
-import { NextRequest } from 'next/server'
+import { IMAGE_EXTENSIONS, MAX_UPLOAD_SIZE_BYTES, STORAGE_BUCKET, SUPPORTED_IMAGE_TYPES } from '@lib/constants'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { user, supabase }) => {
   const form = await request.formData()
   const file = form.get('file') as File
 
   if (!file) return apiError('No file uploaded', { status: 400 })
 
-  const supabase = await supabaseServer()
-  const auth = await requireAuth(supabase)
-  if (!auth.ok) return auth.response
+  const extension = IMAGE_EXTENSIONS[file.type]
+  if (!extension) {
+    return apiError('Unsupported file type', {
+      status: 422,
+      details: `Supported types: ${Object.values(SUPPORTED_IMAGE_TYPES).join(', ')}`,
+    })
+  }
+
+  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+    return apiError('File too large', {
+      status: 422,
+      details: `Maximum file size is ${MAX_UPLOAD_SIZE_BYTES / (1024 * 1024)}MB`,
+    })
+  }
 
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .upload(`${auth.user.id}/${Date.now()}_${file.name}`, file, { contentType: file.type })
+    .upload(`${user.id}/${Date.now()}.${extension}`, file, { contentType: file.type })
 
   if (error) return apiError(error.message, { status: 500 })
 
   const publicUrl = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path)
 
   return apiSuccess({ url: publicUrl.data.publicUrl })
-}
+})

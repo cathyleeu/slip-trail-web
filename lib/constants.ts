@@ -46,6 +46,14 @@ export const SUPPORTED_IMAGE_TYPES = {
   PNG: 'image/png',
 } as const
 
+export const IMAGE_EXTENSIONS: Record<string, string> = {
+  [SUPPORTED_IMAGE_TYPES.WEBP]: 'webp',
+  [SUPPORTED_IMAGE_TYPES.JPEG]: 'jpg',
+  [SUPPORTED_IMAGE_TYPES.PNG]: 'png',
+}
+
+export const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
+
 // ============ Error Messages ============
 
 export const ERROR_MESSAGES = {
