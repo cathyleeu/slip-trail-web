@@ -45,8 +45,8 @@ export default function InsightsPage() {
   const totalCount = breakdown.reduce((sum, e) => sum + e.count, 0)
   const topEmotion = breakdown[0] ?? null
   const topFeelingColor = topEmotion
-    ? (FEELING_HEX_COLORS[topEmotion.feeling as FeelingTag] ?? '#6366f1')
-    : '#6366f1'
+    ? (FEELING_HEX_COLORS[topEmotion.feeling as FeelingTag] ?? '#a1a1aa')
+    : '#a1a1aa'
 
   const heatmap = SESSIONS.map((session) => {
     const cells = byHour.filter((c) => c.session === session)
@@ -145,7 +145,7 @@ export default function InsightsPage() {
             <div className="space-y-4">
               {breakdown.map((e, i) => {
                 const widthPct = totalSpend > 0 ? (e.total / totalSpend) * 100 : 0
-                const color = FEELING_HEX_COLORS[e.feeling as FeelingTag] ?? '#6366f1'
+                const color = FEELING_HEX_COLORS[e.feeling as FeelingTag] ?? '#a1a1aa'
                 return (
                   <motion.div
                     key={e.feeling}
@@ -204,7 +204,7 @@ export default function InsightsPage() {
                     <div className="flex gap-1.5 flex-wrap">
                       {sortedCells.map((cell) => {
                         const opacity = Math.max(0.25, cell.count / max)
-                        const color = FEELING_HEX_COLORS[cell.feeling as FeelingTag] ?? '#6366f1'
+                        const color = FEELING_HEX_COLORS[cell.feeling as FeelingTag] ?? '#a1a1aa'
                         const alphaByte = Math.round(opacity * 255).toString(16).padStart(2, '0')
                         return (
                           <div
