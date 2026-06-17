@@ -1,6 +1,6 @@
 'use client'
 
-import { Card } from '@components/ui'
+import { Card, SegmentToggle } from '@components/ui'
 import { useEmotionBreakdown, useEmotionByHour } from '@hooks/useDashboard'
 import { FEELING_EMOJIS, FEELING_HEX_COLORS } from '@lib/feelings'
 import type { FeelingTag, Period } from '@types'
@@ -78,21 +78,13 @@ export default function InsightsPage() {
         </div>
 
         {/* Segment control — consistent with Map page */}
-        <div className="flex bg-white rounded-2xl shadow-sm p-1 gap-0.5 border border-zinc-100">
-          {PERIOD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setPeriod(opt.value)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                period === opt.value
-                  ? 'bg-zinc-900 text-white shadow-sm'
-                  : 'text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <SegmentToggle
+          options={PERIOD_OPTIONS}
+          value={period}
+          onChange={setPeriod}
+          className="bg-surface rounded-2xl shadow-sm border border-border gap-0.5"
+          optionClassName="px-3 py-1.5 rounded-xl"
+        />
       </div>
 
       <div className="px-6 space-y-4">
