@@ -1,7 +1,7 @@
 'use client'
 
 import { Header } from '@components'
-import { Avatar, Button, Card, Toast, useToast } from '@components/ui'
+import { Avatar, BaseDialog, Button, Card, Toast, useToast } from '@components/ui'
 import { useAuth, useCategories, useProfile } from '@hooks'
 import { useState } from 'react'
 
@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [profileName, setProfileName] = useState('')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const { toastState, showToast } = useToast()
 
   const handleEditProfile = () => {
@@ -225,12 +226,32 @@ export default function SettingsPage() {
 
         {/* Logout Button */}
         <div className="pt-4 pb-8 flex justify-center">
-          <Button variant="ghost" onClick={logout} className="text-gray-500 hover:bg-transparent">
+          <Button
+            variant="ghost"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="text-gray-500 hover:bg-transparent"
+          >
             Log out
           </Button>
         </div>
       </div>
     </div>
+    <BaseDialog isOpen={showLogoutConfirm} onClose={() => setShowLogoutConfirm(false)}>
+      <div className="bg-surface rounded-2xl shadow-2xl overflow-hidden p-6 space-y-5">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-fg">Log out?</h2>
+          <p className="text-sm text-fg-muted mt-1">You can log back in anytime.</p>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="ghost" onClick={() => setShowLogoutConfirm(false)} className="flex-1 py-3">
+            Cancel
+          </Button>
+          <Button onClick={logout} className="flex-1 py-3">
+            Log out
+          </Button>
+        </div>
+      </div>
+    </BaseDialog>
     <Toast
       visible={!!toastState}
       message={toastState?.message ?? ''}
