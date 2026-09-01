@@ -5,6 +5,7 @@ import { useMapReceipts } from '@hooks/useDashboard'
 import { getFeelingEmoji } from '@lib/feelings'
 import type { FeelingTag } from '@types'
 import { money } from '@utils'
+import { toYmd } from '@utils/range'
 import { AnimatePresence, motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
@@ -66,11 +67,7 @@ export default function MapPage() {
 
   const filtered: MapReceipt[] =
     period === 'today'
-      ? (receipts as MapReceipt[]).filter((r) => {
-          const d = new Date(r.purchased_at)
-          const today = new Date()
-          return d.toDateString() === today.toDateString()
-        })
+      ? (receipts as MapReceipt[]).filter((r) => toYmd(new Date(r.purchased_at)) === toYmd(new Date()))
       : (receipts as MapReceipt[])
 
   const trailPositions: [number, number][] = filtered.map((r) => [r.lat, r.lon])
