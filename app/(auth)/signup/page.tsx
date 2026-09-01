@@ -8,13 +8,17 @@ import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-function PasswordStrength({ password }: { password: string }) {
-  const checks = [
+function getPasswordChecks(password: string) {
+  return [
     password.length >= 8,
     /[A-Z]/.test(password),
     /[a-z]/.test(password),
     /[0-9]/.test(password),
   ]
+}
+
+function PasswordStrength({ password }: { password: string }) {
+  const checks = getPasswordChecks(password)
   const score = checks.filter(Boolean).length
 
   const bars = [
@@ -59,6 +63,12 @@ export default function SignUpPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (!getPasswordChecks(password.value).every(Boolean)) {
+      setError('Password must be at least 8 characters and include uppercase, lowercase, and numbers')
+      setLoading(false)
+      return
+    }
 
     if (password.value !== confirmPassword.value) {
       setError('Passwords do not match')
