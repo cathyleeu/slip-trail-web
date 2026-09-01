@@ -35,6 +35,24 @@ export function useAuth() {
     return handleResult(error)
   }
 
+  async function loginWithGoogle(): Promise<AuthResult> {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${siteUrl}/auth/callback` },
+    })
+    return handleResult(error)
+  }
+
+  async function loginWithApple(): Promise<AuthResult> {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${siteUrl}/auth/callback` },
+    })
+    return handleResult(error)
+  }
+
   async function logout() {
     const { error } = await supabase.auth.signOut()
     router.push('/login')
@@ -56,16 +74,7 @@ export function useAuth() {
     return handleResult(error)
   }
 
-  async function loginWithOAuth(provider: 'apple' | 'google'): Promise<AuthResult> {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: siteUrl },
-    })
-    return handleResult(error)
-  }
-
   if (!user && !session && loading === undefined)
     throw new Error('useAuth must be used within AuthProvider')
-  return { user, session, loading, login, signup, logout, resetPassword, updatePassword, loginWithOAuth }
+  return { user, session, loading, login, signup, loginWithGoogle, loginWithApple, logout, resetPassword, updatePassword }
 }
