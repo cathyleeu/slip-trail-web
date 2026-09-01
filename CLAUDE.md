@@ -69,6 +69,8 @@ For multi-step or complex tasks, always output a brief, sequential plan using th
 
 Receipt management app: camera → OCR → Groq parse → map trail + emotion pattern analysis.
 
+> Before asking the user for product context or re-deriving data-flow/reuse decisions, read `docs/product-brief.md` (screens, core flow, open product questions) and `docs/architecture.md` (data-flow rationale, index of existing components/hooks/utils to reuse before writing new ones).
+
 - **Target Users:** North American, 25–35, smartphone-native.
 
 ### Tech Stack
