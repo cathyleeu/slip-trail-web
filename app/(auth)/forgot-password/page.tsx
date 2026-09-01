@@ -41,8 +41,8 @@ export default function ForgotPasswordPage() {
       >
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Reset Password</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-fg">Reset Password</h1>
+          <p className="text-fg-muted">
             Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         </div>
@@ -69,11 +69,11 @@ export default function ForgotPasswordPage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
-              <p className="text-gray-600 text-sm">
+              <h2 className="text-xl font-semibold text-fg">Check your email</h2>
+              <p className="text-fg-muted text-sm">
                 We sent a password reset link to
                 <br />
-                <span className="font-medium text-gray-900">{email.value}</span>
+                <span className="font-medium text-fg">{email.value}</span>
               </p>
             </div>
 
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                   setSent(false)
                   setError(null)
                 }}
-                className="w-full text-sm text-gray-500 hover:text-gray-700"
+                className="w-full text-sm text-fg-muted hover:text-fg-soft"
               >
                 Didn&apos;t receive the email? Try again
               </button>
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
                   autoFocus
                 />
                 <InputField.Action>
-                  <EmailIcon className="text-gray-400" />
+                  <EmailIcon className="text-fg-subtle" />
                 </InputField.Action>
               </InputField.Wrapper>
             </InputField>
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
             <motion.button
               whileTap={{ scale: 0.98 }}
               disabled={loading || !email.value}
-              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-brand text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </motion.button>
@@ -139,11 +139,11 @@ export default function ForgotPasswordPage() {
       {/* Back to Login Link */}
       {!sent && (
         <div className="mt-auto pt-8 text-center">
-          <p className="text-gray-600">
+          <p className="text-fg-muted">
             Remember your password?{' '}
             <button
               onClick={() => router.push('/login')}
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-brand font-semibold hover:underline"
             >
               Log in
             </button>

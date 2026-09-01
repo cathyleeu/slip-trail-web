@@ -13,7 +13,7 @@ export default function TrailPolyline({ positions }: TrailPolylineProps) {
     <Polyline
       positions={positions}
       pathOptions={{
-        color: '#6366f1',
+        color: '#f59e0b', // amber-500 (accent)
         weight: 2.5,
         opacity: 0.6,
         dashArray: '6 8',

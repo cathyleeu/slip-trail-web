@@ -1,13 +1,13 @@
 import type { AuthErrorType } from '@types'
 
 const AUTH_ERROR_MESSAGES = new Map([
-  ['Invalid login credentials', '이메일 또는 비밀번호가 틀렸습니다'],
-  ['User already registered', '이미 가입된 이메일입니다'],
-  ['Email rate limit exceeded', '너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요'],
-  ['Email not confirmed', '이메일 인증이 완료되지 않았습니다'],
-  ['Password should be at least', '비밀번호는 최소 8자 이상이어야 합니다'],
-  ['Password should contain', '비밀번호는 소문자, 대문자, 숫자를 모두 포함해야 합니다'],
-  ['weak_password', '비밀번호는 소문자, 대문자, 숫자를 모두 포함해야 합니다'],
+  ['Invalid login credentials', 'Incorrect email or password'],
+  ['User already registered', 'An account with this email already exists'],
+  ['Email rate limit exceeded', 'Too many attempts. Please try again later'],
+  ['Email not confirmed', 'Please verify your email before continuing'],
+  ['Password should be at least', 'Password must be at least 8 characters'],
+  ['Password should contain', 'Password must include lowercase, uppercase, and numbers'],
+  ['weak_password', 'Password must include lowercase, uppercase, and numbers'],
 ])
 
 const parseAuthError = (error: AuthErrorType): string => {
@@ -17,7 +17,7 @@ const parseAuthError = (error: AuthErrorType): string => {
     if (message.includes(key)) return value
   }
 
-  return '오류가 발생했습니다. 다시 시도해주세요'
+  return 'Something went wrong. Please try again'
 }
 
 export { parseAuthError }

@@ -51,15 +51,15 @@ export default function ResetPasswordPage() {
           className="max-w-sm w-full space-y-6 text-center"
         >
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">Link Expired</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-fg">Link Expired</h1>
+            <p className="text-fg-muted">
               This password reset link is invalid or has expired. Please request a new one.
             </p>
           </div>
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => router.push('/forgot-password')}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors"
+            className="w-full bg-brand text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-brand-dark transition-colors"
           >
             Request New Link
           </motion.button>
@@ -92,8 +92,8 @@ export default function ResetPasswordPage() {
             </svg>
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">Password Reset!</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-fg">Password Reset!</h1>
+            <p className="text-fg-muted">
               Your password has been successfully updated. You can now log in with your new
               password.
             </p>
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => router.push('/login')}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors"
+            className="w-full bg-brand text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-brand-dark transition-colors"
           >
             Back to Login
           </motion.button>
@@ -119,8 +119,8 @@ export default function ResetPasswordPage() {
       >
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Set New Password</h1>
-          <p className="text-gray-600">Enter your new password below.</p>
+          <h1 className="text-3xl font-bold text-fg">Set New Password</h1>
+          <p className="text-fg-muted">Enter your new password below.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -137,9 +137,9 @@ export default function ResetPasswordPage() {
               />
               <InputField.Action onClick={password.togglePasswordVisibility}>
                 {password.showPassword ? (
-                  <EyeOffIcon className="text-gray-400 w-4 h-4" />
+                  <EyeOffIcon className="text-fg-subtle w-4 h-4" />
                 ) : (
-                  <EyeIcon className="text-gray-400 w-4 h-4" />
+                  <EyeIcon className="text-fg-subtle w-4 h-4" />
                 )}
               </InputField.Action>
             </InputField.Wrapper>
@@ -157,9 +157,9 @@ export default function ResetPasswordPage() {
               />
               <InputField.Action onClick={confirmPassword.togglePasswordVisibility}>
                 {confirmPassword.showPassword ? (
-                  <EyeOffIcon className="text-gray-400 w-4 h-4" />
+                  <EyeOffIcon className="text-fg-subtle w-4 h-4" />
                 ) : (
-                  <EyeIcon className="text-gray-400 w-4 h-4" />
+                  <EyeIcon className="text-fg-subtle w-4 h-4" />
                 )}
               </InputField.Action>
             </InputField.Wrapper>
@@ -179,7 +179,7 @@ export default function ResetPasswordPage() {
           <motion.button
             whileTap={{ scale: 0.98 }}
             disabled={loading || !password.value || !confirmPassword.value}
-            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-brand text-white py-4 rounded-2xl font-semibold text-base shadow-lg hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Updating...' : 'Update Password'}
           </motion.button>
