@@ -2,7 +2,7 @@
 
 import { TipPromptDialog } from '@components'
 import { Header } from '@components'
-import { Button, Card, IconButton } from '@components/ui'
+import { Button, Card, IconButton, Toast, useToast } from '@components/ui'
 import { LocationPin, Plus, Trash } from '@components/ui/icons'
 import { useReceiptDetail, useUpdateReceipt } from '@hooks'
 import { DEFAULT_CATEGORIES, getCategoryEmoji, getCategoryLabel, isTipEligibleCategory } from '@lib/categories'
@@ -64,6 +64,7 @@ export default function ReceiptDetailPage() {
   const [draft, setDraft] = useState<DraftState | null>(null)
   const [showTipPrompt, setShowTipPrompt] = useState(false)
   const [tipPromptShown, setTipPromptShown] = useState(false)
+  const { toastState, showToast } = useToast()
 
   // Show tip prompt when entering edit mode for tip-eligible categories without tip
   useEffect(() => {
@@ -134,20 +135,24 @@ export default function ReceiptDetailPage() {
 
   const handleSave = async () => {
     if (!draft) return
-    await updateReceipt.mutateAsync({
-      receipt: {
-        vendor: draft.vendor,
-        category: draft.category ?? undefined,
-        items: draft.items,
-        charges: draft.charges,
-        total: draft.total ?? undefined,
-        subtotal: draft.subtotal ?? undefined,
-      },
-      feeling: draft.feeling,
-      memo: draft.memo,
-    })
-    setDraft(null)
-    setIsEditMode(false)
+    try {
+      await updateReceipt.mutateAsync({
+        receipt: {
+          vendor: draft.vendor,
+          category: draft.category ?? undefined,
+          items: draft.items,
+          charges: draft.charges,
+          total: draft.total ?? undefined,
+          subtotal: draft.subtotal ?? undefined,
+        },
+        feeling: draft.feeling,
+        memo: draft.memo,
+      })
+      setDraft(null)
+      setIsEditMode(false)
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to save receipt', 'error')
+    }
   }
 
   // Draft mutation helpers
@@ -514,6 +519,12 @@ export default function ReceiptDetailPage() {
         onClose={() => setShowTipPrompt(false)}
         onSave={handleAddTip}
         subtotal={draft?.subtotal ?? receipt.subtotal}
+      />
+
+      <Toast
+        visible={!!toastState}
+        message={toastState?.message ?? ''}
+        type={toastState?.type ?? 'success'}
       />
     </div>
   )
