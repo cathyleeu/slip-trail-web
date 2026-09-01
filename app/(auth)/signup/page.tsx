@@ -50,7 +50,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { signup, loginWithGoogle } = useAuth()
+  const { signup, loginWithGoogle, loginWithApple } = useAuth()
 
   const email = useInput({ type: 'email' })
   const password = useInput({ type: 'password' })
@@ -91,6 +91,12 @@ export default function SignUpPage() {
   async function handleGoogleSignUp() {
     setError(null)
     const { success, error } = await loginWithGoogle()
+    if (!success) setError(error as string)
+  }
+
+  async function handleAppleSignUp() {
+    setError(null)
+    const { success, error } = await loginWithApple()
     if (!success) setError(error as string)
   }
 
@@ -192,7 +198,10 @@ export default function SignUpPage() {
 
         {/* Social Login */}
         <div className="space-y-3">
-          <button className="w-full bg-zinc-900 text-white py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-800 active:scale-[0.98] transition-all">
+          <button
+            onClick={handleAppleSignUp}
+            className="w-full bg-zinc-900 text-white py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-800 active:scale-[0.98] transition-all"
+          >
             <AppleIcon />
             Continue with Apple
           </button>
