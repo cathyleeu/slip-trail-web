@@ -8,13 +8,17 @@ import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-function PasswordStrength({ password }: { password: string }) {
-  const checks = [
+function getPasswordChecks(password: string) {
+  return [
     password.length >= 8,
     /[A-Z]/.test(password),
     /[a-z]/.test(password),
     /[0-9]/.test(password),
   ]
+}
+
+function PasswordStrength({ password }: { password: string }) {
+  const checks = getPasswordChecks(password)
   const score = checks.filter(Boolean).length
 
   const bars = [
@@ -46,7 +50,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { signup, loginWithOAuth } = useAuth()
+  const { signup, loginWithGoogle, loginWithApple } = useAuth()
 
   const email = useInput({ type: 'email' })
   const password = useInput({ type: 'password' })
@@ -55,15 +59,16 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const { toastState, showToast } = useToast()
 
-  async function handleOAuthLogin(provider: 'apple' | 'google') {
-    const { error } = await loginWithOAuth(provider)
-    if (error) setError(error)
-  }
-
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (!getPasswordChecks(password.value).every(Boolean)) {
+      setError('Password must be at least 8 characters and include uppercase, lowercase, and numbers')
+      setLoading(false)
+      return
+    }
 
     if (password.value !== confirmPassword.value) {
       setError('Passwords do not match')
@@ -81,6 +86,18 @@ export default function SignUpPage() {
       showToast('Check your email for a confirmation link!', 'success')
       setTimeout(() => router.push('/login'), 2000)
     }
+  }
+
+  async function handleGoogleSignUp() {
+    setError(null)
+    const { success, error } = await loginWithGoogle()
+    if (!success) setError(error as string)
+  }
+
+  async function handleAppleSignUp() {
+    setError(null)
+    const { success, error } = await loginWithApple()
+    if (!success) setError(error as string)
   }
 
   return (
@@ -182,14 +199,14 @@ export default function SignUpPage() {
         {/* Social Login */}
         <div className="space-y-3">
           <button
-            onClick={() => handleOAuthLogin('apple')}
+            onClick={handleAppleSignUp}
             className="w-full bg-zinc-900 text-white py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-800 active:scale-[0.98] transition-all"
           >
             <AppleIcon />
             Continue with Apple
           </button>
           <button
-            onClick={() => handleOAuthLogin('google')}
+            onClick={handleGoogleSignUp}
             className="w-full bg-white border border-zinc-200 text-zinc-900 py-3.5 rounded-2xl font-medium flex items-center justify-center gap-2.5 hover:bg-zinc-50 active:scale-[0.98] transition-all"
           >
             <GoogleIcon />
