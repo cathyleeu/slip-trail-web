@@ -237,9 +237,14 @@ Rules:
 
 - Use the repository-local `issue`, `pr`, and `review` skills in `.agents/skills/` for short workflow requests.
 - Write issue titles/bodies, PR titles/bodies, and review findings in English. Conversation may remain in the user's language.
-- Issue and PR creation requests produce a chat draft first. Commit/push/publication requires an explicit subsequent registration request for that draft. Review comments require an explicit posting request.
+- Issue and PR creation requests authorize direct GitHub publication without a separate draft approval. PR requests also authorize the necessary task-scoped commit and push. Only prepare a chat draft when explicitly requested. Review comments require an explicit posting request.
 - Read the templates in `.github/` instead of duplicating their format. Verify origin and check existing issues/PRs before publishing; report unavailable checks honestly.
-- Publish PRs as Drafts from `codex/` branches, preserve unrelated work, and never push directly to the default branch or merge automatically.
+- Publish PRs ready for review (not Drafts) from `codex/` branches unless the user explicitly requests a Draft. Preserve unrelated work, and never push directly to the default branch or merge automatically.
+
+## Review Automation Budget
+
+- Use Codex's built-in GitHub automatic review within the existing subscription allowance. Do not add API-key-based review Actions, buy credits, enable automatic recharge, or switch to a paid fallback.
+- If the included review allowance is exhausted, report the limit and wait for its reset. Repository instructions do not configure account billing; verify automatic review and credit settings in the account before claiming setup is complete.
 
 ## Validation
 
