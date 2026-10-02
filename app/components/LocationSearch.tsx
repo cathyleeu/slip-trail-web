@@ -24,15 +24,23 @@ export function LocationSearch({ isOpen, onClose, onSelect, initialQuery = '' }:
   const [query, setQuery] = useState(initialQuery)
   const [searchState, setSearchState] = useState<SearchState>('idle')
   const [results, setResults] = useState<LocationResult[]>([])
+  const [previousProps, setPreviousProps] = useState({ isOpen, initialQuery })
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+  if (isOpen !== previousProps.isOpen || initialQuery !== previousProps.initialQuery) {
+    setPreviousProps({ isOpen, initialQuery })
     if (isOpen) {
       setQuery(initialQuery)
       setSearchState('idle')
       setResults([])
-      setTimeout(() => inputRef.current?.focus(), 300)
     }
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const timeout = setTimeout(() => inputRef.current?.focus(), 300)
+    return () => clearTimeout(timeout)
   }, [isOpen, initialQuery])
 
   const search = async (q: string) => {
