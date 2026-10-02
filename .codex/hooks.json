@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/cathylee/.local/bin/graphify hook-check"
+          }
+        ]
+      }
+    ]
+  }
+}

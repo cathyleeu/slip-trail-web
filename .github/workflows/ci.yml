@@ -1,0 +1,33 @@
+name: Frontend CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.13.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Generate Next.js types
+        if: ${{ !cancelled() }}
+        run: pnpm exec next typegen
+      - name: Check TypeScript
+        if: ${{ !cancelled() }}
+        run: pnpm exec tsc --noEmit

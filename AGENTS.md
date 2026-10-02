@@ -88,19 +88,19 @@ Receipt management app: camera → OCR → Groq parse → map trail + emotion pa
 
 ```text
 app/
-  (auth)/           # Auth flows — login, signup, onboarding, forgot/reset password
-  (routes)/         # Main app — home, map, insights, receipts, settings
-  (scan)/           # Scanner flow — camera, result, upload
-  api/              # Next.js API routes (server-side only)
-  components/
-    ui/             # Atoms & molecules: Button, Card, Avatar, IconButton, icons, BaseDialog
-    dashboard/      # Dashboard-specific widgets
-    map/            # Map-specific components
-    *.tsx           # Shared organisms: ReceiptCard, Header, BottomNav, ProcessingDialog
-  hooks/            # React Query hooks + flow hooks
-  lib/              # Pure utilities (no React imports)
-  providers/        # React context providers
-  utils/            # Formatting, class merging, image processing
+	(auth)/           # Auth flows — login, signup, onboarding, forgot/reset password
+	(routes)/         # Main app — home, map, insights, receipts, settings
+	(scan)/           # Scanner flow — camera, result, upload
+	api/              # Next.js API routes (server-side only)
+	components/
+		ui/             # Atoms & molecules: Button, Card, Avatar, IconButton, icons, BaseDialog
+		dashboard/      # Dashboard-specific widgets
+		map/            # Map-specific components
+		*.tsx           # Shared organisms: ReceiptCard, Header, BottomNav, ProcessingDialog
+	hooks/            # React Query hooks + flow hooks
+	lib/              # Pure utilities (no React imports)
+	providers/        # React context providers
+	utils/            # Formatting, class merging, image processing
 lib/                # Server-safe utilities: Supabase clients, apiResponse
 store/              # Zustand stores
 types/              # TypeScript types (barrel: types/index.ts)
@@ -110,12 +110,12 @@ types/              # TypeScript types (barrel: types/index.ts)
 
 #### 1. Atomic Design for Components
 
-| Level         | Location                          | Examples                                           |
-| ------------- | --------------------------------- | -------------------------------------------------- |
+| Level         | Location                          | Examples                                                          |
+| ------------- | --------------------------------- | ----------------------------------------------------------------- |
 | **Atoms**     | app/components/ui/                | Button, IconButton, Avatar, Card, Skeleton, BaseDialog, all icons |
-| **Molecules** | app/components/ui/ or components/ | InputField, Header, LocationSearch                 |
-| **Organisms** | app/components/                   | ReceiptCard, TipPromptDialog, ProcessingDialog, BottomNav |
-| **Pages**     | app/(routes)/                     | Compose organisms, own data fetching via hooks     |
+| **Molecules** | app/components/ui/ or components/ | InputField, Header, LocationSearch                                |
+| **Organisms** | app/components/                   | ReceiptCard, TipPromptDialog, ProcessingDialog, BottomNav         |
+| **Pages**     | app/(routes)/                     | Compose organisms, own data fetching via hooks                    |
 
 #### 2. Feature-Collocated Data Fetching
 
@@ -187,16 +187,16 @@ Always use path aliases configured in `tsconfig.json`:
 
 #### Palette (from globals.css)
 
-| Token                   | Value      | Use                                |
-| ----------------------- | ---------- | ---------------------------------- |
-| `bg-brand` / `text-brand` | zinc-900 | Primary actions, headings          |
-| `bg-accent`             | amber-500  | Money amounts, spending highlights |
-| `text-fg`               | zinc-900   | Primary text                       |
-| `text-fg-muted`         | zinc-600   | Body copy                          |
-| `text-fg-subtle`        | zinc-400   | Hints, disabled states             |
-| `bg-surface`            | white      | Cards, modals                      |
-| `bg-surface-subtle`     | zinc-100   | Inputs, subtle backgrounds         |
-| `border-border`         | zinc-200   | Default borders                    |
+| Token                     | Value     | Use                                |
+| ------------------------- | --------- | ---------------------------------- |
+| `bg-brand` / `text-brand` | zinc-900  | Primary actions, headings          |
+| `bg-accent`               | amber-500 | Money amounts, spending highlights |
+| `text-fg`                 | zinc-900  | Primary text                       |
+| `text-fg-muted`           | zinc-600  | Body copy                          |
+| `text-fg-subtle`          | zinc-400  | Hints, disabled states             |
+| `bg-surface`              | white     | Cards, modals                      |
+| `bg-surface-subtle`       | zinc-100  | Inputs, subtle backgrounds         |
+| `border-border`           | zinc-200  | Default borders                    |
 
 #### Feeling Colors
 
@@ -205,14 +205,54 @@ Always use path aliases configured in `tsconfig.json`:
 
 #### Typography Hierarchy
 
-| Role              | Classes                                              |
-| ----------------- | ---------------------------------------------------- |
-| **Large Amounts** | `text-6xl font-black tracking-tighter tabular-nums`  |
-| **Page Titles**   | `text-3xl font-extrabold`                            |
-| **Section Labels**| `text-xs font-semibold tracking-widest uppercase text-fg-subtle` |
-| **Body Text**     | `text-sm text-fg-muted leading-relaxed`              |
+| Role               | Classes                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| **Large Amounts**  | `text-6xl font-black tracking-tighter tabular-nums`              |
+| **Page Titles**    | `text-3xl font-extrabold`                                        |
+| **Section Labels** | `text-xs font-semibold tracking-widest uppercase text-fg-subtle` |
+| **Body Text**      | `text-sm text-fg-muted leading-relaxed`                          |
 
 ### Git Workflow
 
 - **Commits:** Descriptive, present tense, always explain the "why".
 - **Constraint:** Never push directly to the `main` branch.
+
+---
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Issue and PR Workflow
+
+- Use the repository-local `issue`, `pr`, and `review` skills in `.agents/skills/` for short workflow requests.
+- Write issue titles/bodies, PR titles/bodies, and review findings in English. Conversation may remain in the user's language.
+- Issue and PR creation requests authorize direct GitHub publication without a separate draft approval. PR requests also authorize the necessary task-scoped commit and push. Only prepare a chat draft when explicitly requested. Review comments require an explicit posting request.
+- Read the templates in `.github/` instead of duplicating their format. Verify origin and check existing issues/PRs before publishing; report unavailable checks honestly.
+- Publish PRs ready for review (not Drafts) from `codex/` branches unless the user explicitly requests a Draft. Preserve unrelated work, and never push directly to the default branch or merge automatically.
+
+## Review Automation Budget
+
+- Use Codex's built-in GitHub automatic review within the existing subscription allowance. Do not add API-key-based review Actions, buy credits, enable automatic recharge, or switch to a paid fallback.
+- If the included review allowance is exhausted, report the limit and wait for its reset. Repository instructions do not configure account billing; verify automatic review and credit settings in the account before claiming setup is complete.
+
+## Validation
+
+- Run `pnpm lint`, `pnpm exec next typegen`, then `pnpm exec tsc --noEmit`. Type generation must precede TypeScript checking on a clean checkout.
+- Record existing failures separately; do not fix unrelated application code as part of workflow setup.
+
+## Code Review Rules
+
+- Flag changes that bypass authentication in protected API routes or use another user's receipt, storage object, or profile without ownership checks. Use the authenticated identity and existing auth wrapper.
+- Flag server credentials or server-only Supabase utilities entering client bundles; preserve the server/client boundary.
+- Flag changes that expose or mutate another user's data through queries, cache keys, or session changes. Trace actual access paths before reporting a finding.
