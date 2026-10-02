@@ -47,3 +47,6 @@ venv/
 __pycache__/
 
 certificates
+
+# local knowledge graph
+/graphify-out/
