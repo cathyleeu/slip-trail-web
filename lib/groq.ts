@@ -29,8 +29,8 @@ const CATEGORY_ALIASES: Record<string, ReceiptCategoryValue> = {
   'gas station': 'gas',
 }
 
-export function coerceCategory(raw: string | null | undefined): ReceiptCategoryValue {
-  if (!raw) return 'other'
+export function coerceCategory(raw: unknown): ReceiptCategoryValue {
+  if (typeof raw !== 'string') return 'other'
   const normalized = raw.toLowerCase().trim()
   if ((RECEIPT_CATEGORIES as readonly string[]).includes(normalized)) {
     return normalized as ReceiptCategoryValue
@@ -46,12 +46,7 @@ export async function parseReceipt(text: string) {
     OUTPUT RULES (HARD):
     • Return valid JSON only. No explanations, no markdown, no extra text.
     • Always include every key in the required schema.
-    • If a value is missing or unclear, use null (except charges.amount; see charges rules).
-    • Preserve the original OCR text under "raw_text" EXACTLY as provided.
-    • raw_text MUST be the exact text between RAW_TEXT_START and RAW_TEXT_END below.
-    • raw_text must be a STRING value, never a JSON key.
-    • Do NOT add/remove/reorder/normalize/pretty-print raw_text.
-    • Do NOT make raw_text empty if any OCR text exists.
+    • If a value is missing or unclear, use null.
 
     GENERAL PARSING PRINCIPLES:
     • Prefer explicit information on the receipt over inference.
@@ -280,7 +275,7 @@ export async function parseReceipt(text: string) {
     • If NO charge signals exist, charges MUST be [].
     • If ANY charge signal exists, charges MUST NOT be empty.
     • If signals exist but no amounts can be confidently extracted, include ONE fallback:
-      { "type": "tax", "label": "Unspecified", "amount": 0.00 }
+      { "type": "tax", "label": "Unspecified", "amount": null }
 
     AMOUNT RULES:
     • Taxes/tips/fees positive numbers.
@@ -331,8 +326,7 @@ export async function parseReceipt(text: string) {
       "charges": [
         { "type": string, "label": string, "amount": number }
       ],
-      "total": number | null,
-      "raw_text": string
+      "total": number | null
     }
 
     RAW_TEXT_START

@@ -1,5 +1,4 @@
 import type { ReceiptCategoryValue } from '@lib/constants'
-import type { AddressNormalized } from './address'
 /**
  * Receipt domain types
  * Receipt parsing results and related entities
@@ -39,18 +38,7 @@ export type ReceiptCharge = {
 
 export type ReceiptCategory = ReceiptCategoryValue
 
-export interface ParsedReceipt {
-  vendor: string
-  category: ReceiptCategory
-  address: string | null
-  address_normalized: AddressNormalized
-  phone: string | null
-  purchased_at: string
-  items: ReceiptItem[]
-  currency: string | null
-  subtotal: number | null
-  charges: ReceiptCharge[]
-  total: number | null
+export type ParsedReceipt = import('zod').infer<typeof import('@lib/validation').receiptDraftSchema> & {
   raw_text: string
 }
 
