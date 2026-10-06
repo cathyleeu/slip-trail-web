@@ -7,6 +7,7 @@ import type { GeoLocation, ParsedReceipt, ReceiptDetail, ReceiptListItem } from 
 const DEFAULT_PAGE_SIZE = 20
 
 type ReceiptPayload = {
+  submissionId: string
   receipt: ParsedReceipt
   location: GeoLocation
   imageFile: File
@@ -23,8 +24,9 @@ export function useReceipt() {
     return supabase.from('receipts').select('*').eq('id', id).single()
   }
 
-  async function saveReceipt({ receipt, location, imageFile }: ReceiptPayload) {
+  async function saveReceipt({ receipt, location, imageFile, submissionId }: ReceiptPayload) {
     const form = new FormData()
+    form.append('submission_id', submissionId)
     form.append('image', imageFile, imageFile.name)
     form.append('receipt', JSON.stringify(receipt))
     form.append('place', JSON.stringify(location))
