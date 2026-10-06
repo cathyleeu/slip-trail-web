@@ -15,7 +15,9 @@ From the repository root:
 node --version
 pnpm --version
 pnpm install --frozen-lockfile
-cp .env.example .env.local
+if [ ! -e .env.local ] && [ ! -L .env.local ]; then
+  cp .env.example .env.local
+fi
 # Replace placeholders in .env.local before starting the application.
 pnpm lint
 pnpm exec next typegen
@@ -74,7 +76,7 @@ gh api repos/cathyleeu/slip-trail-web/deployments --jq '.[0:3] | map({id,environ
 gh api repos/cathyleeu/slip-trail-web/deployments/6802751481/statuses --jq '.[0] | {state,environment_url,created_at}'
 ```
 
-For Node.js 22 (also supported by the audit's Node.js 20.17.0), print only response statuses:
+For Node.js 22 (also supported by the audit's Node.js 20.17.0), print only response statuses. The optional bucket metadata probe uses an existing server-only `SUPABASE_SECRET_KEY` for the same project; it skips the request when that key is absent. Do not provision an elevated key solely for this probe: use the read-only Dashboard inspection below instead.
 
 ```sh
 node --env-file=.env.local - <<'NODE'
@@ -94,6 +96,14 @@ async function probe(label, url, headers = {}) {
   await probe('Auth settings', `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
     apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   });
+  if (process.env.SUPABASE_SECRET_KEY) {
+    await probe('Receipt bucket metadata', `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/bucket/sliptrail-bills`, {
+      apikey: process.env.SUPABASE_SECRET_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+    });
+  } else {
+    console.log('Receipt bucket metadata: SKIPPED (server-only key unavailable)');
+  }
 })();
 NODE
 ```
