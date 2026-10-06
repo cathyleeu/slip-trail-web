@@ -37,13 +37,13 @@ Do not overwrite an existing `.env.local`. `pnpm dev` uses `next dev --experimen
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser/server Supabase clients and `proxy.ts` | Required project URL; browser-visible |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Same clients and proxy | Required publishable key for that project; never substitute a secret/service-role key |
 | `GROQ_API_KEY` | `lib/groq.ts` | Required server-only parsing credential |
-| `NEXT_PUBLIC_OCR_API_URL` | `requestOcr` in `useAnalysisMutation.ts` | Full browser-accessible POST URL, including `/ocr`; must support the web origin through CORS |
+| `OCR_API_URL`, `OCR_API_KEY` | Authenticated `POST /api/ocr` | Server-only full POST URL (including `/ocr`) and service key sent as `X-API-Key`; remove the former `NEXT_PUBLIC_OCR_API_URL` |
 | `NEXT_PUBLIC_SITE_URL` | OAuth and reset-password redirects in `useAuth.ts` | Set explicitly for deployment; code falls back to `window.location.origin` |
 | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | `lib/supabase/admin.ts` | Optional for this baseline: the helper has no current callers; keep server-only |
 
-All seven names were present in the local environment, and the two Supabase URL values matched. Values were not printed or committed. Presence does **not** establish credential validity or deployed configuration. Hosted environment variables were not inspected. Public Next.js variables are embedded during a build; correct the hosting settings and rebuild when changing them.
+At the #34 audit baseline, all seven original names were present in the local environment, and the two Supabase URL values matched. Values were not printed or committed. Presence does **not** establish credential validity or deployed configuration. Hosted environment variables were not inspected. Public Next.js variables are embedded during a build; correct the hosting settings and rebuild when changing them.
 
-Current browser flow: image → external OCR → authenticated `/api/parse-receipt` → `/api/geocode` → user confirmation → `/api/receipts`. There is no current `/api/ocr` or `/api/graphql` route. Do not configure the planned `OCR_API_URL`/`OCR_API_KEY` proxy contract until #38 implements it. The existing external OCR service must accept multipart `image` and return `{ "text": "..." }`. A browser request must also pass CORS/mixed-content checks; a command-line response alone does not prove that.
+Current browser flow after #38: image → authenticated `/api/ocr` → authenticated `/api/parse-receipt` → `/api/geocode` → user confirmation → `/api/receipts`. Configure `OCR_API_URL` and `OCR_API_KEY` only on the web server. The external OCR service must accept multipart `image`, validate `X-API-Key`, and return `{ "text": "..." }`. **Rollout prerequisite:** the current Python service has no service-key validation; agree and deploy that contract separately, then record a real authenticated image request before release. The proxy rejects empty, unsupported or over-10MB files and bounds upstream OCR to 30 seconds. Browser CORS to the external service is no longer required. There is no `/api/graphql` route. The recorded checks below remain historical #34 evidence, not verification of this new integration.
 
 ## Recorded checks
 
@@ -92,7 +92,7 @@ async function probe(label, url, headers = {}) {
 }
 (async () => {
   await probe('site', process.env.NEXT_PUBLIC_SITE_URL);
-  await probe('OCR GET, not an image test', process.env.NEXT_PUBLIC_OCR_API_URL);
+  await probe('OCR GET, not an image test', process.env.OCR_API_URL);
   await probe('Auth settings', `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
     apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   });
@@ -158,9 +158,9 @@ Compare results with `supabase/migrations/20240101000000_initial_schema.sql` and
 
 Current result: **blocked before an authenticated image request; no record was saved**. Do not mark the following as passed based on a build or a GET probe.
 
-1. Confirm the intended Supabase project and deployed environment agree; resolve the DNS/configuration issue without assuming a project reset is needed. Confirm OCR POST reachability and browser CORS. Use a tester account and a receipt fixture the tester is willing to send to OCR/Groq.
+1. Confirm the intended Supabase project and deployed environment agree; resolve the DNS/configuration issue without assuming a project reset is needed. Confirm OCR POST reachability and the `X-API-Key` validation contract. Use a tester account and a receipt fixture the tester is willing to send to OCR/Groq.
 2. Sign in at the intended HTTPS origin, open `/upload` (then repeat with `/camera`), and select one English CAD receipt with known vendor, date, total and address.
-3. In browser Network tools verify external multipart OCR `image` → `{ text }`, `/api/parse-receipt`, and `/api/geocode`. Record stage, elapsed time and HTTP status, not raw receipt contents or tokens. Missing location should still allow reviewing the parsed receipt.
+3. In browser Network tools verify same-origin authenticated `/api/ocr` multipart `image` → `{ success: true, data: { text } }`, `/api/parse-receipt`, and `/api/geocode`. Record stage, elapsed time and HTTP status, not raw receipt contents or tokens. Missing location should still allow reviewing the parsed receipt.
 4. Compare parsed fields with the fixture, correct them, add a feeling/memo, and explicitly save in the designated test account. Saving creates test data and belongs to this later functional check, not the read-only probes above.
 5. Verify `/api/receipts` succeeds; reopen the record from `/receipts`, then `/map` using a period containing its purchase date. Refresh and re-login to verify persistence.
 6. Record pass/fail per stage and the first reproducible blocker. Do not assume retry, deletion or image privacy works; use #40, #43, #44 and #45 for their dedicated checks.
