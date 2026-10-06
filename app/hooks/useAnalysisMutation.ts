@@ -1,5 +1,6 @@
 'use client'
 
+import { MAX_OCR_IMAGE_SIZE_BYTES } from '@lib/constants'
 import { ApiError, request } from '@lib/httpFetcher'
 import { toGeoLocation, toPlace } from '@lib/location'
 import { buildAddressNormalized } from '@lib/nomalizedAddress'
@@ -17,16 +18,18 @@ import type {
 } from '@types'
 
 export async function requestOcr({ file }: AnalyzeOptions, signal?: AbortSignal): Promise<OcrResult> {
-  const url = process.env.NEXT_PUBLIC_OCR_API_URL
-  if (!url) return { success: false, error: 'NEXT_PUBLIC_OCR_API_URL is not set' }
+  if (file.size > MAX_OCR_IMAGE_SIZE_BYTES) {
+    return { success: false, error: 'Image exceeds the 4MB OCR limit. Please choose a smaller image.' }
+  }
 
   const formData = new FormData()
   formData.append('image', file, file.name)
 
   try {
-    const externalData = await request<ExternalOcrApiResponse>(url, {
+    const externalData = await request<ExternalOcrApiResponse>('/api/ocr', {
       method: 'POST',
       body: formData,
+      unwrapApiSuccess: true,
       signal,
     })
 
@@ -42,6 +45,7 @@ export async function requestOcr({ file }: AnalyzeOptions, signal?: AbortSignal)
       text: externalData.text,
     }
   } catch (err) {
+    if (signal?.aborted) return { success: false, error: 'OCR request cancelled' }
     if (err instanceof ApiError) {
       return {
         success: false,
