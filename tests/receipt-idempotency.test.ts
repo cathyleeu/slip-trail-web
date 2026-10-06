@@ -66,6 +66,8 @@ function load(path: string): unknown {
   const requireModule = (name: string): unknown => {
     if (name === './supabase/server') return { supabaseServer: async () => supabase }
     if (name === 'next/server') return { NextResponse: Response }
+    if (name === '@lib/supabase/client') return { supabaseClient: () => supabase }
+    if (name === '@tanstack/react-query') return {}
     if (name.startsWith('@lib/')) return load(name.replace('@lib/', 'lib/'))
     if (name.startsWith('./')) return load(`${path.slice(0, path.lastIndexOf('/'))}/${name.slice(2)}`)
     return nativeRequire(name)
@@ -199,6 +201,30 @@ test('draft edits and failed saves retain the ID, reset and a new image create a
   assert.notEqual(store.getState().submissionId, id)
   store.getState().setFile(null)
   assert.equal(store.getState().submissionId, null)
+})
+
+test('receipt save hook forwards the caller-owned submission ID unchanged on retries', async () => {
+  const { useReceipt } = load('app/hooks/useReceipt') as {
+    useReceipt: () => { saveReceipt: (payload: {
+      submissionId: string; receipt: { vendor: string; total: number }
+      location: { lat: number; lon: number }; imageFile: File
+    }) => Promise<Response> }
+  }
+  const payload = { submissionId: randomUUID(), receipt: { vendor: 'Cafe', total: 12 },
+    location: { lat: 49, lon: -123 }, imageFile: new File(['image'], 'receipt.webp') }
+  const originalFetch = globalThis.fetch
+  try {
+    globalThis.fetch = async (url, options) => {
+      assert.equal(url, '/api/receipts')
+      assert.equal((options?.body as FormData).get('submission_id'), payload.submissionId)
+      return Response.json({ success: true })
+    }
+    const { saveReceipt } = useReceipt()
+    await saveReceipt(payload)
+    await saveReceipt(payload)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
 })
 
 // Optional real SQL check: install @electric-sql/pglite outside the repo and set
