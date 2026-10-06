@@ -114,3 +114,43 @@ test('receipt upload validation, authenticated save, and failure reconciliation'
   assert.equal((await POST(request())).status, 503)
   assert.deepEqual(removals, [])
 })
+
+
+test('uncertain save directs the next action to receipts without another POST', async () => {
+  // Execute the page's real save handler without mounting its unrelated form/map UI.
+  const source = readFileSync('app/(scan)/result/page.tsx', 'utf8')
+  const handlerSource = source.slice(source.indexOf('  const handleSave ='), source.indexOf('  const handleEdit ='))
+  const messages: string[] = []
+  const routes: string[] = []
+  const originalFetch = globalThis.fetch
+  let posts = 0
+  const handler = new Function('context', `
+    const { router, receipt, file, showToast } = context;
+    let saveOutcomeUnknown = false;
+    const setSaveOutcomeUnknown = value => { saveOutcomeUnknown = value };
+    const isEditMode = false, selectedFeeling = null, memo = '', place = null;
+    const setIsSaving = () => {}, setIsEditMode = () => {}, setOriginalReceipt = () => {};
+    const reset = () => { throw new Error('Do not discard an uncertain draft') };
+    const hasSavedRef = { current: false };
+    ${transpile(handlerSource, { target: ScriptTarget.ES2022 })}
+    return handleSave;
+  `)({
+    router: { push: (path: string) => routes.push(path) },
+    receipt: { vendor: 'Cafe', total: 5 },
+    file: new File(['x'], 'receipt.png', { type: 'image/png' }),
+    showToast: (message: string) => messages.push(message),
+  }) as () => Promise<void>
+  try {
+    globalThis.fetch = async () => {
+      posts++
+      return Response.json({ success: false, error: 'Outcome unknown' }, { status: 503 })
+    }
+    await handler()
+    assert.deepEqual(messages, ['Save status is uncertain — check your receipts before trying again'])
+    await handler()
+    assert.equal(posts, 1)
+    assert.deepEqual(routes, ['/receipts'])
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
