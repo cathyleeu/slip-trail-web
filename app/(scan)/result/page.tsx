@@ -33,7 +33,7 @@ function fromDatetimeLocalValue(value: string): string {
 
 export default function ResultPage() {
   const router = useRouter()
-  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place, reset } =
+  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place, reset, submissionId } =
     useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
@@ -151,7 +151,7 @@ export default function ResultPage() {
       return
     }
     if (!receipt) return
-    if (!file) {
+    if (!file || !submissionId) {
       showToast('✗ Save failed — try again', 'error')
       return
     }
@@ -167,6 +167,7 @@ export default function ResultPage() {
       }
 
       const formData = new FormData()
+      formData.append('submission_id', submissionId)
       formData.append('image', file)
       formData.append('receipt', JSON.stringify(receiptPayload))
       if (place) formData.append('place', JSON.stringify(place))

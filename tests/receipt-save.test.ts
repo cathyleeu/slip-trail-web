@@ -27,21 +27,21 @@ const supabase = {
     remove: async (paths: string[]) => { removals.push(...paths); return { error: null } },
   }) },
   rpc: async (name: string, args: { receipt: unknown; place: unknown; img_url: string }) => {
-    assert.equal(name, 'save_receipt_with_place_v2')
+    assert.equal(name, 'save_receipt_submission')
     assert.equal(args.img_url, imageUrl)
     assert.ok(!('user_id' in args))
     if (rpcThrows) throw new Error('Connection lost')
-    return { data: savedId ? { id: savedId } : null, error: rpcError }
+    return { data: savedId ? { id: savedId, img_url: imageUrl } : null, error: rpcError }
   },
   from: (table: string) => {
     assert.equal(table, 'receipts')
     const query = {
-      select: (fields: string) => { assert.equal(fields, 'id'); return query },
+      select: (fields: string) => { assert.equal(fields, 'id, img_url'); return query },
       eq: (field: string, value: string) => {
-        assert.equal(value, field === 'user_id' ? 'tester' : imageUrl)
+        assert.equal(value, field === 'user_id' ? 'tester' : '00000000-0000-4000-8000-000000000001')
         return query
       },
-      maybeSingle: async () => ({ data: foundId ? { id: foundId } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
+      maybeSingle: async () => ({ data: foundId && imageUrl ? { id: foundId, img_url: imageUrl } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
     }
     return query
   },
@@ -71,7 +71,9 @@ function load(path: string): unknown {
 const { POST } = load('app/api/receipts/route') as { POST: (request: Request) => Promise<Response> }
 
 function request(image: File | string = new File(['image'], 'receipt.png', { type: 'image/png' })): Request {
+  imageUrl = ''
   const body = new FormData()
+  body.append('submission_id', '00000000-0000-4000-8000-000000000001')
   body.append('image', image)
   body.append('receipt', JSON.stringify({ vendor: 'Cafe', total: 5, user_id: 'another-user' }))
   body.append('place', JSON.stringify({ name: 'Cafe', address: 'Street', lat: 49, lon: -123 }))
@@ -102,7 +104,7 @@ test('receipt upload validation, authenticated save, and failure reconciliation'
   for (const code of ['', '08006', '57014', '40003']) {
     rpcError = { code, message: 'Unknown outcome' }
     foundId = 'committed-receipt'
-    assert.deepEqual(await (await POST(request())).json(), { success: true, data: { id: foundId } })
+    assert.deepEqual(await (await POST(request())).json(), { success: true, data: { id: foundId, img_url: imageUrl } })
     foundId = null
     assert.equal((await POST(request())).status, 503)
     assert.deepEqual(removals, [])

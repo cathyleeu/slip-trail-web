@@ -7,6 +7,7 @@ function safeRevokeObjectUrl(url: string | null) {
 }
 
 type AnalysisDraftState = {
+  submissionId: string | null
   file: File | null
   receipt: ParsedReceipt | null
   location: GeoLocation | null
@@ -33,6 +34,7 @@ type AnalysisDraftState = {
 }
 
 export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
+  submissionId: null,
   file: null,
   receipt: null,
   location: null,
@@ -42,7 +44,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
   draftPath: null,
   imageFile: null,
 
-  setFile: (file) => set({ file }),
+  setFile: (file) => set({ file, submissionId: file ? crypto.randomUUID() : null }),
   setReceipt: (receipt) => set({ receipt }),
   setLocation: (location) => set({ location }),
   setLocationStatus: (locationStatus) => set({ locationStatus }),
@@ -75,6 +77,7 @@ export const useAnalysisDraftStore = create<AnalysisDraftState>((set, get) => ({
     const { previewUrl } = get()
     safeRevokeObjectUrl(previewUrl)
     set({
+      submissionId: null,
       file: null,
       receipt: null,
       location: null,

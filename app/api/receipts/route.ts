@@ -2,11 +2,20 @@ import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET, ERROR_MESSAGES, IMAGE_EXTENSIONS, MAX_UPLOAD_SIZE_BYTES, STORAGE_BUCKET } from '@lib/constants'
 import { type Place, parseFormJson, parseFormJsonOptional, parsedReceiptSchema, placeSchema } from '@lib/validation'
+import { z } from 'zod'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
   const form = await req.formData()
-  const image = form.get('image')
+  const submission = z.uuid().safeParse(form.get('submission_id'))
+  if (!submission.success) return apiError('A valid submission ID is required', { status: 400 })
+  const submissionId = submission.data
+  const findSubmission = () => supabase.from('receipts').select('id, img_url')
+    .eq('user_id', user.id).eq('submission_id', submissionId).maybeSingle()
+  const { data: existing, error: lookupError } = await findSubmission()
+  if (lookupError) return apiError('Unable to check receipt submission. Please try again.', { status: 503 })
+  if (existing) return apiSuccess(existing)
 
+  const image = form.get('image')
   if (!(image instanceof File) || image.size === 0) {
     return apiError(ERROR_MESSAGES.IMAGE_REQUIRED, { status: 400 })
   }
@@ -19,52 +28,48 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   const receipt = parseFormJson(form, 'receipt', parsedReceiptSchema)
   const place = parseFormJsonOptional(form, 'place', placeSchema) as Place | null
 
-  // 1) Storage 업로드
-  const filename = `${user.id}/${crypto.randomUUID()}.${extension}`
-
-  const { data: uploadData, error: uploadErr } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(filename, image, {
-      contentType: image.type || 'application/octet-stream',
-      upsert: false,
-    })
-
+  // Each attempt owns its upload; a losing retry can only clean up its own path.
+  const filename = `${user.id}/${submissionId}/${crypto.randomUUID()}.${extension}`
+  const storage = supabase.storage.from(STORAGE_BUCKET)
+  const { data: uploadData, error: uploadErr } = await storage.upload(filename, image, {
+    contentType: image.type,
+    upsert: false,
+  })
   if (uploadErr) {
     throw new Error(`${ERROR_MESSAGES.STORAGE_UPLOAD_FAILED}: ${uploadErr.message}`)
   }
+  const { data: pub } = storage.getPublicUrl(uploadData.path)
+  const cleanup = async () => {
+    const { error } = await storage.remove([uploadData.path])
+    if (error) throw new Error('Receipt save completed or failed, but unused image cleanup failed')
+  }
 
-  const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadData.path)
-
-  // Versioned RPC requires the atomic-save migration; never fall back to an older function.
   let saved
   try {
-    saved = await supabase.rpc('save_receipt_with_place_v2', {
-      receipt,
-      place,
-      img_url: pub.publicUrl,
+    saved = await supabase.rpc('save_receipt_submission', {
+      receipt, place, img_url: pub.publicUrl, submission_id: submissionId,
     })
   } catch {
     saved = { data: null, error: { code: '', message: 'Save outcome is unknown' } }
   }
   const { data, error } = saved
-
-  if (error || !data?.id) {
-    // SQLSTATE errors confirm the transaction failed. Connection errors and cancellation
-    // can race a commit, so an empty reconciliation result alone cannot justify deletion.
+  if (error || !data?.id || typeof data.img_url !== 'string') {
+    // Only a definite transaction failure permits unconditional cleanup.
     const confirmedFailure = error && /^[0-9A-Z]{5}$/.test(error.code)
       && !error.code.startsWith('08') && error.code !== '57014' && error.code !== '40003'
     if (confirmedFailure) {
-      const { error: cleanupError } = await supabase.storage.from(STORAGE_BUCKET).remove([uploadData.path])
-      if (cleanupError) throw new Error('Receipt save failed and image cleanup failed')
-    } else {
-      const { data: existing, error: lookupError } = await supabase.from('receipts')
-        .select('id').eq('user_id', user.id).eq('img_url', pub.publicUrl).maybeSingle()
-      if (!lookupError && existing) return apiSuccess(existing)
-      return apiError('Receipt save outcome is unknown. Please check your receipts before retrying.', { status: 503 })
+      await cleanup()
+      throw new Error(`${ERROR_MESSAGES.FAILED_TO_SAVE_RECEIPT}: ${error.message}`)
     }
-    throw new Error(`${ERROR_MESSAGES.FAILED_TO_SAVE_RECEIPT}: ${error?.message ?? 'Missing receipt ID'}`)
+    const { data: committed, error: reconcileError } = await findSubmission()
+    if (!reconcileError && committed) {
+      if (committed.img_url !== pub.publicUrl) await cleanup()
+      return apiSuccess(committed)
+    }
+    // An in-flight commit may still reference this upload. Retain it for reconciliation.
+    return apiError('Receipt save outcome is unknown. Please retry with the same submission.', { status: 503 })
   }
-
+  if (data.img_url !== pub.publicUrl) await cleanup()
   return apiSuccess(data)
 })
 
