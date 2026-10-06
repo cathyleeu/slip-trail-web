@@ -175,6 +175,10 @@ export default function ResultPage() {
       const response = await fetch('/api/receipts', { method: 'POST', body: formData })
       const data = await response.json()
 
+      if (response.status === 409) {
+        showToast(data.error, 'error')
+        return
+      }
       if (!response.ok) throw new Error(data.error || 'Failed to save receipt')
 
       setIsEditMode(false)

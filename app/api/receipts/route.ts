@@ -3,18 +3,15 @@ import { apiError, apiSuccess } from '@lib/apiResponse'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET, ERROR_MESSAGES, IMAGE_EXTENSIONS, MAX_UPLOAD_SIZE_BYTES, STORAGE_BUCKET } from '@lib/constants'
 import { type Place, parseFormJson, parseFormJsonOptional, parsedReceiptSchema, placeSchema } from '@lib/validation'
 import { z } from 'zod'
+import { createHash } from 'node:crypto'
+
+const REPLAY_CONFLICT = 'This receipt was already saved with different details. Check your trail before editing.'
 
 export const POST = withAuth(async (req, { user, supabase }) => {
   const form = await req.formData()
   const submission = z.uuid().safeParse(form.get('submission_id'))
   if (!submission.success) return apiError('A valid submission ID is required', { status: 400 })
   const submissionId = submission.data
-  const findSubmission = () => supabase.from('receipts').select('id, img_url')
-    .eq('user_id', user.id).eq('submission_id', submissionId).maybeSingle()
-  const { data: existing, error: lookupError } = await findSubmission()
-  if (lookupError) return apiError('Unable to check receipt submission. Please try again.', { status: 503 })
-  if (existing) return apiSuccess(existing)
-
   const image = form.get('image')
   if (!(image instanceof File) || image.size === 0) {
     return apiError(ERROR_MESSAGES.IMAGE_REQUIRED, { status: 400 })
@@ -27,6 +24,20 @@ export const POST = withAuth(async (req, { user, supabase }) => {
 
   const receipt = parseFormJson(form, 'receipt', parsedReceiptSchema)
   const place = parseFormJsonOptional(form, 'place', placeSchema) as Place | null
+
+  const submissionHash = createHash('sha256')
+    .update(JSON.stringify({ receipt, place }))
+    .update(image.type)
+    .update(new Uint8Array(await image.arrayBuffer()))
+    .digest('hex')
+  const findSubmission = () => supabase.from('receipts').select('id, img_url, submission_hash')
+    .eq('user_id', user.id).eq('submission_id', submissionId).maybeSingle()
+  const { data: existing, error: lookupError } = await findSubmission()
+  if (lookupError) return apiError('Unable to check receipt submission. Please try again.', { status: 503 })
+  if (existing) {
+    if (existing.submission_hash !== submissionHash) return apiError(REPLAY_CONFLICT, { status: 409 })
+    return apiSuccess({ id: existing.id, img_url: existing.img_url })
+  }
 
   // Each attempt owns its upload; a losing retry can only clean up its own path.
   const filename = `${user.id}/${submissionId}/${crypto.randomUUID()}.${extension}`
@@ -47,7 +58,7 @@ export const POST = withAuth(async (req, { user, supabase }) => {
   let saved
   try {
     saved = await supabase.rpc('save_receipt_submission', {
-      receipt, place, img_url: pub.publicUrl, submission_id: submissionId,
+      receipt, place, img_url: pub.publicUrl, submission_id: submissionId, submission_hash: submissionHash,
     })
   } catch {
     saved = { data: null, error: { code: '', message: 'Save outcome is unknown' } }
@@ -59,12 +70,14 @@ export const POST = withAuth(async (req, { user, supabase }) => {
       && !error.code.startsWith('08') && error.code !== '57014' && error.code !== '40003'
     if (confirmedFailure) {
       await cleanup()
+      if (error.code === 'PT409') return apiError(REPLAY_CONFLICT, { status: 409 })
       throw new Error(`${ERROR_MESSAGES.FAILED_TO_SAVE_RECEIPT}: ${error.message}`)
     }
     const { data: committed, error: reconcileError } = await findSubmission()
     if (!reconcileError && committed) {
       if (committed.img_url !== pub.publicUrl) await cleanup()
-      return apiSuccess(committed)
+      if (committed.submission_hash !== submissionHash) return apiError(REPLAY_CONFLICT, { status: 409 })
+      return apiSuccess({ id: committed.id, img_url: committed.img_url })
     }
     // An in-flight commit may still reference this upload. Retain it for reconciliation.
     return apiError('Receipt save outcome is unknown. Please retry with the same submission.', { status: 503 })

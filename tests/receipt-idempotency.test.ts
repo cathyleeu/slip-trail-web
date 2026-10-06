@@ -16,7 +16,7 @@ let rpcMode = 'success'
 let lookupFails = false
 let release: (() => void) | undefined
 let pending: Promise<void> | undefined
-const receipts = new Map<string, Saved>()
+const receipts = new Map<string, Saved & { submission_hash: string }>()
 const images = new Set<string>()
 let uploads = 0
 const removed: string[] = []
@@ -42,18 +42,22 @@ const supabase = {
       return { error: null }
     },
   }) },
-  rpc: async (name: string, args: { submission_id: string; img_url: string }) => {
+  rpc: async (name: string, args: { submission_id: string; img_url: string; submission_hash: string }) => {
     assert.equal(name, 'save_receipt_submission')
     const owner = userId
     if (pending) await pending
     if (rpcMode === 'sql-failure') return { data: null, error: { code: '23514', message: 'constraint' } }
     if (rpcMode === 'unknown') throw new Error('connection lost before outcome')
     const key = `${owner}:${args.submission_id}`
-    const saved = receipts.get(key) ?? { id: randomUUID(), img_url: args.img_url }
+    const existing = receipts.get(key)
+    if (existing && existing.submission_hash !== args.submission_hash) {
+      return { data: null, error: { code: 'PT409', message: 'Submission payload has changed' } }
+    }
+    const saved = existing ?? { id: randomUUID(), img_url: args.img_url, submission_hash: args.submission_hash }
     receipts.set(key, saved)
     if (rpcMode === 'unreconciled-commit') lookupFails = true
     if (rpcMode === 'lost-response' || rpcMode === 'unreconciled-commit') throw new Error('response lost after commit')
-    return { data: saved, error: null }
+    return { data: { id: saved.id, img_url: saved.img_url }, error: null }
   },
 }
 const cache = new Map<string, unknown>()
@@ -77,11 +81,12 @@ function load(path: string): unknown {
   return mod.exports
 }
 const { POST } = load('app/api/receipts/route') as { POST: (req: Request) => Promise<Response> }
-function request(id: string | null): Request {
+function request(id: string | null, changes: Record<string, unknown> = {}, image = 'image', place?: Record<string, unknown>): Request {
   const body = new FormData()
   if (id !== null) body.append('submission_id', id)
-  body.append('image', new File(['image'], 'receipt.webp', { type: 'image/webp' }))
-  body.append('receipt', JSON.stringify({ vendor: 'Cafe', category: 'coffee', total: 12 }))
+  body.append('image', new File([image], 'receipt.webp', { type: 'image/webp' }))
+  body.append('receipt', JSON.stringify({ vendor: 'Cafe', category: 'coffee', total: 12, ...changes }))
+  if (place) body.append('place', JSON.stringify(place))
   return new Request('http://localhost/api/receipts', { method: 'POST', body })
 }
 async function result(response: Response): Promise<Saved> {
@@ -116,7 +121,7 @@ test('lost response and unavailable reconciliation remain safe to retry', async 
   assert.equal(images.size, 1)
   assert.equal(removed.length, 0)
   rpcMode = 'success'; lookupFails = false
-  assert.deepEqual(await result(await POST(request(id))), committed)
+  assert.deepEqual(await result(await POST(request(id))), { id: committed.id, img_url: committed.img_url })
   assert.equal(uploads, 1)
 })
 
@@ -134,6 +139,36 @@ test('concurrent submissions return one receipt and clean only the losing upload
   assert.equal(images.size, 1)
   assert.equal(removed.length, 1)
   assert.ok(!a.img_url.endsWith(removed[0]))
+})
+
+test('changed details or image cannot silently replay a committed submission', async () => {
+  reset()
+  const id = randomUUID()
+  const saved = await result(await POST(request(id)))
+  for (const changes of [{ memo: 'Edited note' }, { feeling: 'Treat' }, { total: 99 },
+    { items: [{ name: 'New item', quantity: 1, price: 12 }] }]) {
+    assert.equal((await POST(request(id, changes))).status, 409)
+  }
+  assert.equal((await POST(request(id, {}, 'different image'))).status, 409)
+  assert.equal((await POST(request(id, {}, 'image', { name: 'New cafe', address: 'New street', lat: 50, lon: -124 }))).status, 409)
+  assert.deepEqual(await result(await POST(request(id))), saved)
+  assert.equal(uploads, 1)
+  assert.equal(images.size, 1)
+})
+
+test('concurrent changed payload loses with a conflict and cleans only its upload', async () => {
+  reset()
+  pending = new Promise<void>((resolve) => { release = resolve })
+  const id = randomUUID()
+  const a = POST(request(id))
+  const b = POST(request(id, { memo: 'Different details' }))
+  while (uploads < 2) await new Promise<void>((resolve) => setImmediate(resolve))
+  release?.()
+  const responses = await Promise.all([a, b])
+  assert.deepEqual(responses.map((response) => response.status).sort(), [200, 409])
+  assert.equal(receipts.size, 1)
+  assert.equal(images.size, 1)
+  assert.equal(removed.length, 1)
 })
 
 test('same submission ID is isolated by authenticated owner', async () => {
@@ -254,14 +289,15 @@ test('SQL migration replays without place mutations and rolls back failed attemp
     const a = randomUUID(), b = randomUUID(), key = randomUUID(), failedKey = randomUUID()
     await db.query('INSERT INTO auth.users(id) VALUES ($1), ($2)', [a, b])
     const setUser = (id: string) => db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [id])
-    const save = async (url: string, category = 'coffee', id = key) => (await db.query(
-      'SELECT public.save_receipt_submission($1::jsonb, $2::jsonb, $3, $4::uuid) AS saved',
+    const save = async (url: string, category = 'coffee', id = key, hash = 'a'.repeat(64)) => (await db.query(
+      'SELECT public.save_receipt_submission($1::jsonb, $2::jsonb, $3, $4::uuid, $5) AS saved',
       [JSON.stringify({ vendor: 'Cafe', category, total: 12 }),
-        JSON.stringify({ name: 'Cafe', lat: 49, lon: -123 }), url, id],
+        JSON.stringify({ name: 'Cafe', lat: 49, lon: -123 }), url, id, hash],
     )).rows[0].saved as Saved
     await setUser(a)
     const first = await save('first-image')
     assert.deepEqual(await save('replay-image'), first)
+    await assert.rejects(save('changed-payload', 'coffee', key, 'b'.repeat(64)), /Submission payload has changed/)
     assert.equal((await db.query('SELECT count(*)::int AS n FROM places')).rows[0].n, 1)
     await setUser(b)
     assert.notEqual((await save('other-user-image')).id, first.id)

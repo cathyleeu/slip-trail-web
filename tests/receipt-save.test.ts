@@ -4,6 +4,7 @@ import { File as NodeFile } from 'node:buffer'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import * as zod from 'zod'
+import * as nodeCrypto from 'node:crypto'
 import { transpile, ModuleKind, ScriptTarget } from 'typescript'
 
 // Node 20's File is available through node:buffer; Next.js supplies it in production.
@@ -18,6 +19,7 @@ let savedId: string | null = 'receipt-id'
 let foundId: string | null = null
 let lookupFails = false
 let imageUrl = ''
+let submissionHash = ''
 let uploadPath = ''
 const supabase = {
   auth: { getUser: async () => ({ data: { user: authenticated ? { id: 'tester' } : null }, error: null }) },
@@ -26,9 +28,10 @@ const supabase = {
     getPublicUrl: (path: string) => { imageUrl = `https://storage.example/${path}`; return { data: { publicUrl: imageUrl } } },
     remove: async (paths: string[]) => { removals.push(...paths); return { error: null } },
   }) },
-  rpc: async (name: string, args: { receipt: unknown; place: unknown; img_url: string }) => {
+  rpc: async (name: string, args: { receipt: unknown; place: unknown; img_url: string; submission_hash: string }) => {
     assert.equal(name, 'save_receipt_submission')
     assert.equal(args.img_url, imageUrl)
+    submissionHash = args.submission_hash
     assert.ok(!('user_id' in args))
     if (rpcThrows) throw new Error('Connection lost')
     return { data: savedId ? { id: savedId, img_url: imageUrl } : null, error: rpcError }
@@ -36,12 +39,12 @@ const supabase = {
   from: (table: string) => {
     assert.equal(table, 'receipts')
     const query = {
-      select: (fields: string) => { assert.equal(fields, 'id, img_url'); return query },
+      select: (fields: string) => { assert.equal(fields, 'id, img_url, submission_hash'); return query },
       eq: (field: string, value: string) => {
         assert.equal(value, field === 'user_id' ? 'tester' : '00000000-0000-4000-8000-000000000001')
         return query
       },
-      maybeSingle: async () => ({ data: foundId && imageUrl ? { id: foundId, img_url: imageUrl } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
+      maybeSingle: async () => ({ data: foundId && imageUrl ? { id: foundId, img_url: imageUrl, submission_hash: submissionHash } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
     }
     return query
   },
@@ -59,6 +62,7 @@ function load(path: string): unknown {
       return { supabaseServer: async () => supabase }
     }
     if (name === 'zod') return zod
+    if (name === 'node:crypto') return nodeCrypto
     if (name === 'next/server') return { NextResponse: Response }
     if (name.startsWith('@lib/')) return load(name.replace('@lib/', 'lib/'))
     if (name.startsWith('./')) return load(`${path.slice(0, path.lastIndexOf('/'))}/${name.slice(2)}`)
