@@ -1,5 +1,6 @@
 'use client'
 
+import { MAX_OCR_IMAGE_SIZE_BYTES } from '@lib/constants'
 import { MIME_TYPES } from '@app/lib'
 import type { ImageFormat } from '@types'
 import imageCompression from 'browser-image-compression'
@@ -67,6 +68,7 @@ export async function compressImage(
 ): Promise<File> {
   if (!blob) throw new Error('No file provided')
   const compressed = await imageCompression(blobToFile(blob, fileName), {
+    maxSizeMB: MAX_OCR_IMAGE_SIZE_BYTES / (1024 * 1024),
     maxWidthOrHeight: 1500, // OCR-friendly resolution
     initialQuality: 0.85, // preserve text sharpness
     useWebWorker: true, // speed up compression

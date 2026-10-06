@@ -1,6 +1,6 @@
 import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
-import { IMAGE_EXTENSIONS, MAX_UPLOAD_SIZE_BYTES } from '@lib/constants'
+import { IMAGE_EXTENSIONS, MAX_OCR_IMAGE_SIZE_BYTES } from '@lib/constants'
 
 export const POST = withAuth(async (request) => {
   const timeout = AbortSignal.timeout(30000)
@@ -23,8 +23,8 @@ export const POST = withAuth(async (request) => {
     if (!Object.hasOwn(IMAGE_EXTENSIONS, image.type)) {
       return apiError('Unsupported image type', { status: 422 })
     }
-    if (image.size > MAX_UPLOAD_SIZE_BYTES) {
-      return apiError('Image exceeds the 10MB limit', { status: 413 })
+    if (image.size > MAX_OCR_IMAGE_SIZE_BYTES) {
+      return apiError('Image exceeds the 4MB limit', { status: 413 })
     }
 
     const url = process.env.OCR_API_URL

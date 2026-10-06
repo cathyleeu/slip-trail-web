@@ -53,6 +53,8 @@ export const IMAGE_EXTENSIONS: Record<string, string> = {
 }
 
 export const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
+// Leave multipart overhead below Vercel Functions' 4.5MB request limit.
+export const MAX_OCR_IMAGE_SIZE_BYTES = 4 * 1024 * 1024
 
 // ============ Error Messages ============
 

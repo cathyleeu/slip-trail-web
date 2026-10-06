@@ -67,7 +67,7 @@ test('authenticated OCR boundary and outcomes', async () => {
       ['not a file', 400],
       [new File([], 'empty.png', { type: 'image/png' }), 400],
       [new File(['x'], 'bad.txt', { type: 'text/plain' }), 422],
-      [new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' }), 413],
+      [new File([new Uint8Array(4 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' }), 413],
     ] as const) {
       assert.equal((await POST(imageRequest(image))).status, status)
     }
@@ -125,6 +125,10 @@ test('client uses the authenticated endpoint and reports cancellation', async ()
   const originalFetch = globalThis.fetch
   const file = new File(['image'], 'receipt.png', { type: 'image/png' })
   try {
+    globalThis.fetch = async () => { throw new Error('Oversized image must not be sent') }
+    assert.deepEqual(await requestOcr({ file: new File([new Uint8Array(4 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' }) }), {
+      success: false, error: 'Image exceeds the 4MB OCR limit. Please choose a smaller image.',
+    })
     globalThis.fetch = async (input, options) => {
       assert.equal(input, '/api/ocr')
       assert.equal((options?.body as FormData).get('image') instanceof File, true)

@@ -1,5 +1,6 @@
 'use client'
 
+import { MAX_OCR_IMAGE_SIZE_BYTES } from '@lib/constants'
 import { ApiError, request } from '@lib/httpFetcher'
 import { toGeoLocation, toPlace } from '@lib/location'
 import { buildAddressNormalized } from '@lib/nomalizedAddress'
@@ -17,6 +18,10 @@ import type {
 } from '@types'
 
 export async function requestOcr({ file }: AnalyzeOptions, signal?: AbortSignal): Promise<OcrResult> {
+  if (file.size > MAX_OCR_IMAGE_SIZE_BYTES) {
+    return { success: false, error: 'Image exceeds the 4MB OCR limit. Please choose a smaller image.' }
+  }
+
   const formData = new FormData()
   formData.append('image', file, file.name)
 
