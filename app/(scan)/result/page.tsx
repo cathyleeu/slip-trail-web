@@ -44,6 +44,7 @@ export default function ResultPage() {
   const [showLocationSearch, setShowLocationSearch] = useState(false)
   const { toastState, showToast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
+  const [saveOutcomeUnknown, setSaveOutcomeUnknown] = useState(false)
   const hasSavedRef = useRef(false)
 
   useEffect(() => {
@@ -145,6 +146,10 @@ export default function ResultPage() {
   }
 
   const handleSave = async () => {
+    if (saveOutcomeUnknown) {
+      router.push('/receipts')
+      return
+    }
     if (isEditMode) {
       setIsEditMode(false)
       setOriginalReceipt(null)
@@ -174,6 +179,11 @@ export default function ResultPage() {
       const response = await fetch('/api/receipts', { method: 'POST', body: formData })
       const data = await response.json()
 
+      if (response.status === 503) {
+        setSaveOutcomeUnknown(true)
+        showToast('Save status is uncertain — check your receipts before trying again', 'error')
+        return
+      }
       if (!response.ok) throw new Error(data.error || 'Failed to save receipt')
 
       setIsEditMode(false)
@@ -489,7 +499,7 @@ export default function ResultPage() {
             disabled={isSaving}
             className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-semibold text-sm disabled:opacity-60 active:scale-[0.98] transition-all"
           >
-            {isSaving ? 'Saving…' : isEditMode ? 'Apply' : 'Save to trail'}
+            {isSaving ? 'Saving…' : saveOutcomeUnknown ? 'Check receipts' : isEditMode ? 'Apply' : 'Save to trail'}
           </motion.button>
         </div>
       </div>
