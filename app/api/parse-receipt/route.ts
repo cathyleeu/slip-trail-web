@@ -2,6 +2,7 @@ import { withAuth } from '@lib/apiHandler'
 import { apiError, apiSuccess } from '@lib/apiResponse'
 import { coerceCategory, parseReceipt } from '@lib/groq'
 import { log } from '@lib/logger'
+import { receiptDraftSchema } from '@lib/validation'
 
 const MAX_RAW_TEXT_LENGTH = 20000
 
@@ -12,10 +13,10 @@ export const POST = withAuth(async (request) => {
       return apiError('rawText is required and must be a string', { status: 400 })
     }
 
-    const rawText = body.rawText.trim()
+    const rawText: string = body.rawText
 
     // verify OCR result minimum validation
-    if (rawText.length < 30) {
+    if (rawText.trim().length < 30) {
       return apiError('OCR text too short', {
         status: 422,
         details: 'The provided OCR text is not sufficient for parsing',
@@ -37,7 +38,6 @@ export const POST = withAuth(async (request) => {
       log.apiError('/api/parse-receipt', err, { stage: 'LLM request' })
       return apiError('LLM request failed', {
         status: 502,
-        details: err instanceof Error ? err.message : 'Unknown LLM error',
       })
     }
 
@@ -45,27 +45,28 @@ export const POST = withAuth(async (request) => {
       return apiError('LLM returned empty response', { status: 502 })
     }
 
-    // parse LLM response as JSON
-    let parsedJson: Record<string, unknown>
     try {
-      parsedJson = JSON.parse(llmResponse)
-    } catch (parseError) {
-      log.error('Failed to parse LLM JSON response', parseError, {
-        response: llmResponse.substring(0, 200),
+      const parsedJson: unknown = JSON.parse(llmResponse)
+      if (!parsedJson || typeof parsedJson !== 'object' || Array.isArray(parsedJson)) {
+        throw new Error('Expected receipt object')
+      }
+      const result = receiptDraftSchema.safeParse({
+        ...parsedJson,
+        category: coerceCategory((parsedJson as Record<string, unknown>).category),
       })
-      return apiError('Invalid JSON returned from LLM', { status: 500, details: llmResponse })
+      if (!result.success) {
+        throw new Error('Invalid receipt draft')
+      }
+      return apiSuccess({ ...result.data, raw_text: rawText })
+    } catch {
+      log.warn('Invalid receipt draft returned by LLM')
+      return apiError('Could not parse receipt. Please try again.', { status: 502 })
     }
-
-    // Normalize category to an allowed enum value regardless of what the LLM returned
-    parsedJson.category = coerceCategory(parsedJson.category as string | null | undefined)
-
-    return apiSuccess(parsedJson)
   } catch (err) {
     log.apiError('/api/parse-receipt', err, { stage: 'unhandled' })
 
     return apiError('Internal server error', {
       status: 500,
-      details: err instanceof Error ? err.message : String(err),
     })
   }
 })

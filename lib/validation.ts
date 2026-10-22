@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { RECEIPT_CATEGORIES } from './constants'
+import { buildAddressNormalized } from './nomalizedAddress'
+import { ChargeType } from '@types'
 
 // ============ Receipt Schemas ============
 
@@ -16,6 +18,7 @@ export const receiptItemSchema = z.object({
  * Schema for receipt charges (tax, tip, etc.)
  */
 export const receiptChargeSchema = z.object({
+  type: z.enum(ChargeType).optional(),
   label: z.string(),
   amount: z.number(),
 })
@@ -50,6 +53,48 @@ export const parsedReceiptSchema = z.object({
   charges: z.array(receiptChargeSchema).optional(),
   feeling: feelingTagSchema.nullable().optional(),
   memo: z.string().nullable().optional(),
+})
+
+// Parsing drafts allow unknown values; final-save schemas above remain stricter.
+const unknownText = z.string().trim().transform((value) => value || null).nullish().transform((value) => value ?? null)
+const unknownNumber = z.number().nullish().transform((value) => value ?? null)
+const addressComponentsSchema = z.object({
+  unit: unknownText,
+  house_number: unknownText,
+  road: unknownText,
+  neighborhood: unknownText,
+  city: unknownText,
+  district_or_county: unknownText,
+  region: unknownText,
+  region_code: unknownText,
+  postal_code: unknownText,
+  country: unknownText,
+  country_code: unknownText,
+})
+
+export const receiptDraftSchema = z.object({
+  vendor: unknownText,
+  category: z.enum(RECEIPT_CATEGORIES).catch('other'),
+  address: unknownText,
+  address_normalized: z.object({
+    raw_address_text: unknownText,
+    components: addressComponentsSchema.nullish().transform((value) => value ?? addressComponentsSchema.parse({})),
+  }).nullish().transform((value) => buildAddressNormalized(value ?? { components: addressComponentsSchema.parse({}) })),
+  phone: unknownText,
+  purchased_at: z.iso.datetime({ offset: true }).nullish().transform((value) => value ?? null),
+  currency: unknownText.transform((value) => value ?? 'CAD'),
+  subtotal: unknownNumber,
+  total: unknownNumber,
+  items: z.array(z.object({
+    name: z.string(),
+    quantity: unknownNumber,
+    price: unknownNumber,
+  })).nullish().transform((value) => value ?? []),
+  charges: z.array(z.object({
+    type: z.enum(ChargeType),
+    label: z.string(),
+    amount: unknownNumber,
+  })).nullish().transform((value) => value ?? []),
 })
 
 // ============ Location Schemas ============

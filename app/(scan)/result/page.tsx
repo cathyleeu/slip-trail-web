@@ -5,9 +5,10 @@ import { Button, Card, IconButton, Toast, useToast } from '@components/ui'
 import { Calendar, Plus, Trash } from '@components/ui/icons'
 import { getCategoryEmoji, getCategoryLabel } from '@lib/categories'
 import { RECEIPT_CATEGORIES } from '@lib/constants'
+import { draftTotal } from '@lib/receiptDraft'
 import { FEELING_TAGS } from '@lib/feelings'
 import { useAnalysisDraftStore } from '@store'
-import { ChargeType, type ParsedReceipt, type ReceiptCharge, type ReceiptItem } from '@types'
+import { ChargeType, type ParsedReceipt } from '@types'
 import { cn } from '@utils/cn'
 import { formatDateTime, normalizeNumberInput } from '@utils/format'
 import { motion } from 'motion/react'
@@ -18,6 +19,9 @@ import { useEffect, useRef, useState } from 'react'
 const Map = dynamic(() => import('@components/map'), { ssr: false })
 
 type FeelingTag = (typeof FEELING_TAGS)[number]
+
+type ReceiptItem = ParsedReceipt['items'][number]
+type ReceiptCharge = ParsedReceipt['charges'][number]
 
 function toDatetimeLocalValue(iso?: string | null) {
   if (!iso) return ''
@@ -71,9 +75,7 @@ export default function ResultPage() {
     if (!receipt) return
     const tipCharge = { type: ChargeType.TIP, label: 'Tip', amount: tipAmount }
     const updatedCharges = [...(receipt.charges || []), tipCharge]
-    const itemsTotal = receipt.items?.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0) || 0
-    const chargesTotal = updatedCharges.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0)
-    setReceipt({ ...receipt, charges: updatedCharges, total: itemsTotal + chargesTotal })
+    setReceipt({ ...receipt, charges: updatedCharges, total: draftTotal(receipt.items, updatedCharges, receipt.subtotal) })
     setShowTipPrompt(false)
   }
 
@@ -81,21 +83,17 @@ export default function ResultPage() {
     if (!receipt?.items) return
     const updatedItems = [...receipt.items]
     if (field === 'quantity' || field === 'price') {
-      updatedItems[index] = { ...updatedItems[index], [field]: parseFloat(value) || 0 }
+      updatedItems[index] = { ...updatedItems[index], [field]: value === '' ? null : parseFloat(value) }
     } else {
       updatedItems[index] = { ...updatedItems[index], [field]: value }
     }
-    const itemsTotal = updatedItems.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0)
-    const chargesTotal = receipt.charges?.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0) || 0
-    setReceipt({ ...receipt, items: updatedItems, total: itemsTotal + chargesTotal })
+    setReceipt({ ...receipt, items: updatedItems, total: draftTotal(updatedItems, receipt.charges, receipt.subtotal) })
   }
 
   const handleDeleteItem = (index: number) => {
     if (!receipt?.items) return
     const updatedItems = receipt.items.filter((_: ReceiptItem, idx: number) => idx !== index)
-    const itemsTotal = updatedItems.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0)
-    const chargesTotal = receipt.charges?.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0) || 0
-    setReceipt({ ...receipt, items: updatedItems, total: itemsTotal + chargesTotal })
+    setReceipt({ ...receipt, items: updatedItems, total: draftTotal(updatedItems, receipt.charges, receipt.subtotal) })
   }
 
   const handleEditVendor = (value: string) => {
@@ -123,21 +121,17 @@ export default function ResultPage() {
     if (!receipt?.charges) return
     const updatedCharges = [...receipt.charges]
     if (field === 'amount') {
-      updatedCharges[index] = { ...updatedCharges[index], [field]: parseFloat(value) || 0 }
+      updatedCharges[index] = { ...updatedCharges[index], [field]: value === '' ? null : parseFloat(value) }
     } else {
       updatedCharges[index] = { ...updatedCharges[index], [field]: value as ChargeType }
     }
-    const itemsTotal = receipt.items?.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0) || 0
-    const chargesTotal = updatedCharges.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0)
-    setReceipt({ ...receipt, charges: updatedCharges, total: itemsTotal + chargesTotal })
+    setReceipt({ ...receipt, charges: updatedCharges, total: draftTotal(receipt.items, updatedCharges, receipt.subtotal) })
   }
 
   const handleDeleteCharge = (index: number) => {
     if (!receipt?.charges) return
     const updatedCharges = receipt.charges.filter((_: ReceiptCharge, idx: number) => idx !== index)
-    const itemsTotal = receipt.items?.reduce((sum: number, item: ReceiptItem) => sum + item.quantity * item.price, 0) || 0
-    const chargesTotal = updatedCharges.reduce((sum: number, charge: ReceiptCharge) => sum + charge.amount, 0)
-    setReceipt({ ...receipt, charges: updatedCharges, total: itemsTotal + chargesTotal })
+    setReceipt({ ...receipt, charges: updatedCharges, total: draftTotal(receipt.items, updatedCharges, receipt.subtotal) })
   }
 
   const handleAddCharge = () => {
@@ -156,6 +150,14 @@ export default function ResultPage() {
       return
     }
     if (!receipt) return
+    if (!receipt.vendor?.trim() || receipt.total === null ||
+        receipt.items.some((item) => item.quantity === null || item.price === null) ||
+        receipt.charges.some((charge) => charge.amount === null)) {
+      showToast('Fill in the vendor and missing amounts before saving', 'error')
+      setOriginalReceipt(receipt)
+      setIsEditMode(true)
+      return
+    }
     if (!file) {
       showToast('✗ Save failed — try again', 'error')
       return
@@ -168,7 +170,7 @@ export default function ResultPage() {
         feeling: selectedFeeling,
         memo: memo.trim() || null,
         items: receipt.items?.map(({ name, quantity, price }: ReceiptItem) => ({ name, quantity, price })),
-        charges: receipt.charges?.map(({ label, amount }: ReceiptCharge) => ({ label, amount })),
+        charges: receipt.charges,
       }
 
       const formData = new FormData()
@@ -288,12 +290,12 @@ export default function ResultPage() {
             {isEditMode ? (
               <input
                 type="text"
-                value={receipt.vendor}
+                value={receipt.vendor ?? ''}
                 onChange={(e) => handleEditVendor(e.target.value)}
                 className="w-full text-xl font-bold text-zinc-900 px-2 py-1 border border-zinc-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             ) : (
-              <h2 className="text-xl font-bold text-zinc-900">{receipt.vendor}</h2>
+              <h2 className="text-xl font-bold text-zinc-900">{receipt.vendor ?? 'Unknown vendor'}</h2>
             )}
             {receipt.address && <p className="text-sm text-zinc-500 mt-1">{receipt.address}</p>}
           </div>
@@ -356,7 +358,7 @@ export default function ResultPage() {
                       <>
                         <input
                           type="number"
-                          value={item.quantity}
+                          value={item.quantity ?? ''}
                           onChange={(e) => handleEditItem(idx, 'quantity', normalizeNumberInput(e.target.value))}
                           className="w-12 px-2 py-1 border border-zinc-200 rounded-lg text-center focus:outline-none focus:ring-1 focus:ring-zinc-400"
                           min="1"
@@ -370,7 +372,7 @@ export default function ResultPage() {
                         />
                         <input
                           type="number"
-                          value={item.price}
+                          value={item.price ?? ''}
                           onChange={(e) => handleEditItem(idx, 'price', normalizeNumberInput(e.target.value))}
                           className="w-20 px-2 py-1 border border-zinc-200 rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-zinc-400"
                           step="0.01"
@@ -383,9 +385,9 @@ export default function ResultPage() {
                     ) : (
                       <>
                         <span className="flex-1 text-zinc-800">
-                          {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
+                          {item.quantity !== null && item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
                         </span>
-                        <span className="font-semibold text-zinc-900">${item.price.toFixed(2)}</span>
+                        <span className="font-semibold text-zinc-900">{item.price === null ? 'Unknown' : `$${item.price.toFixed(2)}`}</span>
                       </>
                     )}
                   </div>
@@ -420,7 +422,7 @@ export default function ResultPage() {
                       </select>
                       <input
                         type="number"
-                        value={charge.amount}
+                        value={charge.amount ?? ''}
                         onChange={(e) => handleEditCharge(idx, 'amount', normalizeNumberInput(e.target.value))}
                         className="w-20 px-2 py-1 border border-zinc-200 rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-zinc-400"
                         step="0.01"
@@ -433,7 +435,7 @@ export default function ResultPage() {
                   ) : (
                     <>
                       <span className="flex-1 text-zinc-500 capitalize">{charge.type}</span>
-                      <span className="text-zinc-900">${charge.amount.toFixed(2)}</span>
+                      <span className="text-zinc-900">{charge.amount === null ? 'Unknown' : `$${charge.amount.toFixed(2)}`}</span>
                     </>
                   )}
                 </div>
@@ -444,9 +446,20 @@ export default function ResultPage() {
           {/* Total */}
           <div className="border-t border-zinc-100 pt-4 flex justify-between items-center">
             <span className="text-sm font-semibold tracking-widest text-zinc-400 uppercase">Total</span>
-            <span className="text-3xl font-black text-zinc-900 tabular-nums tracking-tight">
-              ${receipt.total ? receipt.total.toFixed(2) : '0.00'}
-            </span>
+            {isEditMode ? (
+              <input
+                type="number"
+                aria-label="Total"
+                value={receipt.total ?? ''}
+                onChange={(e) => setReceipt({ ...receipt, total: e.target.value === '' ? null : Number(e.target.value) })}
+                step="0.01"
+                className="w-32 rounded-lg border border-border px-2 py-1 text-right text-3xl font-black text-fg"
+              />
+            ) : (
+              <span className="text-3xl font-black text-zinc-900 tabular-nums tracking-tight">
+                {receipt.total === null ? 'Unknown' : `$${receipt.total.toFixed(2)}`}
+              </span>
+            )}
           </div>
         </Card>
 
