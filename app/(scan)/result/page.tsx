@@ -33,7 +33,7 @@ function fromDatetimeLocalValue(value: string): string {
 
 export default function ResultPage() {
   const router = useRouter()
-  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place, reset } =
+  const { location, locationStatus, receipt, setReceipt, setLocation, setPlace, file, place, reset, submissionId } =
     useAnalysisDraftStore()
   const [isEditMode, setIsEditMode] = useState(false)
   const [originalReceipt, setOriginalReceipt] = useState<typeof receipt | null>(null)
@@ -44,7 +44,6 @@ export default function ResultPage() {
   const [showLocationSearch, setShowLocationSearch] = useState(false)
   const { toastState, showToast } = useToast()
   const [isSaving, setIsSaving] = useState(false)
-  const [saveOutcomeUnknown, setSaveOutcomeUnknown] = useState(false)
   const hasSavedRef = useRef(false)
 
   useEffect(() => {
@@ -146,17 +145,13 @@ export default function ResultPage() {
   }
 
   const handleSave = async () => {
-    if (saveOutcomeUnknown) {
-      router.push('/receipts')
-      return
-    }
     if (isEditMode) {
       setIsEditMode(false)
       setOriginalReceipt(null)
       return
     }
     if (!receipt) return
-    if (!file) {
+    if (!file || !submissionId) {
       showToast('✗ Save failed — try again', 'error')
       return
     }
@@ -172,6 +167,7 @@ export default function ResultPage() {
       }
 
       const formData = new FormData()
+      formData.append('submission_id', submissionId)
       formData.append('image', file)
       formData.append('receipt', JSON.stringify(receiptPayload))
       if (place) formData.append('place', JSON.stringify(place))
@@ -179,9 +175,8 @@ export default function ResultPage() {
       const response = await fetch('/api/receipts', { method: 'POST', body: formData })
       const data = await response.json()
 
-      if (response.status === 503) {
-        setSaveOutcomeUnknown(true)
-        showToast('Save status is uncertain — check your receipts before trying again', 'error')
+      if (response.status === 409 || response.status === 503) {
+        showToast(data.error, 'error')
         return
       }
       if (!response.ok) throw new Error(data.error || 'Failed to save receipt')
@@ -499,7 +494,7 @@ export default function ResultPage() {
             disabled={isSaving}
             className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-semibold text-sm disabled:opacity-60 active:scale-[0.98] transition-all"
           >
-            {isSaving ? 'Saving…' : saveOutcomeUnknown ? 'Check receipts' : isEditMode ? 'Apply' : 'Save to trail'}
+            {isSaving ? 'Saving…' : isEditMode ? 'Apply' : 'Save to trail'}
           </motion.button>
         </div>
       </div>

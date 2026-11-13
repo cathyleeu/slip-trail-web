@@ -4,6 +4,7 @@ import { File as NodeFile } from 'node:buffer'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import * as zod from 'zod'
+import * as nodeCrypto from 'node:crypto'
 import { transpile, ModuleKind, ScriptTarget } from 'typescript'
 
 // Node 20's File is available through node:buffer; Next.js supplies it in production.
@@ -18,6 +19,7 @@ let savedId: string | null = 'receipt-id'
 let foundId: string | null = null
 let lookupFails = false
 let imageUrl = ''
+let submissionHash = ''
 let uploadPath = ''
 const supabase = {
   auth: { getUser: async () => ({ data: { user: authenticated ? { id: 'tester' } : null }, error: null }) },
@@ -26,22 +28,23 @@ const supabase = {
     getPublicUrl: (path: string) => { imageUrl = `https://storage.example/${path}`; return { data: { publicUrl: imageUrl } } },
     remove: async (paths: string[]) => { removals.push(...paths); return { error: null } },
   }) },
-  rpc: async (name: string, args: { receipt: unknown; place: unknown; img_url: string }) => {
-    assert.equal(name, 'save_receipt_with_place_v2')
+  rpc: async (name: string, args: { receipt: unknown; place: unknown; img_url: string; submission_hash: string }) => {
+    assert.equal(name, 'save_receipt_submission')
     assert.equal(args.img_url, imageUrl)
+    submissionHash = args.submission_hash
     assert.ok(!('user_id' in args))
     if (rpcThrows) throw new Error('Connection lost')
-    return { data: savedId ? { id: savedId } : null, error: rpcError }
+    return { data: savedId ? { id: savedId, img_url: imageUrl } : null, error: rpcError }
   },
   from: (table: string) => {
     assert.equal(table, 'receipts')
     const query = {
-      select: (fields: string) => { assert.equal(fields, 'id'); return query },
+      select: (fields: string) => { assert.equal(fields, 'id, img_url, submission_hash'); return query },
       eq: (field: string, value: string) => {
-        assert.equal(value, field === 'user_id' ? 'tester' : imageUrl)
+        assert.equal(value, field === 'user_id' ? 'tester' : '00000000-0000-4000-8000-000000000001')
         return query
       },
-      maybeSingle: async () => ({ data: foundId ? { id: foundId } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
+      maybeSingle: async () => ({ data: foundId && imageUrl ? { id: foundId, img_url: imageUrl, submission_hash: submissionHash } : null, error: lookupFails ? { message: 'Unavailable' } : null }),
     }
     return query
   },
@@ -59,6 +62,7 @@ function load(path: string): unknown {
       return { supabaseServer: async () => supabase }
     }
     if (name === 'zod') return zod
+    if (name === 'node:crypto') return nodeCrypto
     if (name === 'next/server') return { NextResponse: Response }
     if (name.startsWith('@lib/')) return load(name.replace('@lib/', 'lib/'))
     if (name.startsWith('./')) return load(`${path.slice(0, path.lastIndexOf('/'))}/${name.slice(2)}`)
@@ -71,7 +75,9 @@ function load(path: string): unknown {
 const { POST } = load('app/api/receipts/route') as { POST: (request: Request) => Promise<Response> }
 
 function request(image: File | string = new File(['image'], 'receipt.png', { type: 'image/png' })): Request {
+  imageUrl = ''
   const body = new FormData()
+  body.append('submission_id', '00000000-0000-4000-8000-000000000001')
   body.append('image', image)
   body.append('receipt', JSON.stringify({ vendor: 'Cafe', total: 5, user_id: 'another-user' }))
   body.append('place', JSON.stringify({ name: 'Cafe', address: 'Street', lat: 49, lon: -123 }))
@@ -102,7 +108,7 @@ test('receipt upload validation, authenticated save, and failure reconciliation'
   for (const code of ['', '08006', '57014', '40003']) {
     rpcError = { code, message: 'Unknown outcome' }
     foundId = 'committed-receipt'
-    assert.deepEqual(await (await POST(request())).json(), { success: true, data: { id: foundId } })
+    assert.deepEqual(await (await POST(request())).json(), { success: true, data: { id: foundId, img_url: imageUrl } })
     foundId = null
     assert.equal((await POST(request())).status, 503)
     assert.deepEqual(removals, [])
@@ -116,18 +122,17 @@ test('receipt upload validation, authenticated save, and failure reconciliation'
 })
 
 
-test('uncertain save directs the next action to receipts without another POST', async () => {
+test('uncertain save retries with the same submission ID', async () => {
   // Execute the page's real save handler without mounting its unrelated form/map UI.
   const source = readFileSync('app/(scan)/result/page.tsx', 'utf8')
   const handlerSource = source.slice(source.indexOf('  const handleSave ='), source.indexOf('  const handleEdit ='))
   const messages: string[] = []
   const routes: string[] = []
   const originalFetch = globalThis.fetch
-  let posts = 0
+  const submittedIds: FormDataEntryValue[] = []
+  const submissionId = nodeCrypto.randomUUID()
   const handler = new Function('context', `
-    const { router, receipt, file, showToast } = context;
-    let saveOutcomeUnknown = false;
-    const setSaveOutcomeUnknown = value => { saveOutcomeUnknown = value };
+    const { router, receipt, file, showToast, submissionId } = context;
     const isEditMode = false, selectedFeeling = null, memo = '', place = null;
     const setIsSaving = () => {}, setIsEditMode = () => {}, setOriginalReceipt = () => {};
     const reset = () => { throw new Error('Do not discard an uncertain draft') };
@@ -135,21 +140,24 @@ test('uncertain save directs the next action to receipts without another POST', 
     ${transpile(handlerSource, { target: ScriptTarget.ES2022 })}
     return handleSave;
   `)({
+    submissionId,
     router: { push: (path: string) => routes.push(path) },
     receipt: { vendor: 'Cafe', total: 5 },
     file: new File(['x'], 'receipt.png', { type: 'image/png' }),
     showToast: (message: string) => messages.push(message),
   }) as () => Promise<void>
   try {
-    globalThis.fetch = async () => {
-      posts++
+    globalThis.fetch = async (_input, init) => {
+      const id = (init?.body as FormData).get('submission_id')
+      assert.ok(id)
+      submittedIds.push(id)
       return Response.json({ success: false, error: 'Outcome unknown' }, { status: 503 })
     }
     await handler()
-    assert.deepEqual(messages, ['Save status is uncertain — check your receipts before trying again'])
+    assert.deepEqual(messages, ['Outcome unknown'])
     await handler()
-    assert.equal(posts, 1)
-    assert.deepEqual(routes, ['/receipts'])
+    assert.deepEqual(submittedIds, [submissionId, submissionId])
+    assert.deepEqual(routes, [])
   } finally {
     globalThis.fetch = originalFetch
   }
