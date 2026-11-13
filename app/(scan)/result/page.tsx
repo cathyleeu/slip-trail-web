@@ -175,7 +175,7 @@ export default function ResultPage() {
       const response = await fetch('/api/receipts', { method: 'POST', body: formData })
       const data = await response.json()
 
-      if (response.status === 409) {
+      if (response.status === 409 || response.status === 503) {
         showToast(data.error, 'error')
         return
       }

@@ -120,3 +120,45 @@ test('receipt upload validation, authenticated save, and failure reconciliation'
   assert.equal((await POST(request())).status, 503)
   assert.deepEqual(removals, [])
 })
+
+
+test('uncertain save retries with the same submission ID', async () => {
+  // Execute the page's real save handler without mounting its unrelated form/map UI.
+  const source = readFileSync('app/(scan)/result/page.tsx', 'utf8')
+  const handlerSource = source.slice(source.indexOf('  const handleSave ='), source.indexOf('  const handleEdit ='))
+  const messages: string[] = []
+  const routes: string[] = []
+  const originalFetch = globalThis.fetch
+  const submittedIds: FormDataEntryValue[] = []
+  const submissionId = nodeCrypto.randomUUID()
+  const handler = new Function('context', `
+    const { router, receipt, file, showToast, submissionId } = context;
+    const isEditMode = false, selectedFeeling = null, memo = '', place = null;
+    const setIsSaving = () => {}, setIsEditMode = () => {}, setOriginalReceipt = () => {};
+    const reset = () => { throw new Error('Do not discard an uncertain draft') };
+    const hasSavedRef = { current: false };
+    ${transpile(handlerSource, { target: ScriptTarget.ES2022 })}
+    return handleSave;
+  `)({
+    submissionId,
+    router: { push: (path: string) => routes.push(path) },
+    receipt: { vendor: 'Cafe', total: 5 },
+    file: new File(['x'], 'receipt.png', { type: 'image/png' }),
+    showToast: (message: string) => messages.push(message),
+  }) as () => Promise<void>
+  try {
+    globalThis.fetch = async (_input, init) => {
+      const id = (init?.body as FormData).get('submission_id')
+      assert.ok(id)
+      submittedIds.push(id)
+      return Response.json({ success: false, error: 'Outcome unknown' }, { status: 503 })
+    }
+    await handler()
+    assert.deepEqual(messages, ['Outcome unknown'])
+    await handler()
+    assert.deepEqual(submittedIds, [submissionId, submissionId])
+    assert.deepEqual(routes, [])
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})

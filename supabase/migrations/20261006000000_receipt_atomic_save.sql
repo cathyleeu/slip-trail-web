@@ -1,4 +1,11 @@
 -- Deploy before the receipt-create route. The versioned name prevents legacy RPC fallback.
+-- Older deployed schemas do not yet have the receipt place snapshot columns.
+ALTER TABLE public.receipts
+  ADD COLUMN IF NOT EXISTS lat NUMERIC(10, 7),
+  ADD COLUMN IF NOT EXISTS lon NUMERIC(10, 7),
+  ADD COLUMN IF NOT EXISTS place_name TEXT,
+  ADD COLUMN IF NOT EXISTS place_address TEXT;
+
 CREATE OR REPLACE FUNCTION public.save_receipt_with_place_v2(
   receipt JSONB,
   place   JSONB,
@@ -53,7 +60,8 @@ BEGIN
     auth.uid(),
     v_place_id,
     COALESCE(receipt->>'vendor', 'Unknown'),
-    COALESCE(receipt->>'category', 'other'),
+    (jsonb_populate_record(NULL::public.receipts,
+      jsonb_build_object('category', COALESCE(receipt->>'category', 'other')))).category,
     receipt->>'address',
     receipt->>'phone',
     NULLIF(receipt->>'purchased_at', '')::TIMESTAMPTZ,

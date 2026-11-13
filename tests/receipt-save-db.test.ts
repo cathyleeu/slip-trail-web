@@ -5,7 +5,8 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { test } from 'node:test'
 
-test('atomic RPC migration, owner isolation, snapshot, and rollback', async () => {
+for (const categoryType of ['text', 'enum']) {
+test(`atomic RPC migration, ownership, snapshot, rollback (${categoryType} category)`, async () => {
   assert.ok(process.env.PGLITE_PATH, 'Set PGLITE_PATH to an installed @electric-sql/pglite package')
   const { PGlite } = createRequire(`${process.cwd()}/package.json`)(process.env.PGLITE_PATH) as {
     PGlite: new () => {
@@ -25,7 +26,16 @@ test('atomic RPC migration, owner isolation, snapshot, and rollback', async () =
       CREATE ROLE authenticated;
     `)
     await db.exec(readFileSync('supabase/migrations/20240101000000_initial_schema.sql', 'utf8'))
-    await db.exec(readFileSync('supabase/migrations/20261006000000_receipt_atomic_save.sql', 'utf8'))
+    if (categoryType === 'enum') {
+      await db.exec(`CREATE TYPE public.receipt_category AS ENUM ('restaurant','coffee','mart','bar','fast_food','bakery','pharmacy','gas','other');
+        ALTER TABLE receipts DROP CONSTRAINT receipts_category_check;
+        ALTER TABLE receipts ALTER COLUMN category TYPE public.receipt_category USING category::public.receipt_category`)
+    }
+    // Match the deployed legacy schema, which predates receipt place snapshots.
+    await db.exec('ALTER TABLE receipts DROP COLUMN lat, DROP COLUMN lon, DROP COLUMN place_name, DROP COLUMN place_address')
+    const migration = readFileSync('supabase/migrations/20261006000000_receipt_atomic_save.sql', 'utf8')
+    await db.exec(migration)
+    await db.exec(migration) // Reapplying must preserve data and permissions.
     await db.exec(`
       INSERT INTO auth.users (id) VALUES ('00000000-0000-0000-0000-000000000001');
       SET request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
@@ -58,3 +68,4 @@ test('atomic RPC migration, owner isolation, snapshot, and rollback', async () =
     await db.close()
   }
 })
+}
